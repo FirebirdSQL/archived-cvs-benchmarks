@@ -65,6 +65,9 @@ public class BenchmarkFixture {
         manager.executeDDL(BenchmarkDDL.CREATE_HUNDRED_OUTPUT);
         
         manager.executeDDL(BenchmarkDDL.CREATE_SAVE_UPDATES_TABLE);
+        
+        manager.executeDDL(BenchmarkDDL.CREATE_SEL_100_SEQ_TABLE);
+        manager.executeDDL(BenchmarkDDL.CREATE_SEL_100_RND_TABLE);
     }
 
     /**

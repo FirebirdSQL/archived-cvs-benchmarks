@@ -35,6 +35,8 @@ public abstract class BenchmarkDDL extends TestCase {
     public static final String TINY_TABLE = "\"tiny\"";
     
     public static final String SAVE_UPDATES_TABLE = "\"saveupdates\"";
+    public static final String SEL_100_SEQ_TABLE = "\"sel100seq\"";
+    public static final String SEL_100_RND_TABLE = "\"sel100rnd\"";
     
     public static final String UNIQUES_TABLE_OUTPUT = "\"uniques_output\"";
     public static final String HUNDRED_TABLE_OUTPUT = "\"hundred_output\"";
@@ -65,6 +67,11 @@ public abstract class BenchmarkDDL extends TestCase {
         + NAME_COL + " CHAR(20) NOT NULL, "
         + ADDRESS_COL + " VARCHAR(80) NOT NULL "
         ;
+        
+    public static final String[] COLUMNS_ARRAY = new String[] {
+        KEY_COL, INT_COL, SIGNED_COL, FLOAT_COL, DOUBLE_COL,
+        DECIM_COL, DATE_COL, CODE_COL, NAME_COL, ADDRESS_COL
+    };
     
     public static final String CREATE_UNIQUES_TABLE = ""
         + "CREATE TABLE " + UNIQUES_TABLE + "("
@@ -127,6 +134,19 @@ public abstract class BenchmarkDDL extends TestCase {
         + ")"
         ;
         
+    public static final String CREATE_SEL_100_SEQ_TABLE = ""
+        + "CREATE TABLE " + SEL_100_SEQ_TABLE + "("
+        + COLUMNS_DEF + ", "
+        + "PRIMARY KEY (" + KEY_COL + ")"
+        + ")"
+        ;
+        
+    public static final String CREATE_SEL_100_RND_TABLE = ""
+        + "CREATE TABLE " + SEL_100_RND_TABLE + "("
+        + COLUMNS_DEF + ", "
+        + "PRIMARY KEY (" + KEY_COL + ")"
+        + ")"
+        ;
 
     public BenchmarkDDL(String string) {
         super(string);
