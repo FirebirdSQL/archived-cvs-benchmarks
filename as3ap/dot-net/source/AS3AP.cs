@@ -108,7 +108,7 @@ namespace AS3AP.BenchMark
 
 			log.Simple("Starting as3ap benchmark at: {0}", DateTime.Now);
 
-			if (!runCreate) 
+			if (runCreate) 
 			{
 				Console.WriteLine("Creating tables and loading data {0}.", DateTime.Now);
 				timeIt("createDataBase");
