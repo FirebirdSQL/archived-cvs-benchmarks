@@ -28,6 +28,16 @@ import junit.framework.TestSuite;
 public class SingleUserSuite extends BenchmarkSuite {
 
     /**
+     * Do we create database?
+     * 
+     * @return <code>false</code> always.
+     */
+    protected boolean isCreateDatabase() {
+        return false;
+    }
+
+
+    /**
      * Fill the suite. Depending on the result of {@link #isCreateDatabase()}
      * method, database filling test is added or not.
      */
