@@ -43,14 +43,14 @@ public class BenchmarkListener implements TestListener {
     private List executionTrace = new LinkedList();
     
     
-    public void addError(Test test, Throwable throwable) {
+    public synchronized void addError(Test test, Throwable throwable) {
         startTimes.remove(test);
         testTimes.remove(test);
         
         errors.put(test, throwable);
     }
 
-    public void addFailure(Test test, AssertionFailedError assertionFailedError) {
+    public synchronized void addFailure(Test test, AssertionFailedError assertionFailedError) {
         startTimes.remove(test);
         testTimes.remove(test);
         
@@ -64,7 +64,7 @@ public class BenchmarkListener implements TestListener {
             return test.toString();
     }
 
-    public void endTest(Test test) {
+    public synchronized void endTest(Test test) {
 
         Long start = (Long)startTimes.get(test);
 

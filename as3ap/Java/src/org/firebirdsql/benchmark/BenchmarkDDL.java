@@ -147,6 +147,10 @@ public abstract class BenchmarkDDL extends TestCase {
         + "PRIMARY KEY (" + KEY_COL + ")"
         + ")"
         ;
+        
+    public static final String DROP_UPDATES_TABLE = ""
+        + "DROP TABLE " + UPDATES_TABLE
+        ;
 
     public BenchmarkDDL(String string) {
         super(string);

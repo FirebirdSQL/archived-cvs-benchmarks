@@ -71,6 +71,18 @@ public class BenchmarkFixture {
     }
 
     /**
+     * Recreate updates table. This method is used to restore updates relation,
+     * and drop/create sequence works better than deleting a content from the
+     * relation due to garbage collection.
+     * 
+     * @throws SQLException if something went wrong.
+     */    
+    public void recreateUpdates() throws SQLException {
+        manager.executeDDL(BenchmarkDDL.DROP_UPDATES_TABLE);
+        manager.executeDDL(BenchmarkDDL.CREATE_UPDATES_TABLE);
+    }
+
+    /**
      * Load data in CSV format from the specified file using the specified
      * insert statement.
      * 

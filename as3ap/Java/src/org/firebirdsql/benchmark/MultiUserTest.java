@@ -31,6 +31,9 @@ import java.util.Random;
  */
 public class MultiUserTest extends BenchmarkTest {
     
+    public static final int DEFAULT_KEY_RANGE = 1000 * 1000 * 1000;
+
+    
     public static final String UPDATES_KEY_COL = UPDATES_TABLE + "." + KEY_COL;
     public static final String UPDATES_DECIM_COL = UPDATES_TABLE + "." + DECIM_COL;
     public static final String UPDATES_INT_COL = UPDATES_TABLE + "." + INT_COL;
@@ -45,6 +48,10 @@ public class MultiUserTest extends BenchmarkTest {
     public static final String SEL_100_RND_DOUBLE_COL = SEL_100_RND_TABLE + "." + DOUBLE_COL;
 
     private int keyRange;
+
+    public MultiUserTest(String name) {
+        this(name, DEFAULT_KEY_RANGE);
+    }
 
     /**
      * Create instance of this class for the specified test case.
@@ -68,6 +75,8 @@ public class MultiUserTest extends BenchmarkTest {
         
         stmt = getConnection().createStatement();
         rnd = new Random();
+        
+        getConnection().setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
     }
     
     protected void tearDown() throws Exception {
@@ -116,6 +125,9 @@ public class MultiUserTest extends BenchmarkTest {
     }
     
     public void testMode100k() throws Exception {
+        
+        getConnection().setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        
         ResultSet rs = stmt.executeQuery(""
             + "SELECT " + COLUMNS_DEF + " "
             + "FROM " + HUNDRED_TABLE + " "
@@ -128,22 +140,37 @@ public class MultiUserTest extends BenchmarkTest {
     }
     
     public void testSelect1NonClustered() throws Exception {
-        ResultSet rs = stmt.executeQuery(""
+        String sql = ""
             + "SELECT " 
             + KEY_COL + ", " + INT_COL + ", " + SIGNED_COL + ", "
             + CODE_COL + ", " + DOUBLE_COL + ", " + NAME_COL + " "
             + "FROM " + UPDATES_TABLE + " "
-            + "WHERE " + CODE_COL + "'BENCHMARKS'"
-        );
+            + "WHERE " + CODE_COL + "'BENCHMARKS'";
         
         Fetcher f = new Fetcher(new String[]{
             KEY_COL, INT_COL, SIGNED_COL, CODE_COL, DOUBLE_COL, NAME_COL
         });
+
+        getConnection().setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        ResultSet rs = stmt.executeQuery(sql);
+        f.fetchResultSet(rs);
+        rs.close();
+        
+        getConnection().setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        rs = stmt.executeQuery(sql);
+        f.fetchResultSet(rs);
+        rs.close();
+        
+        getConnection().setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+        rs = stmt.executeQuery(sql);
         f.fetchResultSet(rs);
         rs.close();
     }
     
     public void testSimpleReport() throws Exception {
+        
+        getConnection().setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+        
         ResultSet rs = stmt.executeQuery(""
             + "SELECT avg(" + UPDATES_DECIM_COL + ") "
             + "FROM " + UPDATES_TABLE + " "

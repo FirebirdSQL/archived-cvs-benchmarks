@@ -58,4 +58,16 @@ public class LoadTest extends BenchmarkTest {
             BenchmarkInsertSQL.INSERT_TINY);
     }
     
+    public void testBackupUpdates() throws Exception {
+        // do nothing here
+    }
+    
+    public void testRestoreUpdates() throws Exception {
+        BenchmarkFixture fixture = getFixture();
+        
+        fixture.recreateUpdates();
+        fixture.loadFile(new File(fixture.getDataPath(), UPDATES_FILE), 
+            BenchmarkInsertSQL.INSERT_UPDATES);
+    }
+    
 }
