@@ -12,7 +12,6 @@
     <property name="build.dir" value="build" />
     <property name="base.dir" value="." />
 	<property name="as3ap.src.dir" value=".\source" />
-    <property name="FirebirdSql.Data.Firebird.dir" value="..\Net-Provider_15\BUILD" />
 
     <!-- Targets -->
     <target name="clean" description="cleans build directory">
@@ -39,17 +38,13 @@
         <copy todir="${build.dir}">
             <fileset basedir=".\assemblys">
                 <includes name="logger.dll" />
+                <includes name="Common.Data.Helper.dll" />
+                <includes name="FirebirdSql.Data.Firebird.dll" />
             </fileset>
         </copy>
 
 		<copy file="${as3ap.src.dir}/AS3AP.config" tofile="${build.dir}/as3ap.Benchmark.exe.config" />
 		        
-        <copy todir="${build.dir}">
-            <fileset basedir="${FirebirdSql.Data.Firebird.dir}">
-                <includes name="FirebirdSql.Data.Firebird.dll" />
-            </fileset>
-        </copy>        
-
         <!-- compile as3ap.Benchmark.exe -->
         <csc target="winexe" output="${build.dir}\as3ap.Benchmark.exe" debug="${build.debug}" win32icon="${as3ap.src.dir}/App.ico">
             <sources>
@@ -63,7 +58,7 @@
                 <absolute file="System.Windows.Forms.dll" />
                 <absolute file="System.Runtime.Serialization.Formatters.Soap" />
                 <includes name="${build.dir}/Logger.dll" />
-                <includes name="${build.dir}/FirebirdSql.Data.Firebird.dll" />
+                <includes name="${build.dir}/Common.Data.Helper.dll" />
             </references>
         </csc>
     </target>

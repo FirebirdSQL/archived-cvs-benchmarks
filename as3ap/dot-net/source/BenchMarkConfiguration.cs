@@ -26,6 +26,8 @@ using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Soap;
 
+using Common.Data.Helper;
+
 namespace AS3AP.BenchMark
 {
 	/// <summary>
@@ -62,6 +64,8 @@ namespace AS3AP.BenchMark
 		private string	doubleTypeName		= "double precision";
 
 		private bool	forcedWrites		= true;
+
+		private			DataHelperType		helperType = DataHelperType.Firebird;
 
 		#endregion
 
@@ -191,6 +195,12 @@ namespace AS3AP.BenchMark
 		{
 			get { return forcedWrites; }
 			set { forcedWrites = value; }
+		}
+
+		public DataHelperType HelperType
+		{
+			get { return helperType; }
+			set { helperType = value; }
 		}
 
 		#endregion

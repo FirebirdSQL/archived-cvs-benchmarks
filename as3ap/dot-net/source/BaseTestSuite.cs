@@ -25,6 +25,7 @@
 using System;
 using System.IO;
 using System.Data;
+using System.Collections;
 using System.Threading;
 using System.Text;
 using System.Reflection;
@@ -32,7 +33,7 @@ using System.Text.RegularExpressions;
 
 using CSharp.Logger;
 
-using FirebirdSql.Data.Firebird;
+using Common.Data.Helper;
 
 namespace AS3AP.BenchMark
 {
@@ -88,11 +89,12 @@ namespace AS3AP.BenchMark
 		
 		protected string 	testSuiteName = String.Empty;
 
-		private IsolationLevel	isolation  = IsolationLevel.ReadCommitted;
-		private FbConnection	connection;
-		private FbTransaction	transaction;
-		protected FbDataReader	cursor;
-		private FbCommand		cmdCursor;	
+		private		IsolationLevel	isolation  = IsolationLevel.ReadCommitted;
+		private		IDbConnection	connection;
+		private		IDbTransaction	transaction;
+		protected	IDataReader		cursor;
+		private		IDbCommand		cmdCursor;
+		private		DataHelper		dataHelper;
 
 		#endregion
 
@@ -136,6 +138,9 @@ namespace AS3AP.BenchMark
 			baseTableStructure = baseTableStructure.Replace("@DECIMAL", configuration.DecimalTypeName);
 			baseTableStructure = baseTableStructure.Replace("@CHAR", configuration.CharTypeName);
 			baseTableStructure = baseTableStructure.Replace("@VARCHAR", configuration.VarcharTypeName);
+
+			// Create the helper object
+			dataHelper = DataHelperFactory.GetHelper(configuration.HelperType);
 		}
 
 		#endregion
@@ -1122,7 +1127,7 @@ namespace AS3AP.BenchMark
 				testResult = 0;	
 			}
 			catch (Exception)
-			{				
+			{
 			}
 
 			try
@@ -2755,7 +2760,7 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				connection = new FbConnection(configuration.ConnectionString);
+				connection = dataHelper.CreateConnection(configuration.ConnectionString);
 				connection.Open();
 			}
 			catch (Exception ex)
@@ -2776,6 +2781,7 @@ namespace AS3AP.BenchMark
 			bool	forcedWrite = configuration.ForcedWrites;
 			short	pageSize	= 4096;
 			string	charset		= "NONE";
+			bool	ssl			= false;
 
 			Regex			search	 = new Regex(@"([\w\s\d]*)\s*=\s*([^;]*)");
 			MatchCollection	elements = search.Matches(this.configuration.ConnectionString);
@@ -2812,15 +2818,30 @@ namespace AS3AP.BenchMark
 						dialect = byte.Parse(element.Groups[2].Value.Trim());
 						break;
 
+					case "ssl":
+						ssl = Boolean.Parse(element.Groups[2].Value.Trim());
+						break;
+
 					case "charset":
 						charset = element.Groups[2].Value.Trim();
 						break;
 				}
 			}
 
-			FbConnection.CreateDatabase(
-					dataSource, port, database, user, password, dialect, forcedWrite,
-					pageSize, charset);
+			Hashtable values = new Hashtable();
+
+			values.Add("DataSource"	, dataSource);
+			values.Add("Port"		, port);
+			values.Add("Database"	, database);
+			values.Add("User"		, user);
+			values.Add("Password"	, password);
+			values.Add("Dialect"	, dialect);
+			values.Add("ForcedWrites", forcedWrite);
+			values.Add("PageSize"	, pageSize);
+			values.Add("Charset"	, charset);
+			values.Add("SSL"		, ssl);
+
+			dataHelper.CreateDatabase(values);
 		}
 
 		public void DatabaseDisconnect()
@@ -2844,7 +2865,7 @@ namespace AS3AP.BenchMark
 
 		protected void executeStatement(string commandText)
 		{			
-			FbCommand command = null;
+			IDbCommand command = null;
 
 			try
 			{
@@ -2990,9 +3011,24 @@ namespace AS3AP.BenchMark
 		{
 			StringBuilder	commandText = new StringBuilder();
 			StreamReader	stream		= null;
-			FbCommand		command		= null;
+			IDbCommand		command		= null;
 			
 			commandText.AppendFormat("insert into {0} values (@col_key,@col_int,@col_signed,@col_float,@col_double,@col_decim,@col_date,@col_code,@col_name,@col_address)", table);
+
+			/* Crate command */
+			command = getCommand(commandText.ToString());
+			
+			/* Add parameters	*/
+			command.Parameters.Add(dataHelper.CreateParameter("@col_key", null));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_int", null));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_signed", null));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_float", null));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_double", null));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_decim", null));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_date", null));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_code", null));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_name", null));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_address", null));
 
 			string path = Path.GetFullPath(configuration.DataPath);
 			if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
@@ -3010,31 +3046,15 @@ namespace AS3AP.BenchMark
 			stream = new StreamReader(
 				(System.IO.Stream)File.Open(
 				path + "asap." + table	,
-				FileMode.Open								,
-				FileAccess.Read								,
+				FileMode.Open			,
+				FileAccess.Read			,
 				FileShare.None));
-
-			/* Crate command */
-			command = getCommand(commandText.ToString());
-			
-			/* Add parameters	*/
-			command.Parameters.Add("@col_key"	, FbDbType.Integer	, 4, "COL_KEY");
-			command.Parameters.Add("@col_int"	, FbDbType.Integer	, 4, "COL_INT");
-			command.Parameters.Add("@col_signed", FbDbType.Integer	, 4, "COL_SIGNED");
-			command.Parameters.Add("@col_float"	, FbDbType.Float	, 4, "COL_FLOAT");
-			command.Parameters.Add("@col_double", FbDbType.Double	, 8, "COL_DOUBLE");
-			command.Parameters.Add("@col_decim"	, FbDbType.Decimal	, 8, "COL_DECIM");
-			command.Parameters.Add("@col_date"	, FbDbType.Char		, 20, "COL_DATE");
-			command.Parameters.Add("@col_code"	, FbDbType.Char		, 10, "COL_CODE");
-			command.Parameters.Add("@col_name"	, FbDbType.Char		, 20, "COL_NAME");
-			command.Parameters.Add("@col_address", FbDbType.VarChar	, 80, "COL_ADDRESS");
 
 			/* Prepare command execution	*/
 			command.Prepare();
 
 			int		rowCount			= 0;
 			bool	transactionPending	= false;
-
 			while (stream.Peek() > -1)
 			{
 				if (rowCount == 0)
@@ -3048,9 +3068,9 @@ namespace AS3AP.BenchMark
 			
 				for (int i = 0; i < 10; i++)
 				{
-					command.Parameters[i].Value = elements[i];
+					((IDataParameter)command.Parameters[i]).Value = elements[i];
 				}
-	
+
 				command.ExecuteNonQuery();
 
 				rowCount++;
@@ -3078,7 +3098,7 @@ namespace AS3AP.BenchMark
 
 			StringBuilder	commandText = new StringBuilder();
 			StreamReader	stream		= null;
-			FbCommand		command		= null;
+			IDbCommand		command		= null;
 
 			commandText.AppendFormat("insert into {0} values (@col_key)", table);
 
@@ -3086,7 +3106,7 @@ namespace AS3AP.BenchMark
 			command = getCommand(commandText.ToString());
 
 			/* Add parameters	*/
-			command.Parameters.Add("@col_key", FbDbType.Integer, 4, "COL_KEY");
+			command.Parameters.Add(dataHelper.CreateParameter("@col_key", null));
 
 			/* Prepare command execution	*/
 			command.Prepare();
@@ -3115,7 +3135,7 @@ namespace AS3AP.BenchMark
 			{
 				string[] elements = stream.ReadLine().Split(',');
 			
-				command.Parameters[0].Value = elements[0];
+				((IDataParameter)command.Parameters[0]).Value = elements[0];
 	
 				command.ExecuteNonQuery();
 			}
@@ -3126,9 +3146,14 @@ namespace AS3AP.BenchMark
 			commitTransaction();
 		}
 
-		protected FbCommand getCommand(string commandText)
+		protected IDbCommand getCommand(string commandText)
 		{
-			return new FbCommand(commandText, connection, transaction);
+			IDbCommand command = connection.CreateCommand();
+
+			command.CommandText = commandText;
+			command.Transaction	= transaction;
+
+			return command;
 		}
 
 		#endregion	

@@ -53,14 +53,14 @@ namespace AS3AP.BenchMark
 		#region FIELDS
 
 		private BenchMarkConfiguration	configuration;
-		private ITestSuite				testSuite;
-		private Logger					log;
-		private string					logPath;
 		private bool					disposed		= false;
+		private ITestSuite				testSuite;
 		private string					currentTest		= String.Empty;
-		private string					testSuiteType	= "SQL87";
 		private int						tupleCount		= 0;
-				
+		private string					testSuiteType	= "SQL87";
+		private string					logPath;
+		private Logger					log;
+		
 		#endregion
 
 		#region CONSTRUCTORS
