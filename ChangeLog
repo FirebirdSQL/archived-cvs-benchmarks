@@ -1,12 +1,240 @@
-2003-11-27  carlosga_fb
-	* as3ap/dot-net/CHANGELOG.txt:
-	* as3ap/dot-net/as3ap.BenchMark.build:
-	* as3ap/dot-net/assemblys/Common.Data.Helper.dll:
-	* as3ap/dot-net/assemblys/FirebirdSql.Data.Firebird.dll:
-	* as3ap/dot-net/source/AS3AP.cs:
-	* as3ap/dot-net/source/BaseTestSuite.cs:
-	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
-	* as3ap/dot-net/source/GUI/As3apGui.cs:
+2004-04-20	carlosga_fb
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.37:
+		Minor changes
+
+	* as3ap/dot-net/as3apgen/source/DsRandomData.cs 1.4:
+	* as3ap/dot-net/as3apgen/source/DsRandomData.xsd 1.3:
+	* as3ap/dot-net/as3apgen/source/as3apgen.cs 1.5:
+		Updated AS3AP data file generator
+
+2004-04-19	carlosga_fb
+	* as3ap/dot-net/as3ap.BenchMark.build 1.12:
+	* as3ap/dot-net/as3apgen/source/as3apgen.cs 1.4:
+	* as3ap/dot-net/source/AS3AP.cs 1.44:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.36:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs 1.15:
+	* as3ap/dot-net/source/Console/As3apConsole.cs 1.2:
+	* as3ap/dot-net/source/GUI/As3apGui.cs 1.15:
+	* as3ap/dot-net/source/ITestSuite.cs 1.16:
+	* as3ap/dot-net/source/IsolationAttribute.cs 1.2:
+	* as3ap/dot-net/source/Logger.cs 1.1:
+	* as3ap/dot-net/source/Main.cs 1.6:
+	* as3ap/dot-net/source/Sql87TestSuite.cs 1.16:
+	* as3ap/dot-net/source/Sql92TestSuite.cs 1.18:
+	* as3ap/dot-net/source/TestSuiteFactory.cs 1.3:
+		- Removed dependency on Logger assembly
+		
+		- minor changes on license headers
+
+	* as3ap/dot-net/makefile 1.6:
+		removed old file
+
+2004-04-18	carlosga_fb
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.34:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.35:
+		2004-04-18 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* source/Sql87TestSuite.cs:
+			* source/Sql92TestSuite.cs:
+			* source/BaseTestSuite.cs:
+		
+				- Fixed some tests according to the AS3AP documentation.
+		
+				- Added some little comments.
+		
+				- Method reorganiozation
+
+	* as3ap/dot-net/as3apgen/source/DsRandomData.cs 1.3:
+	* as3ap/dot-net/as3apgen/source/DsRandomData.xsd 1.2:
+	* as3ap/dot-net/as3apgen/source/DsRandomTenpct.cs 1.3:
+	* as3ap/dot-net/as3apgen/source/DsRandomTenpct.xsd 1.2:
+	* as3ap/dot-net/as3apgen/source/as3apgen.cs 1.3:
+		Updated AS3AP data file generator
+
+2004-04-17	carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt 1.53:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.33:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs 1.14:
+	* as3ap/dot-net/source/Sql87TestSuite.cs 1.15:
+	* as3ap/dot-net/source/Sql92TestSuite.cs 1.17:
+		2004-04-18 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* source/Sql87TestSuite.cs:
+			* source/Sql92TestSuite.cs:
+			* source/BaseTestSuite.cs:
+		
+				- Fixed some tests according to the AS3AP documentation.
+		
+				- Added some little comments.
+		
+				- Method reorganiozation
+
+2004-03-04	carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt 1.52:
+	* as3ap/dot-net/source/Console/As3apConsole.cs 1.1:
+	* as3ap/dot-net/source/Main.cs 1.5:
+		2004-03-04 Carlos Guzman Alvarez  <carlosga@telefonica.net>
+		
+			* source/Main.cs:
+			* source/Console/As3apConsole.cs
+		
+				- Added a simple console front-end.
+
+2004-02-28	carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt 1.51:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.32:
+		2004-02-28 Carlos Guzman Alvarez  <carlosga@telefonica.net>
+		
+			* source/BaseTestSuite.cs:
+		
+				- Use a buffered stream for read data files.
+
+	* as3ap/dot-net/as3ap.BenchMark.build 1.11:
+	* as3ap/dot-net/as3apgen/as3apgen.build 1.2:
+	* as3ap/dot-net/as3apgen/as3apgen.build 1.3:
+		Updated build file for allow build using ms.net 1.0 and ms.net 
+		1.1
+
+2004-02-27	carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt 1.50:
+	* as3ap/dot-net/source/AS3AP.cs 1.43:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.31:
+	* as3ap/dot-net/source/ITestSuite.cs 1.15:
+		2004-02-27 Carlos Guzman Alvarez  <carlosga@telefonica.net>
+		
+			* source/BaseTestSuite.cs:
+			* source/AS3AP.cs:
+			* source/ITestSuite.cs:
+		
+				- Better time of tests.
+		
+				- Changes on formatting of Progress messages.
+		
+				- Changes on the use of this keyword.
+
+	* as3ap/dot-net/as3apgen/CHANGELOG.txt 1.2:
+	* as3ap/dot-net/as3apgen/source/DsRandomData.cs 1.2:
+	* as3ap/dot-net/as3apgen/source/DsRandomData.xsd 1.1:
+	* as3ap/dot-net/as3apgen/source/DsRandomTenpct.cs 1.2:
+	* as3ap/dot-net/as3apgen/source/DsRandomTenpct.xsd 1.1:
+	* as3ap/dot-net/as3apgen/source/as3apgen.cs 1.2:
+		2003-28-02 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* Updated dataset classes and added XSD files.
+		
+			* source/as3apgen.cs:
+		
+				- Fixed some incoherences on data generation.
+
+2004-01-13	carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt 1.48:
+	* as3ap/dot-net/source/AS3AP.cs 1.42:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.28:
+	* as3ap/dot-net/source/ITestSuite.cs 1.14:
+	* as3ap/dot-net/source/Sql87TestSuite.cs 1.13:
+	* as3ap/dot-net/source/Sql92TestSuite.cs 1.15:
+		2004-01-13 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* source/GUI/BaseTestSuite.cs:
+			* source/AS3AP.cs:
+			* source/ITestSuite.cs:
+		
+				- Added changes for allow database dropping
+		
+				- Now the database will be recreated (drop/create) before run
+				the single or multiuser tests.
+		
+				- The test suite needs to be executed without use Connection Pooling.
+		
+			* source/AS3AP.cs:
+			* source/Sql87TestSuite.cs:
+			* source/Sql92TestSuite.cs:
+		
+				- Unified use of "this."
+
+	* as3ap/dot-net/CHANGELOG.txt 1.49:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.30:
+	* as3ap/dot-net/source/Sql87TestSuite.cs 1.14:
+	* as3ap/dot-net/source/Sql92TestSuite.cs 1.16:
+		2004-01-13 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* source/Sql87TestSuite.cs:
+			* source/Sql92TestSuite.cs:
+			* source/BaseTestSuite.cs:
+		
+				- Added major refactoring to test execution.
+		
+				- Added check of expected results on more tests
+				(can be good to create a ExpectedResult attribute).
+		
+				- Previous sources are tagged as as3ap_20040113.
+
+	* as3ap/dot-net/CHANGELOG.txt 1.47:
+	* as3ap/dot-net/source/AS3AP.cs 1.41:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.27:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs 1.13:
+	* as3ap/dot-net/source/ITestSuite.cs 1.13:
+	* as3ap/dot-net/source/Sql87TestSuite.cs 1.12:
+	* as3ap/dot-net/source/Sql92TestSuite.cs 1.14:
+		2004-01-13 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* Updated source file Headers.
+		
+			* source/GUI/BaseTestSuite.cs:
+		
+				- Unified use of "this."
+		
+				- Added changes for try to improve Thread Handling for multiuser tests.
+
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.29:
+		Minor change
+
+	* as3ap/dot-net/CHANGELOG.txt 1.46:
+	* as3ap/dot-net/source/GUI/As3apGui.cs 1.14:
+		2004-01-13 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* source/GUI/As3ApGui.cs:
+		
+				- Unified use of "this."
+		
+				- Fixed thread abort when manually stop the execution.
+
+2004-01-12	carlosga_fb
+	* as3ap/dot-net/as3ap.BenchMark.build 1.10:
+		Updated build file
+
+	* as3ap/dot-net/README.TXT 1.5:
+		Updated README.TXT
+
+2004-01-07	carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt 1.45:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.26:
+		2004-01-07 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* source/BaseTestSuite.cs:
+		
+				- Added changes for allow the test suite to run using
+				different data providers (like the SqlClient one).
+
+	* as3ap/dot-net/CHANGELOG.txt 1.44:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.25:
+		2004-01-07 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* source/BaseTestSuite.cs:
+		
+				- Added changes for allow the test suite to run using the
+				1.6 version of the .NET Data provider.
+
+2003-11-27	carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt 1.41:
+		Updated CHANGELOG.TXT
+
+	* as3ap/dot-net/CHANGELOG.txt 1.42:
+	* as3ap/dot-net/as3ap.BenchMark.build 1.9:
+	* as3ap/dot-net/source/AS3AP.cs 1.40:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.24:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs 1.12:
+	* as3ap/dot-net/source/GUI/As3apGui.cs 1.12:
 		2003-11-27 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 		
 			* source/AS3AP.cs:
@@ -21,7 +249,7 @@
 		
 				- Reworked the Page control.
 
-	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.23:
 		2003-11-27 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 		
 			* source/BaseTestSuite.cs:
@@ -29,22 +257,15 @@
 				- Improved transaction handling in loadFile method starting a new transaction when
 				a new block of 1000 rows has been inserted.
 
-	* as3ap/dot-net/source/GUI/As3apGui.cs:
-		- Added some improvements to exception handling.
+	* as3ap/dot-net/Build.NET.bat 1.2:
+	* as3ap/dot-net/build.bat 1.1:
+		Renamed filed Build.Net.bat to build.bat
 
-	* as3ap/dot-net/CHANGELOG.txt:
-		Updated CHANGELOG.TXT
-
-	* as3ap/dot-net/CHANGELOG.txt:
+	* as3ap/dot-net/CHANGELOG.txt 1.43:
 		Updated changelog.txt
 
-	* as3ap/dot-net/assemblys/Common.Data.Helper.dll:
-	* as3ap/dot-net/assemblys/FirebirdSql.Data.Firebird.dll:
-		Updated assemblys
-
-	* as3ap/dot-net/Build.NET.bat:
-	* as3ap/dot-net/build.bat:
-		Renamed filed Build.Net.bat to build.bat
+	* as3ap/dot-net/source/GUI/As3apGui.cs 1.13:
+		- Added some improvements to exception handling.
 
 2003-11-22  carlosga_fb
 	* as3ap/dot-net/CHANGELOG.txt:
