@@ -15,6 +15,10 @@ AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 
 	* Added SharpDevelop XML form for AS3AP GUI
 
+	* Added TestResultEventHandler.
+	
+	* Removed DataSize property.
+
 
 2003-03-28 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
