@@ -221,8 +221,6 @@ namespace AS3AP.BenchMark
 			int			singleUserCount = 0;
 			int			multiUserCount	= 0;
 			
-			currentTest = "Test Initialization";
-
 			if (log != null) log.Simple("Starting as3ap benchmark at: {0}", DateTime.Now);
 
 			if (configuration.RunCreate) 
@@ -232,14 +230,13 @@ namespace AS3AP.BenchMark
 					ProgressMessage(this, 
 						new ProgressMessageEventArgs("Creating tables and loading data " + DateTime.Now.ToString()));
 				}
-				timeIt("createDataBase");
+				runTest("runCreateDataBase");
 			}			
 			else
 			{
-				setup_database();
+				runDatabaseSetup();
 			}
 
-			currentTest = "Counting tuples";
 			testSuite.Backend.DatabaseConnect();
 			if ((tupleCount = testSuite.CountRows("updates")) == 0)
 			{
@@ -249,7 +246,7 @@ namespace AS3AP.BenchMark
 			testSuite.TupleCount = tupleCount;
 			dbSize = (4 * testSuite.TupleCount * 100)/1000000;
 			
-			if (log != null) log.Simple("\r\n\"Logical database size {0}MB\"\r\n", dbSize);
+			if (log != null) log.Simple("\r\n\"Database size {0}MB\"\r\n", dbSize);
 
 			testSuite.Backend.DatabaseDisconnect();			
 
@@ -276,7 +273,7 @@ namespace AS3AP.BenchMark
 							testSuite = TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
 							testSuite.TupleCount = tupleCount;
 
-							if (log != null) log.Simple("\r\n\"Running tests using {0} syntax\r\n", testType[j]);
+							if (log != null) log.Simple("\r\n\"Running tests using {0} syntax\r\n\"", testType[j]);
 						}
 						break;
 
@@ -290,7 +287,7 @@ namespace AS3AP.BenchMark
 							}
 							if (singleUserCount != 0)
 							{
-								setup_database();
+								runDatabaseSetup();
 							}
 
 							if (ProgressMessage != null)
@@ -298,13 +295,23 @@ namespace AS3AP.BenchMark
 								ProgressMessage(this, 
 									new ProgressMessageEventArgs("Starting single-user test"));
 							}
-							currentTest = "Preparing single user test";
-							clocks		= DateTime.Now.Ticks;
+
+							if (log != null) log.Simple("\r\n");
+
+							testSuite.Backend.DatabaseDisconnect();
+							if (ProgressMessage != null)
+							{
+								ProgressMessage(this, 
+									new ProgressMessageEventArgs("Starting multi-user test"));
+							}
+												
+							clocks = DateTime.Now.Ticks;
 							runSingleUserTests();
-							elapsed	= new TimeSpan(clocks = (DateTime.Now.Ticks - clocks));
-			
-							if (log != null) log.Simple("\r\n\"Single user test\"\t{0} seconds\t({1})\r\n\r\n",
-										(double)clocks / TimeSpan.TicksPerSecond, elapsed);
+							elapsed = new TimeSpan(DateTime.Now.Ticks - clocks);
+
+							if (log != null) log.Simple("\r\nSingle user test ( {0} )\r\n\r\n",
+												 elapsed.ToString());
+
 
 							singleUserCount++;
 						}
@@ -327,13 +334,13 @@ namespace AS3AP.BenchMark
 									ProgressMessage(this, 
 										new ProgressMessageEventArgs("Starting multi-user test"));
 								}
-				
+												
 								clocks = DateTime.Now.Ticks;
 								runMultiUserTests(configuration.UserNumber == 0 ? (int)(dbSize / 4) : configuration.UserNumber);
-								elapsed = new TimeSpan(clocks = (DateTime.Now.Ticks - clocks));
+								elapsed = new TimeSpan(DateTime.Now.Ticks - clocks);
 
-								if (log != null) log.Simple("\r\n\"Multi user test\"\t{0} seconds\t({1})\r\n\r\n",
-											(double)clocks / TimeSpan.TicksPerSecond, elapsed);
+								if (log != null) log.Simple("\r\nMulti user test ( {0} )\r\n\r\n",
+											elapsed.ToString());
 
 								multiUserCount++;
 							}
@@ -350,39 +357,39 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		private int createDataBase() 
+		private int runCreateDataBase() 
 		{
 			testSuite.Backend.DatabaseCreate("AS3AP");
 
 			testSuite.Backend.DatabaseConnect();
-			timeIt("create_tables");
-			timeIt("LoadData");
-			timeIt("create_idx_uniques_key_bt");
-			timeIt("create_idx_updates_key_bt");
-			timeIt("create_idx_hundred_key_bt");
-			timeIt("create_idx_tenpct_key_bt");
-			timeIt("create_idx_tenpct_key_code_bt");
-			timeIt("create_idx_tiny_key_bt");
-			timeIt("create_idx_tenpct_int_bt");
-			timeIt("create_idx_tenpct_signed_bt");
-			timeIt("create_idx_uniques_code_h");
-			timeIt("create_idx_tenpct_double_bt");
-			timeIt("create_idx_updates_decim_bt");
-			timeIt("create_idx_tenpct_float_bt");
-			timeIt("create_idx_updates_int_bt");
-			timeIt("create_idx_tenpct_decim_bt");
-			timeIt("create_idx_hundred_code_h");
-			timeIt("create_idx_tenpct_name_h");
-			timeIt("create_idx_updates_code_h");
-			timeIt("create_idx_tenpct_code_h");
-			timeIt("create_idx_updates_double_bt");
-			timeIt("create_idx_hundred_foreign");
+			runTest("create_tables");
+			runTest("LoadData");
+			runTest("create_idx_uniques_key_bt");
+			runTest("create_idx_updates_key_bt");
+			runTest("create_idx_hundred_key_bt");
+			runTest("create_idx_tenpct_key_bt");
+			runTest("create_idx_tenpct_key_code_bt");
+			runTest("create_idx_tiny_key_bt");
+			runTest("create_idx_tenpct_int_bt");
+			runTest("create_idx_tenpct_signed_bt");
+			runTest("create_idx_uniques_code_h");
+			runTest("create_idx_tenpct_double_bt");
+			runTest("create_idx_updates_decim_bt");
+			runTest("create_idx_tenpct_float_bt");
+			runTest("create_idx_updates_int_bt");
+			runTest("create_idx_tenpct_decim_bt");
+			runTest("create_idx_hundred_code_h");
+			runTest("create_idx_tenpct_name_h");
+			runTest("create_idx_updates_code_h");
+			runTest("create_idx_tenpct_code_h");
+			runTest("create_idx_updates_double_bt");
+			runTest("create_idx_hundred_foreign");
 			testSuite.Backend.DatabaseDisconnect();
 			
 			return 0;
 		}
 
-		private void setup_database()
+		private void runDatabaseSetup()
 		{
 			testSuite.Backend.DatabaseConnect();
 			testSuite.setup_database();
@@ -393,52 +400,52 @@ namespace AS3AP.BenchMark
 		{
 			testSuite.Backend.DatabaseConnect();
 			
-			timeIt("sel_1_cl");
-			timeIt("join_3_cl");
-			timeIt("sel_100_ncl");
-			timeIt("table_scan");
-			timeIt("agg_func");
-			timeIt("agg_scal");
-			timeIt("sel_100_cl");
-			timeIt("join_3_ncl");
-			timeIt("sel_10pct_ncl");
-			timeIt("agg_simple_report");
-			timeIt("agg_info_retrieval");
-			timeIt("agg_create_view");
-			timeIt("agg_subtotal_report");
-			timeIt("agg_total_report");
-			timeIt("join_2_cl");
-			timeIt("join_2");
-			timeIt("sel_variable_select_low");
-			timeIt("sel_variable_select_high");
-			timeIt("join_4_cl");
-			timeIt("proj_100");
-			timeIt("join_4_ncl");
-			timeIt("proj_10pct");
-			timeIt("sel_1_ncl");
-			timeIt("join_2_ncl");
-			timeIt("integrity_test");
-			timeIt("drop_updates_keys");
-			timeIt("bulk_save");
-			timeIt("bulk_modify");
-			timeIt("upd_append_duplicate");
-			timeIt("upd_remove_duplicate");
-			timeIt("upd_app_t_mid");
-			timeIt("upd_mod_t_mid");
-			timeIt("upd_del_t_mid");
-			timeIt("upd_app_t_end");
-			timeIt("upd_mod_t_end");
-			timeIt("upd_del_t_end");
-			timeIt("create_idx_updates_code_h");
-			timeIt("upd_app_t_mid");
-			timeIt("upd_mod_t_cod");
-			timeIt("upd_del_t_mid");
-			timeIt("create_idx_updates_int_bt");
-			timeIt("upd_app_t_mid");
-			timeIt("upd_mod_t_int");
-			timeIt("upd_del_t_mid");
-			timeIt("bulk_append");
-			timeIt("bulk_delete");
+			runTest("sel_1_cl");
+			runTest("join_3_cl");
+			runTest("sel_100_ncl");
+			runTest("table_scan");
+			runTest("agg_func");
+			runTest("agg_scal");
+			runTest("sel_100_cl");
+			runTest("join_3_ncl");
+			runTest("sel_10pct_ncl");
+			runTest("agg_simple_report");
+			runTest("agg_info_retrieval");
+			runTest("agg_create_view");
+			runTest("agg_subtotal_report");
+			runTest("agg_total_report");
+			runTest("join_2_cl");
+			runTest("join_2");
+			runTest("sel_variable_select_low");
+			runTest("sel_variable_select_high");
+			runTest("join_4_cl");
+			runTest("proj_100");
+			runTest("join_4_ncl");
+			runTest("proj_10pct");
+			runTest("sel_1_ncl");
+			runTest("join_2_ncl");
+			runTest("integrity_test");
+			runTest("drop_updates_keys");
+			runTest("bulk_save");
+			runTest("bulk_modify");
+			runTest("upd_append_duplicate");
+			runTest("upd_remove_duplicate");
+			runTest("upd_app_t_mid");
+			runTest("upd_mod_t_mid");
+			runTest("upd_del_t_mid");
+			runTest("upd_app_t_end");
+			runTest("upd_mod_t_end");
+			runTest("upd_del_t_end");
+			runTest("create_idx_updates_code_h");
+			runTest("upd_app_t_mid");
+			runTest("upd_mod_t_cod");
+			runTest("upd_del_t_mid");
+			runTest("create_idx_updates_int_bt");
+			runTest("upd_app_t_mid");
+			runTest("upd_mod_t_int");
+			runTest("upd_del_t_mid");
+			runTest("bulk_append");
+			runTest("bulk_delete");
 
 			testSuite.Backend.DatabaseDisconnect();
 		}
@@ -449,8 +456,6 @@ namespace AS3AP.BenchMark
 			DateTime	startTime;
 			Thread[]	process = new Thread[nInstances];
 			
-			currentTest = "Multi-user tests";			
-
 			if (log != null) log.Simple("\"Executing multi-user tests with {0} user task{1}\"\n",
 						nInstances, ((nInstances != 1) ? "s" : ""));
 
@@ -468,7 +473,7 @@ namespace AS3AP.BenchMark
 			timeToRun	= 15;
 			for (int i = 0; i < nInstances; i++) 
 			{
-				process[i]		= new Thread(new ThreadStart(ir_select));
+				process[i]		= new Thread(new ThreadStart(runIrSelect));
 				process[i].Name = "User " + i.ToString();
 				process[i].Start();
 			}
@@ -490,7 +495,7 @@ namespace AS3AP.BenchMark
 			timeToRun	= 5;
 			for (int i = 0; i < nInstances; i++) 
 			{
-				process[i] = new Thread(new ThreadStart(ir_select));
+				process[i] = new Thread(new ThreadStart(runIrSelect));
 				process[i].Name = "User " + i.ToString();
 				process[i].Start();
 			}
@@ -517,14 +522,14 @@ namespace AS3AP.BenchMark
 					new ProgressMessageEventArgs("Run Mixed Workload IR test (Mix 3) (" + DateTime.Now.ToString() + ")."));
 			}
 			currentTest		= "Mixed IR";
-			process[0]		= new Thread(new ThreadStart(crossSectionTests));
+			process[0]		= new Thread(new ThreadStart(runCrossSectionTests));
 			process[0].Name = "User " + 0.ToString();
 			process[0].Start();
 			/* Exec the only one time in each thread	*/
 			timeToRun	= -1;
 			for (int i = 1; i < nInstances; i++) 
 			{
-				process[i] = new Thread(new ThreadStart(ir_select));
+				process[i] = new Thread(new ThreadStart(runIrSelect));
 				process[i].Name = "User " + i.ToString();
 				process[i].Start();
 			}
@@ -544,8 +549,8 @@ namespace AS3AP.BenchMark
 					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
 			}
 			testSuite.Backend.DatabaseConnect();
-			timeIt("mu_checkmod_100_seq");
-			timeIt("mu_checkmod_100_rand");
+			runTest("mu_checkmod_100_seq");
+			runTest("mu_checkmod_100_rand");
 			testSuite.Backend.DatabaseDisconnect();
 
 			/* Step 6 - Recover updates relation from backup tape (Step 1) 
@@ -563,11 +568,11 @@ namespace AS3AP.BenchMark
 					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
 			}
 			testSuite.Backend.DatabaseConnect();
-			timeIt("mu_checkmod_100_seq");
-			timeIt("mu_checkmod_100_rand");
+			runTest("mu_checkmod_100_seq");
+			runTest("mu_checkmod_100_rand");
 
-			timeIt("mu_drop_sel100_seq");
-			timeIt("mu_drop_sel100_rand");
+			runTest("mu_drop_sel100_seq");
+			runTest("mu_drop_sel100_rand");
 			testSuite.Backend.DatabaseDisconnect();
 
 			/* Step 8 - Run OLTP test for 15 minutes.	*/
@@ -579,7 +584,7 @@ namespace AS3AP.BenchMark
 			timeToRun = 15;
 			for (int i = 0; i < nInstances; i++) 
 			{
-				process[i] = new Thread(new ThreadStart(oltp_update));
+				process[i] = new Thread(new ThreadStart(runOltpUpdate));
 				process[i].Name = "User " + i.ToString();
 				process[i].Start();
 			}
@@ -601,7 +606,7 @@ namespace AS3AP.BenchMark
 			timeToRun	= 5;
 			for (int i = 0; i < nInstances; i++) 
 			{
-				process[i] = new Thread(new ThreadStart(ir_select));
+				process[i] = new Thread(new ThreadStart(runIrSelect));
 				process[i].Name = "User " + i.ToString();
 				process[i].Start();
 			}
@@ -628,14 +633,14 @@ namespace AS3AP.BenchMark
 					new ProgressMessageEventArgs("Run Mixed Workload OLTP test (Mix 4) (" + DateTime.Now.ToString() + ")."));
 			}
 			currentTest		= "Mixed OLTP";
-			process[0]		= new Thread(new ThreadStart(crossSectionTests));
+			process[0]		= new Thread(new ThreadStart(runCrossSectionTests));
 			process[0].Name = "User " + 0.ToString();
 			process[0].Start();
 			/* Exec the only one time in each thread	*/
 			timeToRun	= -1;
 			for (int i = 1; i < nInstances; i++)
 			{
-				process[i] = new Thread(new ThreadStart(oltp_update));
+				process[i] = new Thread(new ThreadStart(runOltpUpdate));
 				process[i].Name = "User " + i.ToString();
 				process[i].Start();
 			}			
@@ -656,45 +661,47 @@ namespace AS3AP.BenchMark
 					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
 			}
 			testSuite.Backend.DatabaseConnect();
-			timeIt("mu_checkmod_100_seq");			
-			timeIt("mu_checkmod_100_rand");
+			runTest("mu_checkmod_100_seq");			
+			runTest("mu_checkmod_100_rand");
 			
-			timeIt("mu_drop_sel100_seq");
-			timeIt("mu_drop_sel100_rand");
+			runTest("mu_drop_sel100_seq");
+			runTest("mu_drop_sel100_rand");
 			testSuite.Backend.DatabaseDisconnect();
 		}
 
-		private void crossSectionTests() 
+		private void runCrossSectionTests() 
 		{
 			long	startTime;
-			string	currentTest = this.currentTest;
+			long	endTime;
 
 			testSuite.Backend.DatabaseConnect();
 
 			startTime = DateTime.Now.Ticks;
 
-			timeIt("o_mode_tiny");
-			timeIt("o_mode_100k");
-			timeIt("sel_1_ncl");
-			timeIt("sel_1_ncl");
-			timeIt("sel_1_ncl");
-			timeIt("agg_simple_report");
-			timeIt("mu_sel_100_seq");
-			timeIt("mu_sel_100_rand");
-			timeIt("mu_mod_100_seq");
-			timeIt("mu_mod_100_rand");
-			timeIt("mu_unmod_100_seq");
-			timeIt("mu_unmod_100_rand");
+			runTest("o_mode_tiny");
+			runTest("o_mode_100k");
+			runTest("sel_1_ncl");
+			runTest("sel_1_ncl");
+			runTest("sel_1_ncl");
+			runTest("agg_simple_report");
+			runTest("mu_sel_100_seq");
+			runTest("mu_sel_100_rand");
+			runTest("mu_mod_100_seq");
+			runTest("mu_mod_100_rand");
+			runTest("mu_unmod_100_seq");
+			runTest("mu_unmod_100_rand");
+
+			endTime = DateTime.Now.Ticks;
+			TimeSpan elapsed = new TimeSpan(endTime - startTime);
 
 			testSuite.Backend.DatabaseDisconnect();
 
-			startTime = DateTime.Now.Ticks - startTime;
-
-			if (log != null) log.Simple("CrossSectionTests({0})\t{1}", currentTest, 
-						Math.Round((double)startTime / ticksPerSecond, 4));
+			if (log != null) log.Simple("CrossSectionTests({0})\t{1}", 
+										currentTest, 
+										elapsed.ToString());
 		}
 
-		private void ir_select()
+		private void runIrSelect()
 		{
 			DateTime	endTime	= DateTime.Now;
 			ITestSuite	test	= TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
@@ -720,7 +727,7 @@ namespace AS3AP.BenchMark
 			test.Backend.DatabaseDisconnect();
 		}
 		
-		private void oltp_update()
+		private void runOltpUpdate()
 		{
 			DateTime	endTime	= DateTime.Now;
 			ITestSuite	test	= TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
@@ -748,24 +755,23 @@ namespace AS3AP.BenchMark
 			}			
 		}
 
-
-		private void timeIt(string methodName) 
+		private void runTest(string testName)
 		{
 			MethodInfo	method		= null;
 			MethodInfo	thisMethod	= null;
 			long		clocks;
 
-			currentTest				= methodName;
+			currentTest				= testName;
 			testSuite.TestFailed	= false;
 
-			method = testSuite.GetType().GetMethod(methodName);			
+			method = testSuite.GetType().GetMethod(testName);			
 			if (method == null)
 			{
-				thisMethod = this.GetType().GetMethod(methodName, BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.DeclaredOnly);
+				thisMethod = this.GetType().GetMethod(testName, BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.DeclaredOnly);
 			}
 			
 			// Set IsolationLevel for test execution
-			testSuite.SetIsolationLevel(methodName);
+			testSuite.SetIsolationLevel(testName);
 
 			// Reset TestFailed property value
 			testSuite.TestFailed = false;
@@ -783,28 +789,27 @@ namespace AS3AP.BenchMark
 
 			clocks	= DateTime.Now.Ticks - clocks;
 
-			methodName = formatMethodName(methodName);
+			testName = formatMethodName(testName);
 
-			TimeSpan testTime = new TimeSpan(clocks);				
+			TimeSpan elapsed = new TimeSpan(clocks);				
 
 			if (TestResult != null)
 			{
-				TestResult(this, new TestResultEventArgs(methodName, testSuite.TestResult, testTime, testSuite.TestFailed));
+				TestResult(this, new TestResultEventArgs(testName, testSuite.TestResult, elapsed, testSuite.TestFailed));
 			}
 
 			StringBuilder logMessage = new StringBuilder();
 
 			if (testSuite.TestFailed)
 			{
-				if (log != null) log.Simple("--------------> {0}\tfailed <--------------",
-							methodName + "()");
+				if (log != null) log.Simple("-----> {0}\tfailed <-----", testName);
 			}
 			else
 			{
 				logMessage.AppendFormat(
-							"{0}\t{1} seconds\treturn value = {2} \t\t",
-							methodName + "()"							,
-							testTime.TotalSeconds,
+							"{0} ( {1} )\treturn value = {2} \t\t"	,
+							testName								,
+							elapsed.ToString(),
 							testSuite.TestResult);
 			}
 
@@ -813,7 +818,7 @@ namespace AS3AP.BenchMark
 
 		private string formatMethodName(string methodName)
 		{
-			int length = 40 - methodName.Length;
+			int length = 30 - methodName.Length;
 
 			for (int i = 0; i < length; i++)
 			{
