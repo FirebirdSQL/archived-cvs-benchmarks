@@ -1,6 +1,19 @@
 AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems.
 =============================================================================================
 
+2003-03-31 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+
+	* Added first revison of the AS3AP BenchMark GUI form.
+
+	* source/Main.cs:
+
+		- Added changes for use GUI interface instead of Console interface.
+
+	* source/AS3AP.cs:
+
+		- Changes in the constructor, now we get an BenchMark configuration object 
+		instead of a configuration file name.
+
 
 2003-03-30 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
