@@ -20,6 +20,7 @@ package org.firebirdsql.benchmark;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
 import java.util.Properties;
 
 /**
@@ -36,6 +37,7 @@ public class BenchmarkConfiguration {
     public static final String DATABASE_PATH_PROPERTY = "databasePath";
     public static final String USER_NAME_PROPERTY = "userName";
     public static final String PASSWORD_PROPERTY = "password";
+    public static final String TRANSACTION_ISOLATION = "txIsolation";
     
     public static final String TPB_MAPPING_PROPERTY = "tpbMapping";
     
@@ -118,6 +120,29 @@ public class BenchmarkConfiguration {
     
     public String getPassword() {
         return getProperty(PASSWORD_PROPERTY, "masterkey");
+    }
+    
+    public int getTransactionIsolation() {
+        String isolation = getProperty(TRANSACTION_ISOLATION, null);
+        if (isolation == null)
+            return -1;
+        
+        if ("TRANSACTION_NONE".equals(isolation))
+            return Connection.TRANSACTION_NONE;
+        else
+        if ("TRANSACTION_READ_UNCOMMITTED".equals(isolation))
+            return Connection.TRANSACTION_READ_UNCOMMITTED;
+        else
+        if ("TRANSACTION_READ_COMMITTED".equals(isolation))
+            return Connection.TRANSACTION_READ_COMMITTED;
+        else
+        if ("TRANSACTION_REPEATABLE_READ".equals(isolation))
+            return Connection.TRANSACTION_REPEATABLE_READ;
+        else
+        if ("TRANSACTION_SERIALIZABLE".equals(isolation))
+            return Connection.TRANSACTION_SERIALIZABLE;
+        else
+            return -1;
     }
     
     public int getPoolingType() {

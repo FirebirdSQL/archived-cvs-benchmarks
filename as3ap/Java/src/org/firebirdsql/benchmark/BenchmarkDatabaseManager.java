@@ -75,6 +75,11 @@ public abstract class BenchmarkDatabaseManager {
      */
     protected void setUp(Connection connection) throws SQLException {
         connection.setAutoCommit(false);
+        
+        int isolation = getConfig().getTransactionIsolation();
+        
+        if (isolation != -1)
+            connection.setTransactionIsolation(isolation);
     }
     
     /**
