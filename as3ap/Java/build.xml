@@ -1,0 +1,146 @@
+<?xml version="1.0"?>
+
+<!-- ======================================================================= -->
+<!-- AS3AP Benchmark for Firebird build file                                -->
+<!-- ======================================================================= -->
+
+
+<project name="AS3AP Benchmark" default="dist" basedir=".">
+
+  <target name="init">
+    <!-- Setup the build timestamp & build identifer properties -->
+    <tstamp>
+      <format property="build.number" pattern="yyyyMMddHHmm"/>
+      <format property="YEAR" pattern="yyyy"/>
+    </tstamp>
+    <property name="build.id" value="${build.number}"/>
+
+
+    <property name="Name" value="Firebird_AS3AP"/>
+    <property name="name" value="firebird_as3ap"/>
+
+    <property name="version.major" value="0"/>
+    <property name="version.minor" value="1"/>
+    <property name="version.revision" value="1"/>
+    <property name="version.tag" value="Beta"/>
+    <property name="version.name" value=""/>
+
+    <property name="version.full" value="${version.major}.${version.minor}.${version.revision}${version.tag}"/>
+
+    <!-- This must be set to the CVS tag for any release -->
+    <property name="version.cvstag" value="HEAD"/>
+
+    <!-- Manifest version info -->
+    <property name="specification.title" value="Firebird AS3AP Benchmark suite"/>
+    <property name="specification.version" value="${version.major}.${version.minor}"/>
+    <property name="specification.vendor" value="Firebird (http://www.firebirdsql.org)"/>
+
+    <property name="implementation.title" value="AS3AP Benchmark suite"/>
+    <property name="implementation.url" value="http://www.firebirdsql.org"/>
+    <property name="implementation.version" 
+            value="${version.full} (build: CVSTag=${version.cvstag} date=${build.id})"/>
+    <property name="implementation.vendor" value="FirebirdSQL"/>
+    <property name="implementation.vendor.id" value="${implementation.url}"/>
+
+    <!--where everything goes -->
+    <property name="lib.dir" value="${basedir}/lib"/>
+
+    <!-- Setup the module environment. -->
+    <property name="module.root" value="${basedir}"/>
+
+    <property file="${module.root}/local.properties"/>
+    <property name="module.source" value="${module.root}/src"/>
+    <property name="module.output" value="${module.root}/output"/>
+    <property name="module.lib" value="${module.root}/lib"/>
+
+    <!-- Where source files live -->
+    <property name="source.java" value="${module.source}"/>
+
+    <!-- Where build generated files will go -->
+    <property name="build.classes" value="${module.output}/classes"/>
+    <property name="build.lib" value="${module.output}/lib"/>
+    <property name="build.dist" value="${module.output}/dist"/>
+
+    <property name="packages" value="org.firebirdsql.*"/>
+
+    <property name="build.compiler" value="classic"/>
+    
+    <path id="javac.classpath">
+    	<pathelement location="${module.lib}/junit.jar"/>
+    </path>
+
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the source code                                            -->
+  <!-- =================================================================== -->
+  <target name="compile" depends="init">
+
+    <mkdir dir="${build.classes}"/>
+    <javac srcdir="${source.java}"
+           destdir="${build.classes}"
+           target="1.3"
+           debug="on"
+           deprecation="on"
+           optimize="on"
+           includes="org/**"
+           excludes="**/temp*"
+    >
+      <classpath refid="javac.classpath"/>
+    </javac>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Creates the jar archives                                            -->
+  <!-- =================================================================== -->
+  <target name="jar" depends="compile">
+
+    <mkdir dir="${build.lib}"/>
+    <jar jarfile="${build.lib}/firebird_as3ap.jar">
+       <fileset dir="${build.classes}">
+         <include name="org/firebirdsql/**"/>
+       </fileset>
+    </jar>
+
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Creates the API documentation                                       -->
+  <!-- =================================================================== -->
+  <target name="javadocs" depends="init">
+    <mkdir dir="${build.docs}"/>
+    <javadoc packagenames="${packages}"
+             sourcepath="${source.java}"
+             destdir="${build.docs}"
+             author="true"
+             version="true"
+             windowtitle="${Name} API"
+             doctitle="${Name}"
+             extdirs="${module.thirdparty}"
+             bottom="Copyright &#169; 2003 Roman Rokytskyy. All rights reserved.">
+      <classpath refid="javac.classpath"/>
+    </javadoc>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Creates the distribution                                            -->
+  <!-- =================================================================== -->
+  <target name="dist" depends="jar">
+    <mkdir dir="${build.dist}"/>
+    <zip zipfile="${build.dist}/${Name}-${version.full}.zip">
+      <fileset dir="${build.lib}">
+        <include name="firebirdsql_as3ap.jar"/>
+      </fileset>
+      <zipfileset dir="${module.lib}" prefix="lib">
+        <include name="junit.jar"/>
+      </zipfileset>
+    </zip>
+  </target>
+
+</project>
+
+
+
+
+
+
