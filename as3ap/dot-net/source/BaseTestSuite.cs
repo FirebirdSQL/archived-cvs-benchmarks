@@ -207,24 +207,6 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Abstract Methods
-
-		public abstract void join_2();
-		
-		public abstract void join_2_cl();
-
-		public abstract void join_2_ncl();
-
-		public abstract void join_3_cl();
-
-		public abstract void join_3_ncl();
-
-		public abstract void join_4_cl();
-
-		public abstract void join_4_ncl();
-
-		#endregion
-
 		#region Misc Methods
 
 		public int CountRows(string table)
@@ -267,7 +249,578 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Single User Tests
+		#region AS3AP Methods
+
+		public void CreateDatabase() 
+		{
+			TimeSpan elapsed = new TimeSpan(0, 0, 0);
+
+			this.dropDatabase();
+			this.databaseCreate();
+
+			this.DatabaseConnect();
+
+			elapsed += this.runTest("create_tables");
+			elapsed += this.runTest("load_data");
+			elapsed += this.runTest("create_idx_uniques_key_bt");
+			elapsed += this.runTest("create_idx_updates_key_bt");
+			elapsed += this.runTest("create_idx_hundred_key_bt");
+			elapsed += this.runTest("create_idx_tenpct_key_bt");
+			elapsed += this.runTest("create_idx_tenpct_key_code_bt");
+			elapsed += this.runTest("create_idx_tiny_key_bt");
+			elapsed += this.runTest("create_idx_tenpct_int_bt");
+			elapsed += this.runTest("create_idx_tenpct_signed_bt");
+			elapsed += this.runTest("create_idx_uniques_code_h");
+			elapsed += this.runTest("create_idx_tenpct_double_bt");
+			elapsed += this.runTest("create_idx_updates_decim_bt");
+			elapsed += this.runTest("create_idx_tenpct_float_bt");
+			elapsed += this.runTest("create_idx_updates_int_bt");
+			elapsed += this.runTest("create_idx_tenpct_decim_bt");
+			elapsed += this.runTest("create_idx_hundred_code_h");
+			elapsed += this.runTest("create_idx_tenpct_name_h");
+			elapsed += this.runTest("create_idx_updates_code_h");
+			elapsed += this.runTest("create_idx_tenpct_code_h");
+			elapsed += this.runTest("create_idx_updates_double_bt");
+			elapsed += this.runTest("create_idx_hundred_foreign");
+			
+			this.DatabaseDisconnect();
+
+			if (this.log != null) 
+			{
+				this.log.Simple(
+					"\r\nDatabase creation time ( {0} )\r\n\r\n",
+					elapsed.ToString());
+			}
+		}
+
+		private TimeSpan runTest(string testName)
+		{
+			Type 		type	= null;
+			MethodInfo	method	= null;
+			DateTime	stime	= DateTime.Now;
+
+			this.testFailed	= false;
+
+			type	= this.GetType();
+			method 	= type.GetMethod(
+				testName, 
+				BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance);
+			
+			// Set IsolationLevel for test execution
+			this.SetIsolationLevel(testName);
+
+			// Reset this.testFailed property value
+			this.testFailed = false;
+
+			stime = DateTime.Now;
+
+			method.Invoke(this, null);
+
+			TimeSpan elapsed = DateTime.Now - stime;
+
+			testName = formatTestName(testName);
+
+			if (this.Result != null)
+			{
+				this.Result(
+					this, 
+					new TestResultEventArgs(
+					testName, this.testResult, elapsed, this.testFailed));
+			}
+
+			StringBuilder logMessage = new StringBuilder();
+
+			if (this.testFailed)
+			{
+				if (log != null) log.Simple("-----> {0}\tfailed <-----", testName);
+			}
+			else
+			{
+				logMessage.AppendFormat(
+					"{0} ( {1} )\treturn value = {2} \t\t"	,
+					testName								,
+					elapsed.ToString(),
+					this.testResult);
+			}
+
+			if (this.log != null)
+			{
+				this.log.Simple(logMessage.ToString());
+			}
+
+			return elapsed;
+		}
+
+		private string formatTestName(string methodName)
+		{
+			int length = 30 - methodName.Length;
+
+			for (int i = 0; i < length; i++)
+			{
+				methodName = " " + methodName;
+			}
+
+			return methodName;
+		}
+
+		#endregion
+
+		#region Single User Tests - Main
+
+		public void SingleUserTests() 
+		{
+			TimeSpan elapsed = new TimeSpan(0, 0, 0);
+
+			this.DatabaseConnect();
+						
+			elapsed += this.runTest("sel_1_cl");
+			elapsed += this.runTest("join_3_cl");
+			elapsed += this.runTest("sel_100_ncl");
+			elapsed += this.runTest("table_scan");
+			elapsed += this.runTest("agg_func");
+			elapsed += this.runTest("agg_scal");
+			elapsed += this.runTest("sel_100_cl");
+			elapsed += this.runTest("join_3_ncl");
+			elapsed += this.runTest("sel_10pct_ncl");
+			elapsed += this.runTest("agg_simple_report");
+			elapsed += this.runTest("agg_info_retrieval");
+			elapsed += this.runTest("agg_create_view");
+			elapsed += this.runTest("agg_subtotal_report");
+			elapsed += this.runTest("agg_total_report");
+			elapsed += this.runTest("join_2_cl");
+			elapsed += this.runTest("join_2");
+			elapsed += this.runTest("sel_variable_select_low");
+			elapsed += this.runTest("sel_variable_select_high");
+			elapsed += this.runTest("join_4_cl");
+			elapsed += this.runTest("proj_100");
+			elapsed += this.runTest("join_4_ncl");
+			elapsed += this.runTest("proj_10pct");
+			elapsed += this.runTest("sel_1_ncl");
+			elapsed += this.runTest("join_2_ncl");
+			elapsed += this.runTest("integrity_temp");
+			elapsed += this.runTest("integrity_test");
+			elapsed += this.runTest("integrity_restore");
+			elapsed += this.runTest("drop_updates_keys");
+			elapsed += this.runTest("bulk_save");
+			elapsed += this.runTest("bulk_modify");
+			elapsed += this.runTest("upd_append_duplicate");
+			elapsed += this.runTest("upd_remove_duplicate");
+			elapsed += this.runTest("upd_app_t_mid");
+			elapsed += this.runTest("upd_mod_t_mid");
+			elapsed += this.runTest("upd_del_t_mid");
+			elapsed += this.runTest("upd_app_t_end");
+			elapsed += this.runTest("upd_mod_t_end");
+			elapsed += this.runTest("upd_del_t_end");
+			elapsed += this.runTest("create_idx_updates_code_h");
+			elapsed += this.runTest("upd_app_t_mid");
+			elapsed += this.runTest("upd_mod_t_cod");
+			elapsed += this.runTest("upd_del_t_mid");
+			elapsed += this.runTest("create_idx_updates_int_bt");
+			elapsed += this.runTest("upd_app_t_mid");
+			elapsed += this.runTest("upd_mod_t_int");
+			elapsed += this.runTest("upd_del_t_mid");
+			elapsed += this.runTest("bulk_append");
+			elapsed += this.runTest("bulk_delete");
+
+			if (this.log != null) 
+			{
+				this.log.Simple(
+					"\r\nSingle user test ( {0} )\r\n\r\n",
+					elapsed.ToString());
+			}
+
+			this.DatabaseDisconnect();
+		}
+
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void table_scan() 
+		{
+			try
+			{	
+				this.testResult = this.ExecuteReader(
+					"select * from uniques where col_int = 1");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		#endregion
+
+		#region Single User Test - Joins
+
+		/* AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems
+		 * 
+		 * Joins (Table 7.3)
+		 */
+
+		public abstract void join_2_cl();
+
+		public abstract void join_2_ncl();
+
+		public abstract void join_2();		
+
+		public abstract void join_3_cl();
+
+		public abstract void join_3_ncl();
+
+		public abstract void join_4_cl();
+
+		public abstract void join_4_ncl();
+
+		public abstract void join_1_10();
+
+		#endregion
+
+		#region Single User Tests - Selections
+
+		/* AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems
+		 * 
+		 * Selections (Table 7.2)
+		 */
+
+		/// <summary>
+		/// select 1 tuple using clustered index
+		/// </summary>
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void sel_1_cl() 
+		{
+			try
+			{
+				int count = this.ExecuteReader(
+					"select col_key, col_int, col_signed, col_code, "	+
+					"col_double, col_name "								+
+					"from updates where col_key = 1000");
+
+				if (count != 1)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		/// <summary>
+		/// select 1 tuple using secondary hashed index
+		/// </summary>
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void sel_1_ncl() 
+		{
+			try
+			{
+				int count = this.ExecuteReader(
+					"select col_key, col_int, col_signed, col_code, "	+
+					"col_double, col_name "								+
+					"from updates where col_code = 'BENCHMARKS'");				
+
+				if (count != 1)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		/// <summary>
+		/// select 10% tuples using clustered index
+		/// </summary>
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void sel_10pct_cl() 
+		{
+			try
+			{
+				int count = this.ExecuteReader(
+					"select col_key, col_int, col_signed, col_code, col_double, col_name " +
+					"from uniques " +
+					"where col_key <= 100000000");
+
+				if (count != (this.tupleCount*10/100))
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		/// <summary>
+		/// select 100 tuples using clustered index
+		/// </summary>
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void sel_100_cl() 
+		{
+			try
+			{
+				int count = this.ExecuteReader(
+					"select col_key, col_int, col_signed, col_code, "	+
+					"col_double, col_name "								+
+					"from updates where col_key <= 100");
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		/// <summary>
+		/// select 100 tuples using B-tree secondary index
+		/// </summary>
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void sel_100_ncl() 
+		{
+			try
+			{
+				int count = this.ExecuteReader(
+					"select col_key, col_int, col_signed, col_code, "	+
+					"col_double, col_name "								+
+					"from updates where col_int <= 100");
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		/// <summary>
+		/// select 10% tuples using B-tree secondary index
+		/// </summary>
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void	sel_10pct_ncl() 
+		{
+			try
+			{
+				int count = this.ExecuteReader(
+					"select col_key, col_int, col_signed, col_code, "	+
+					"col_double, col_name "								+
+					"from tenpct "										+
+					"where col_name = 'THE+ASAP+BENCHMARKS+'");
+
+				if (count != (this.tupleCount*10/100))
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		/// <summary>
+		/// range select predicated on program variable
+		/// </summary>
+		public void sel_variable_select_high() 
+		{
+			this.sel_variable_select(-250000000);
+		}
+
+		public void sel_variable_select_low() 
+		{
+			this.sel_variable_select(-500000000);
+		}
+
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void	sel_variable_select(long foo) 
+		{
+			try
+			{
+				this.testResult = this.ExecuteReader(
+					"select col_key, col_int, col_signed, col_code, "	+
+					"col_double, col_name "								+
+					"from tenpct "										+
+					"where col_signed < {0}",							+
+					foo);
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		#endregion
+
+		#region Single User Tests - Projections
+
+		/* AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems
+		 * 
+		 * Projections (Table 7.4)
+		 */
+
+		/// <summary>
+		/// project on address and signed attr.
+		/// </summary>
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void proj_100() 
+		{
+			try
+			{
+				int count = this.ExecuteReader(
+					"select distinct col_address, col_signed from hundred");
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		/// <summary>
+		/// project on signed attr.
+		/// </summary>
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void proj_10pct() 
+		{
+			try
+			{
+				int count = this.ExecuteReader(
+					"select distinct col_signed from tenpct");
+
+				if (count != (this.tupleCount*10/100))
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		#endregion
+
+		#region Single User Tests - Aggregates
+
+		/* AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems
+		 * 
+		 * Aggregates (Table 7.5)
+		 */
+
+		/// <summary>
+		/// minimum key
+		/// </summary>
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void agg_scal() 
+		{	
+			try
+			{
+				this.testResult = this.ExecuteScalar(
+					"select min(col_key) from uniques");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		/// <summary>
+		/// minimum key grouped by name
+		/// </summary>
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void agg_func() 
+		{
+			try
+			{
+				int count = this.ExecuteReader(
+					"select min(col_key) from hundred group by col_name");
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch(Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		/// <summary>
+		/// select w/ complex predicate, then min(key)
+		/// </summary>
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void agg_info_retrieval() 
+		{
+			try
+			{
+				this.testResult = this.ExecuteScalar(
+					"select count(col_key) "									+
+					"from tenpct "												+
+					"where col_name = 'THE+ASAP+BENCHMARKS+' "					+
+					"and col_int <= 100000000 "									+
+					"and col_signed between 1 and 99999999 "					+
+					"and not (col_float between -450000000 and 450000000) "		+
+					"and col_double > 600000000 "								+
+					"and col_decim < -600000000");
+			}
+			catch(Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		/// <summary>
+		/// select avg(x) where x in (select 10%)
+		/// </summary>
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void agg_simple_report()
+		{
+			try
+			{
+				this.testResult = this.ExecuteScalar(
+					"select * "						+
+					"from updates "					+
+					"where updates.col_key in "		+
+					"(select updates.col_key "		+
+					"from updates, hundred "		+
+					"where hundred.col_key = updates.col_key " +
+					"and updates.decim > 980000000))");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void agg_create_view() 
@@ -293,80 +846,9 @@ namespace AS3AP.BenchMark
 			this.testResult = 0; 
 		}
 
-		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public void agg_func() 
-		{		
-			int count = 0;
-
-			try
-			{
-				count = this.ExecuteReader(
-					"select min(col_key) from hundred group by col_name");
-			}
-			catch(Exception)
-			{
-				this.testFailed = true;
-			}
-			finally
-			{
-				this.testResult = count;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public void agg_simple_report()
-		{
-			try
-			{
-				this.testResult = this.ExecuteScalar(
-					"select * "						+
-					"from updates "					+
-					"where updates.col_key in "		+
-					"(select updates.col_key "		+
-					"from updates, hundred "		+
-					"where hundred.col_key = updates.col_key)");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public void agg_info_retrieval() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteScalar(
-					"select count(col_key) "									+
-					"from tenpct "												+
-					"where col_name = 'THE+ASAP+BENCHMARKS+' "					+
-					"and col_int <= 100000000 "									+
-					"and col_signed between 1 and 99999999 "					+
-					"and not (col_float between -450000000 and 450000000) "		+
-					"and col_double > 600000000 "								+
-					"and col_decim < -600000000");
-			}
-			catch(Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public void agg_scal() 
-		{	
-			try
-			{
-				this.testResult = this.ExecuteScalar(
-					"select min(col_key) from uniques");				
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
+		/// <summary>
+		/// 10% select on view, min(a),max(a),avg(a),count(b),group by code,int
+		/// </summary>
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void agg_subtotal_report() 
 		{
@@ -379,7 +861,7 @@ namespace AS3AP.BenchMark
 					"col_code, col_int "											+
 					"from reportview "												+
 					"where col_decim > 980000000 "									+
-					"group by col_code, col_int");				
+					"group by col_code, col_int");
 			}
 			catch (Exception)
 			{
@@ -387,6 +869,9 @@ namespace AS3AP.BenchMark
 			}
 		}
 
+		/// <summary>
+		/// report 10% select on view,min(a),max(a),avg(a),count(b)
+		/// </summary>
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void agg_total_report() 
 		{			
@@ -406,13 +891,117 @@ namespace AS3AP.BenchMark
 			}
 		}
 
+		#endregion
+
+		#region Single User Tests - Updates
+
+		/* AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems
+		 * 
+		 * Updates (Table 7.6)
+		 */
+
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void upd_append_duplicate() 
+		{
+			if (this.configuration.UseIndexes) 
+			{
+				try
+				{
+					/* try to append duplicate key value */
+					this.testResult = this.ExecuteNonQuery( 
+						"insert into updates  "					+
+						"values (6000, 0, 60000, 39997.90, "	+
+						"50005.00, 50005.00, "					+
+						"'11/10/1985', 'CONTROLLER', "			+
+						"'ALICE IN WONDERLAND', "				+
+						"'UNIVERSITY OF ILLINOIS AT CHICAGO')"); 
+
+					this.testFailed = true;
+				}
+				catch (Exception)
+				{
+				}
+			}
+		}
+
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void upd_remove_duplicate() 
+		{
+			try
+			{
+				this.testResult = this.ExecuteNonQuery(
+					"delete from updates where col_key = 6000 and col_int = 0");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public void bulk_append() 
+		public void integrity_temp() 
+		{
+			try
+			{
+				/* Test of referential integrity:
+				 * 
+				 * make temp relation for restore 
+				 */
+				this.createTable("integrity_temp", this.baseTableStructure, null);
+
+				int count = this.ExecuteNonQuery(
+					"insert into integrity_temp select * from hundred where col_int = 0");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void integrity_test() 
 		{
 			try
 			{
 				int count = this.ExecuteNonQuery(
-					"insert into updates select * from saveupdates");
+					"update hundred set col_signed = '-500000000' where col_int = 0");
+
+				this.testFailed = true;				
+				this.testResult = 0;	
+			}
+			catch (Exception)
+			{
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void integrity_restore() 
+		{
+			/* restore hundred relation in case test failed 
+			 */
+			try
+			{
+				int count = this.ExecuteNonQuery(
+					"delete from hundred where col_int = 0");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+
+			try
+			{
+				int count = this.ExecuteNonQuery(
+					"insert into hundred select * from integrity_temp");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+
+			try
+			{
+				this.ExecuteNonQuery("drop table integrity_temp");
 			}
 			catch (Exception)
 			{
@@ -422,13 +1011,159 @@ namespace AS3AP.BenchMark
 			this.testResult = 0;
 		}
 
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void	upd_app_t_mid() 
+		{
+			try
+			{
+				this.testResult = this.ExecuteNonQuery(
+					"insert into updates "								+
+					"values (5005, 5005, 50005, 50005.00, 50005.00, "	+
+					"50005.00, '1/1/1988', 'CONTROLLER', "				+
+					"'ALICE IN WONDERLAND', "							+
+					"'UNIVERSITY OF ILLINOIS AT CHICAGO')");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void	upd_mod_t_mid() 
+		{
+			try
+			{
+				this.testResult = this.ExecuteNonQuery(
+					"update updates set col_key = '-5000' where col_key = 5005");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void upd_del_t_mid() 
+		{
+			try
+			{
+				this.testResult = this.ExecuteNonQuery(
+					"delete from updates where col_key = -5000");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void upd_app_t_end() 
+		{
+			try
+			{
+				this.testResult = this.ExecuteNonQuery(
+					"insert into updates "							+
+					"values (1000000001, 50005, 50005, 50005.00, "	+
+					"50005.00, 50005.00, '1/1/1988', "				+
+					"'CONTROLLER', 'ALICE IN WONDERLAND', "			+
+					"'UNIVERSITY OF ILLINOIS AT CHICAGO')");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void	upd_mod_t_end() 
+		{
+			try
+			{
+				this.testResult = this.ExecuteNonQuery(
+					"update updates "	+
+					"set col_key = -1000 where col_key = 1000000001");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void upd_del_t_end() 
+		{
+			try
+			{
+				this.testResult = this.ExecuteNonQuery(
+					"delete from updates where col_key = -1000");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void	upd_mod_t_int() 
+		{
+			try
+			{
+				this.testResult = this.ExecuteNonQuery(
+					"update updates set col_int = 50015 where col_key = 5005");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void	upd_mod_t_cod() 
+		{
+			try
+			{
+				this.testResult = this.ExecuteNonQuery(
+					"update updates "				+
+					"set col_code = 'SQL+GROUPS' "	+
+					"where col_key = 5005");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		#endregion
+
+		#region Single User Tests - Bulk Updates
+
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public void bulk_delete() 
+		public void bulk_save()
+		{
+			try
+			{
+				this.createTable("saveupdates", baseTableStructure, null);
+
+				int count = this.ExecuteNonQuery(
+					"insert into saveupdates select * "	+
+					"from updates where col_key between 5000 and 5999");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+
+			this.testResult = 0;
+		}
+	
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void bulk_append() 
 		{
 			try
 			{
 				int count = this.ExecuteNonQuery(
-					"delete from updates where col_key < 0");
+					"insert into updates select * from saveupdates");
 			}
 			catch (Exception)
 			{
@@ -457,15 +1192,731 @@ namespace AS3AP.BenchMark
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public void bulk_save()
+		public void bulk_delete() 
 		{
 			try
 			{
-				this.createTable("saveupdates", baseTableStructure, null);
+				int count = this.ExecuteNonQuery(
+					"delete from updates where col_key < 0");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+
+			this.testResult = 0;
+		}
+
+		#endregion
+
+		#region Multi User Tests - Main
+
+		public void MultiUserTests(int nInstances) 
+		{	
+			TimeSpan fTime;
+			DateTime sTime;
+
+			this.userProcess = new Thread[nInstances];
+			
+			if (this.log != null)
+			{
+				this.log.Simple(
+					"\"Executing multi-user tests with {0} user task{1}\"\r\n\r\n",
+					nInstances, ((nInstances != 1) ? "s" : ""));
+			}
+
+			/* Step 1 -- Backup updates relation, including indices, 
+			 * to tape or other device. This is done early on.
+			 */
+			
+						
+			/* Step 2 -- Run IR (Mix 1) test for 15 minutes.	*/
+			if (this.Progress != null)
+			{
+				this.Progress(
+					this, 
+					new ProgressMessageEventArgs(
+					"Run IR (Mix 1) test for {0} minutes ({1})",
+					this.timeToRun,
+					DateTime.Now.ToString()));
+			}
+
+			this.iters		= 0;
+			this.timeToRun	= 15;
+					
+			for (int i = 0; i < this.userProcess.Length; i++) 
+			{
+				this.userProcess[i]	= new Thread(new ThreadStart(this.ir_select));
+
+				this.userProcess[i].Name = "User " + i.ToString();
+				this.userProcess[i].Start();
+				this.userProcess[i].IsBackground = true;
+			}
+
+			/* Wait to the end of the threads	*/
+			for (int i = 0; i < this.userProcess.Length; i++) 
+			{
+				this.userProcess[i].Join();
+			}
+
+			/* Step 3 -- Measure throughput in IR test for five minutes.	*/
+			if (this.Progress != null)
+			{
+				this.Progress(
+					this, 
+					new ProgressMessageEventArgs(
+					"Run Measure throughput in IR test for {0} minutes ({1}).",
+					this.timeToRun,
+					DateTime.Now.ToString()));
+			}
+			
+			sTime			= DateTime.Now;
+			this.iters		= 0;			
+			this.timeToRun	= 5;
+						
+			for (int i = 0; i < this.userProcess.Length; i++)
+			{
+				this.userProcess[i] = new Thread(new ThreadStart(this.ir_select));
+
+				this.userProcess[i].Name = "User " + i.ToString();
+				this.userProcess[i].Start();
+				this.userProcess[i].IsBackground = true;
+			}
+						
+			/* Wait to the end of the threads	*/
+			for (int i = 0; i < this.userProcess.Length; i++) 
+			{
+				this.userProcess[i].Join();
+			}
+
+			fTime = DateTime.Now - sTime;
+
+			if (this.log != null)
+			{
+				this.log.Simple(
+					"Mixed IR (tup/sec)\t{0}\t returned in {1} minutes",
+					Math.Round((double)iters/fTime.TotalSeconds, 4)	, 
+					fTime.ToString());
+			}
+			
+			/* Step 4 -- A Mixed Workload IR Test, where one user executes a cross
+			 * section of ten update and retrieval queries, and all the others 
+			 * execute the same IR query as in the second test.
+			 */
+			if (this.Progress != null)
+			{
+				this.Progress(
+					this, 
+					new ProgressMessageEventArgs(
+					"Run Mixed Workload IR test (Mix 3) ({0}).",
+					DateTime.Now.ToString()));
+			}
+			
+			this.userProcess[0]	= new Thread(new ThreadStart(this.cross_section_tests));
+
+			this.userProcess[0].Name = "User " + 0.ToString();
+			this.userProcess[0].Start();
+			this.userProcess[0].IsBackground = true;
+			
+			this.timeToRun	= -1;	// Exec the only one time in each thread
+			for (int i = 1; i < this.userProcess.Length; i++) 
+			{
+				this.userProcess[i] = new Thread(new ThreadStart(this.ir_select));
+
+				this.userProcess[i].Name = "User " + i.ToString();
+				this.userProcess[i].Start();
+				this.userProcess[i].IsBackground = true;
+			}
+						
+			/* Wait to the end of the threads	*/
+			for (int i = 0; i < this.userProcess.Length; i++) 
+			{
+				this.userProcess[i].Join();
+			}
+						
+			/* Step 5 -- Run queries to check correctness of the sequential
+			 * and random bulk updates.
+			 */
+			if (this.Progress != null)
+			{
+				Progress(
+					this, 
+					new ProgressMessageEventArgs(
+					"Check correctness of the sequential and random bulk updates ({0}).",
+					DateTime.Now.ToString()));
+			}
+			
+			this.DatabaseConnect();
+
+			this.runTest("mu_checkmod_100_seq");
+			this.runTest("mu_checkmod_100_rand");
+
+			this.DatabaseDisconnect();
+			
+			/* Step 6 - Recover updates relation from backup tape (Step 1)
+			 * and log (from Steps 2, 3, 4, and 5).	
+			 */
+
+
+			/* Step 7 - Perform correctness checks, checkmod_100_seq and 
+			 * checkmod_100_rand. Remove temporary tables: sel100seq and 
+			 * sel100rand.
+			 */
+			if (this.Progress != null)
+			{
+				this.Progress(
+					this, 
+					new ProgressMessageEventArgs(
+					"Check correctness of the sequential and random bulk updates ({0}).",
+					DateTime.Now.ToString()));
+			}
+			
+			this.DatabaseConnect();
+
+			this.runTest("mu_checkmod_100_seq");
+			this.runTest("mu_checkmod_100_rand");
+
+			this.runTest("mu_drop_sel100_seq");
+			this.runTest("mu_drop_sel100_rand");
+
+			this.DatabaseDisconnect();
+
+			/* Step 8 - Run OLTP test for 15 minutes.	*/
+			if (this.Progress != null)
+			{
+				this.Progress(
+					this, 
+					new ProgressMessageEventArgs(
+					"Run OLTP test for {0} minutes ({1})",
+					this.timeToRun,
+					DateTime.Now.ToString()));
+			}
+			
+			this.timeToRun = 15;
+			for (int i = 0; i < this.userProcess.Length; i++) 
+			{
+				this.userProcess[i] = new Thread(new ThreadStart(oltp_update));
+
+				this.userProcess[i].Name = "User " + i.ToString();
+				this.userProcess[i].Start();
+				this.userProcess[i].IsBackground = true;
+			}
+
+			/* Wait to the end of the threads	*/
+			for (int i = 0; i < this.userProcess.Length; i++) 
+			{
+				this.userProcess[i].Join();
+			}
+			
+			/* Step 9 -- Measure throughput in IR test for five minutes.	*/
+			if (this.Progress != null)
+			{
+				this.Progress(
+					this, 
+					new ProgressMessageEventArgs(
+					"Run Measure throughput in IR test for {0} minutes ({1}).",
+					this.timeToRun,
+					DateTime.Now.ToString()));
+			}
+
+			sTime			= DateTime.Now;
+			this.iters		= 0;
+			this.timeToRun	= 5;
+			
+			for (int i = 0; i < this.userProcess.Length; i++)
+			{
+				this.userProcess[i] = new Thread(new ThreadStart(this.ir_select));
+
+				this.userProcess[i].Name = "User " + i.ToString();
+				this.userProcess[i].Start();
+				this.userProcess[i].IsBackground = true;
+			}
+			
+			/* Wait to the end of the threads	*/
+			for (int i = 0; i < this.userProcess.Length; i++) 
+			{
+				this.userProcess[i].Join();
+			}
+						
+			fTime = DateTime.Now - sTime;
+			
+			if (this.log != null)
+			{
+				this.log.Simple(
+					"Mixed OLTP (tup/sec)\t{0}\t returned in {1} minutes\n",
+					Math.Round((double)iters/fTime.TotalSeconds, 4), 
+					fTime.ToString());
+			}
+
+			/* Step 10 -- Replace one background OLTP script with the cross 
+			 * section script. This is the Mixed Workload OLTP test (Mix 4). 
+			 * This step is variable length.
+			 */
+			if (this.Progress != null)
+			{
+				this.Progress(
+					this, 
+					new ProgressMessageEventArgs(
+					"Run Mixed Workload OLTP test (Mix 4) ({0}).",
+					DateTime.Now.ToString()));
+			}
+						
+			this.userProcess[0] = new Thread(new ThreadStart(this.cross_section_tests));
+			
+			this.userProcess[0].Name = "User " + 0.ToString();
+			this.userProcess[0].Start();
+			this.userProcess[0].IsBackground = true;
+
+			this.timeToRun = -1;	// Exec the only one time in each thread
+
+			for (int i = 1; i < this.userProcess.Length; i++)
+			{
+				this.userProcess[i] = new Thread(new ThreadStart(this.oltp_update));
+
+				this.userProcess[i].Name = "User " + i.ToString();
+				this.userProcess[i].Start();
+				this.userProcess[i].IsBackground = true;
+			}			
+
+			/* Wait to the end of the threads	*/
+			for (int i = 0; i < this.userProcess.Length; i++) 
+			{
+				this.userProcess[i].Join();
+			}
+									
+			/* Step 11 -- Perform correctness checks, checkmod_100_seq and 
+			 * checkmod_100_rand. Remove temporary tables: sel100seq and 
+			 * sel100rand.
+			 */
+			if (this.Progress != null)
+			{
+				this.Progress(
+					this, 
+					new ProgressMessageEventArgs(
+					"Check correctness of the sequential and random bulk updates ({0}).",
+					DateTime.Now.ToString()));
+			}
+			
+			this.DatabaseConnect();
+
+			this.runTest("mu_checkmod_100_seq");			
+			this.runTest("mu_checkmod_100_rand");
+			
+			this.runTest("mu_drop_sel100_seq");
+			this.runTest("mu_drop_sel100_rand");
+
+			this.DatabaseDisconnect();
+		}
+
+		private void oltp_update()
+		{	
+			try
+			{
+				ITestSuite testSuite = TestSuiteFactory.GetTestSuite(
+					testSuiteName, configuration);
+			
+				testSuite.DatabaseConnect();
+			
+				if (timeToRun > 0)
+				{
+					DateTime endTime = DateTime.Now.AddMinutes(timeToRun);
+
+					while (endTime >= DateTime.Now)
+					{
+						testSuite.mu_oltp_update();
+					}
+				}
+				else
+				{
+					testSuite.mu_oltp_update();
+				}
+			
+				testSuite.DatabaseDisconnect();
+			}
+			catch (ThreadAbortException)
+			{
+			}
+		}
+
+		private void ir_select()
+		{	
+			try
+			{
+				ITestSuite testSuite = TestSuiteFactory.GetTestSuite(
+					testSuiteName, configuration);
+
+				testSuite.DatabaseConnect();
+							
+				if (timeToRun > 0)
+				{
+					DateTime endTime = DateTime.Now.AddMinutes(timeToRun);
+
+					while (endTime >= DateTime.Now)
+					{					
+						testSuite.mu_ir_select();
+						iters++;
+					}
+				}
+				else
+				{
+					this.mu_ir_select();
+				}
+			
+				testSuite.DatabaseDisconnect();
+			}
+			catch (ThreadAbortException)
+			{
+			}
+		}
+
+		#endregion
+
+		#region Cross Section Tests Main
+
+		private void cross_section_tests() 
+		{
+			try
+			{
+				DateTime startTime;
+
+				this.DatabaseConnect();
+
+				startTime = DateTime.Now;
+
+				this.runTest("o_mode_tiny");
+				this.runTest("o_mode_100k");
+				this.runTest("sel_1_ncl");
+				this.runTest("sel_1_ncl");
+				this.runTest("sel_1_ncl");
+				this.runTest("agg_simple_report");
+				this.runTest("mu_sel_100_seq");
+				this.runTest("mu_sel_100_rand");
+				this.runTest("mu_mod_100_seq");
+				this.runTest("mu_mod_100_rand");
+				this.runTest("mu_unmod_100_seq");
+				this.runTest("mu_unmod_100_rand");
+
+				TimeSpan elapsed = startTime - DateTime.Now;
+
+				this.DatabaseDisconnect();
+
+				if (this.log != null)
+				{
+					this.log.Simple("CrossSectionTests \t( {0} )", elapsed.ToString());
+				}
+			}
+			catch (ThreadAbortException)
+			{
+			}
+		}
+
+		#endregion
+
+		#region Multi User Tests - Cross Section Tests for Mixed IR and Mixed OLTP tests
+
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void mu_oltp_update()
+		{
+			int		r			= 0;
+			Random	randNumber	= new Random(unchecked((int)DateTime.Now.Ticks));
+			string	sql			= 
+				"update updates set col_signed = col_signed + 1 " +
+				"where col_key = {0}";
+
+			try
+			{				
+				r = 1;
+				while (r == 1)
+				{
+					r = randNumber.Next(0, tupleCount);   // There IS no col_key 1
+				}	
+
+				this.testResult = this.ExecuteNonQuery(sql, r);
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void mu_ir_select()
+		{			
+			Random	randNumber	= new Random(unchecked((int)DateTime.Now.Ticks));
+			int		r			= 0;
+			string	sql			=
+				"select col_key, col_code, col_date, col_signed, col_name "	+
+				"from updates where col_key = {0}";
+
+			try
+			{
+				while (r == 1)
+				{
+					r = randNumber.Next(0, tupleCount);   // there IS no key 1
+				}
+		
+				this.testResult = this.ExecuteReader(sql, r);
+			}	
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void o_mode_tiny()
+		{	
+			try
+			{
+				this.testResult = this.ExecuteReader("select * from tiny");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void o_mode_100k()
+		{
+			string sql = "select * from hundred where col_key <= 1000";
+
+			try
+			{
+				this.testResult = this.ExecuteReader(sql);
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void mu_checkmod_100_rand() 
+		{
+			string sql = 
+					"select count(*) from updates, sel100rand "+
+					"where updates.col_int = sel100rand.col_int "		+
+					"and not updates.col_double = sel100rand.col_double";
+
+			try
+			{
+				int count = this.ExecuteReader(sql);
+
+				if (count != 100) 
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void mu_drop_sel100_rand() 
+		{
+			try
+			{
+				this.testResult = this.ExecuteNonQuery("drop table sel100rand");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void mu_checkmod_100_seq() 
+		{
+			string sql = "select count(*) from updates, sel100seq "		+
+						"where updates.col_key = sel100seq.col_key "	+
+						"and not updates.col_double = sel100seq.col_double";
+
+			try
+			{
+				int count = this.ExecuteReader(sql);
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void mu_drop_sel100_seq() 
+		{
+			try
+			{
+				this.testResult = this.ExecuteNonQuery("drop table sel100seq");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void mu_mod_100_rand() 
+		{
+			try
+			{
+				int count = this.ExecuteNonQuery(
+					"update updates "							+
+					"set col_double = col_double + 100000000 "	+
+					"where col_int between 1001 and 1100");
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void mu_mod_100_seq() 
+		{
+			try
+			{
+				this.testResult = this.ExecuteAborting(
+					"update updates "							+
+					"set col_double = col_double + 100000000 "	+
+					"where col_key between 1001 and 1100");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void mu_sel_100_rand() 
+		{
+			try
+			{
+				this.createTable("sel100rand", baseTableStructure, null);
 
 				int count = this.ExecuteNonQuery(
-					"insert into saveupdates select * "	+
-					"from updates where col_key between 5000 and 5999");
+					"insert into sel100rand select * from updates "	+
+					"where updates.col_int between 1001 and 1100");
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void mu_sel_100_seq() 
+		{
+			try
+			{
+				this.createTable("sel100seq", baseTableStructure, null);
+
+				int count = this.ExecuteNonQuery(
+					"insert into sel100seq select * from updates "	+
+					"where updates.col_key between 1001 and 1100");
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void mu_unmod_100_rand() 
+		{
+			try
+			{
+				int count = this.ExecuteNonQuery(
+					"update updates "	+
+					"set col_double = col_double - 100000000 "	+
+					"where col_int between 1001 and 1100");
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void mu_unmod_100_seq() 
+		{
+			try
+			{
+				int count = this.ExecuteNonQuery(
+					"update updates "							+
+					"set col_double = col_double - 100000000 "	+
+					"where col_key between 1001 and 1100");
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
+			}
+		}
+
+		#endregion
+
+		#region Table and Index handling
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void create_tables() 
+		{
+			try
+			{
+				this.createTable("uniques", this.baseTableStructure, "col_key");
+				this.createTable("hundred", this.baseTableStructure, "col_key");
+				this.createTable("updates", this.baseTableStructure, "col_key");
+				this.createTable("tenpct" , this.baseTableStructure, "col_key,col_code");
+
+				this.createTable( 
+					"tiny"					,
+					"col_key " + this.configuration.IntegerTypeName + " not null",
+					"col_key");
 			}
 			catch (Exception)
 			{
@@ -918,29 +2369,6 @@ namespace AS3AP.BenchMark
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public void create_tables() 
-		{
-			try
-			{
-				this.createTable("uniques", this.baseTableStructure, "col_key");
-				this.createTable("hundred", this.baseTableStructure, "col_key");
-				this.createTable("updates", this.baseTableStructure, "col_key");
-				this.createTable("tenpct" , this.baseTableStructure, "col_key,col_code");
-
-				this.createTable( 
-					"tiny"					,
-					"col_key " + this.configuration.IntegerTypeName + " not null",
-					"col_key");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-
-			this.testResult = 0;
-		}
-
-		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void drop_updates_keys() 
 		{
 			if (configuration.UseIndexes) 
@@ -962,1260 +2390,6 @@ namespace AS3AP.BenchMark
 			}
 
 			this.testResult = 0;
-		}
-
-		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public void integrity_test() 
-		{
-			try
-			{
-				this.createTable("integrity_temp", this.baseTableStructure, null);
-
-				int count = this.ExecuteNonQuery(
-					"insert into integrity_temp select * from hundred where col_int = 0");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-
-			try
-			{
-				int count = this.ExecuteNonQuery(
-					"update hundred set col_signed = '-500000000' where col_int = 0");
-
-				this.testFailed = true;				
-				this.testResult = 0;	
-			}
-			catch (Exception)
-			{
-			}
-
-			try
-			{
-				int count = this.ExecuteNonQuery(
-					"delete from hundred where col_int = 0");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-
-			try
-			{
-				int count = this.ExecuteNonQuery(
-					"insert into hundred select * from integrity_temp");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-
-			try
-			{
-				this.ExecuteNonQuery("drop table integrity_temp");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-
-			this.testResult = 0;
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void proj_100() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteReader(
-					"select distinct col_address, col_signed from hundred");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void proj_10pct() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteReader(
-					"select distinct col_signed from tenpct");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void sel_1_cl() 
-		{
-			try
-			{
-				int count = this.ExecuteReader(
-					"select col_key, col_int, col_signed, col_code, "	+
-					"col_double, col_name "								+
-					"from updates where col_key = 1000");
-
-				if (count != 1)
-				{
-					this.testFailed = true;
-				}
-
-				this.testResult = count;
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void sel_1_ncl() 
-		{
-			try
-			{
-				int count = this.ExecuteReader(
-					"select col_key, col_int, col_signed, col_code, "	+
-					"col_double, col_name "								+
-					"from updates where col_code = 'BENCHMARKS'");				
-
-				if (count != 1)
-				{
-					this.testFailed = true;
-				}
-
-				this.testResult = count;
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void sel_100_cl() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteReader(
-					"select col_key, col_int, col_signed, col_code, "	+
-					"col_double, col_name "								+
-					"from updates where col_key <= 100");				
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void sel_100_ncl() 
-		{
-			try
-			{
-				int count = this.ExecuteReader(
-					"select col_key, col_int, col_signed, col_code, "	+
-					"col_double, col_name "								+
-					"from updates where col_int <= 100");
-
-				if (count != 100)
-				{
-					this.testFailed = true;
-				}
-
-				this.testResult = count;
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-	
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void	sel_10pct_ncl() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteReader(
-					"select col_key, col_int, col_signed, col_code, "	+
-					"col_double, col_name "								+
-					"from tenpct "										+
-					"where col_name = 'THE+ASAP+BENCHMARKS+'");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void	sel_variable_select(long foo) 
-		{
-			try
-			{
-				this.testResult = this.ExecuteReader(
-					"select col_key, col_int, col_signed, col_code, "	+
-					"col_double, col_name "								+
-					"from tenpct "										+
-					"where col_signed < {0}",							+
-					foo);
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		public void sel_variable_select_high() 
-		{
-			this.sel_variable_select(-250000000);
-		}
-
-		public void sel_variable_select_low() 
-		{
-			this.sel_variable_select(-500000000);
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void table_scan() 
-		{
-			try
-			{	
-				this.testResult = this.ExecuteReader(
-					"select * from uniques where col_int = 1");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void upd_app_t_end() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteNonQuery(
-					"insert into updates "							+
-					"values (1000000001, 50005, 50005, 50005.00, "	+
-					"50005.00, 50005.00, '1/1/1988', "				+
-					"'CONTROLLER', 'ALICE IN WONDERLAND', "			+
-					"'UNIVERSITY OF ILLINOIS AT CHICAGO')");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void	upd_app_t_mid() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteNonQuery(
-					"insert into updates "								+
-					"values (5005, 5005, 50005, 50005.00, 50005.00, "	+
-					"50005.00, '1/1/1988', 'CONTROLLER', "				+
-					"'ALICE IN WONDERLAND', "							+
-					"'UNIVERSITY OF ILLINOIS AT CHICAGO')");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void upd_append_duplicate() 
-		{
-			if (this.configuration.UseIndexes) 
-			{
-				try
-				{
-					this.testResult = this.ExecuteNonQuery( 
-						"insert into updates  "					+
-						"values (6000, 0, 60000, 39997.90, "	+
-						"50005.00, 50005.00, "					+
-						"'11/10/1985', 'CONTROLLER', "			+
-						"'ALICE IN WONDERLAND', "				+
-						"'UNIVERSITY OF ILLINOIS AT CHICAGO')"); 
-
-					this.testFailed = true;
-				}
-				catch (Exception)
-				{
-				}
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void upd_del_t_end() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteNonQuery(
-					"delete from updates where col_key = -1000");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void upd_del_t_mid() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteNonQuery(
-					"delete from updates where (col_key='5005') or (col_key='-5000')");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void	upd_mod_t_cod() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteNonQuery(
-					"update updates "				+
-					"set col_code = 'SQL+GROUPS' "	+
-					"where col_key = 5005");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void	upd_mod_t_end() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteNonQuery(
-					"update updates "	+
-					"set col_key = -1000 where col_key = 1000000001");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void	upd_mod_t_int() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteNonQuery(
-					"update updates set col_int = 50015 where col_key = 5005");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void	upd_mod_t_mid() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteNonQuery(
-					"update updates set col_key = '-5000' where col_key = 5005");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void upd_remove_duplicate() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteNonQuery(
-					"delete from updates where col_key = 6000 and col_int = 0");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		#endregion
-
-		#region Multi User and Cross Section Tests
-
-		[IsolationLevel(IsolationLevel.RepeatableRead)]
-		public void o_mode_tiny()
-		{	
-			try
-			{
-				this.testResult = this.ExecuteReader("select * from tiny");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.RepeatableRead)]
-		public void o_mode_100k()
-		{
-			string sql = "select * from hundred where col_key <= 1000";
-
-			try
-			{
-				this.testResult = this.ExecuteReader(sql);
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.RepeatableRead)]
-		public void mu_checkmod_100_rand() 
-		{
-			string sql = 
-					"select count(*) from updates, sel100rand "+
-					"where updates.col_int = sel100rand.col_int "		+
-					"and not updates.col_double = sel100rand.col_double";
-
-			try
-			{
-				int count = this.ExecuteReader(sql);
-
-				if (count != 100) 
-				{
-					this.testFailed = true;
-				}
-
-				this.testResult = count;
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public void mu_drop_sel100_rand() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteNonQuery("drop table sel100rand");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public void mu_checkmod_100_seq() 
-		{
-			string sql = "select count(*) from updates, sel100seq "		+
-						"where updates.col_key = sel100seq.col_key "	+
-						"and not updates.col_double = sel100seq.col_double";
-
-			try
-			{
-				int count = this.ExecuteReader(sql);
-
-				if (count != 100)
-				{
-					this.testFailed = true;
-				}
-
-				this.testResult = count;
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public void mu_drop_sel100_seq() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteNonQuery("drop table sel100seq");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public void mu_ir_select()
-		{			
-			Random	randNumber	= new Random(unchecked((int)DateTime.Now.Ticks));
-			int		r			= 0;
-			string	sql			=
-					"select col_key, col_code, col_date, col_signed, col_name "	+
-					"from updates where col_key = {0}";
-
-			try
-			{
-				while (r == 1)
-				{
-					r = randNumber.Next(0, tupleCount);   // there IS no key 1
-				}
-		
-				this.testResult = this.ExecuteReader(sql, r);
-			}	
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.RepeatableRead)]
-		public void mu_mod_100_rand() 
-		{
-			try
-			{
-				int count = this.ExecuteNonQuery(
-					"update updates "							+
-					"set col_double = col_double + 100000000 "	+
-					"where col_int between 1001 and 1100");
-
-				if (count != 100)
-				{
-					this.testFailed = true;
-				}
-
-				this.testResult = count;
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.RepeatableRead)]
-		public void mu_mod_100_seq() 
-		{
-			try
-			{
-				this.testResult = this.ExecuteAborting(
-					"update updates "							+
-					"set col_double = col_double + 100000000 "	+
-					"where col_key between 1001 and 1100");
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
-		public void mu_oltp_update()
-		{
-			int		r			= 0;
-			Random	randNumber	= new Random(unchecked((int)DateTime.Now.Ticks));
-			string	sql			= 
-					"update updates set col_signed = col_signed + 1 " +
-					"where col_key = {0}";
-
-			try
-			{				
-				r = 1;
-				while (r == 1)
-				{
-					r = randNumber.Next(0, tupleCount);   // There IS no col_key 1
-				}	
-
-				this.testResult = this.ExecuteNonQuery(sql, r);
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.RepeatableRead)]
-		public void mu_sel_100_rand() 
-		{
-			try
-			{
-				this.createTable("sel100rand", baseTableStructure, null);
-
-				int count = this.ExecuteNonQuery(
-					"insert into sel100rand select * from updates "	+
-					"where updates.col_int between 1001 and 1100");
-
-				if (count != 100)
-				{
-					this.testFailed = true;
-				}
-
-				this.testResult = count;
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.RepeatableRead)]
-		public void mu_sel_100_seq() 
-		{
-			try
-			{
-				this.createTable("sel100seq", baseTableStructure, null);
-
-				int count = this.ExecuteNonQuery(
-					"insert into sel100seq select * from updates "	+
-					"where updates.col_key between 1001 and 1100");
-
-				if (count != 100)
-				{
-					this.testFailed = true;
-				}
-
-				this.testResult = count;
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.RepeatableRead)]
-		public void mu_unmod_100_rand() 
-		{
-			try
-			{
-				int count = this.ExecuteNonQuery(
-					"update updates "	+
-					"set col_double = col_double - 100000000 "	+
-					"where col_int between 1001 and 1100");
-
-				if (count != 100)
-				{
-					this.testFailed = true;
-				}
-
-				this.testResult = count;
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.RepeatableRead)]
-		public void mu_unmod_100_seq() 
-		{
-			try
-			{
-				int count = this.ExecuteNonQuery(
-					"update updates "							+
-					"set col_double = col_double - 100000000 "	+
-					"where col_key between 1001 and 1100");
-
-				if (count != 100)
-				{
-					this.testFailed = true;
-				}
-
-				this.testResult = count;
-			}
-			catch (Exception)
-			{
-				this.testFailed = true;
-			}
-		}
-
-		#endregion
-
-		#region AS3AP Methods
-
-		public void CreateDatabase() 
-		{
-			TimeSpan elapsed = new TimeSpan(0, 0, 0);
-
-			this.dropDatabase();
-			this.databaseCreate();
-
-			this.DatabaseConnect();
-
-			elapsed += this.runTest("create_tables");
-			elapsed += this.runTest("load_data");
-			elapsed += this.runTest("create_idx_uniques_key_bt");
-			elapsed += this.runTest("create_idx_updates_key_bt");
-			elapsed += this.runTest("create_idx_hundred_key_bt");
-			elapsed += this.runTest("create_idx_tenpct_key_bt");
-			elapsed += this.runTest("create_idx_tenpct_key_code_bt");
-			elapsed += this.runTest("create_idx_tiny_key_bt");
-			elapsed += this.runTest("create_idx_tenpct_int_bt");
-			elapsed += this.runTest("create_idx_tenpct_signed_bt");
-			elapsed += this.runTest("create_idx_uniques_code_h");
-			elapsed += this.runTest("create_idx_tenpct_double_bt");
-			elapsed += this.runTest("create_idx_updates_decim_bt");
-			elapsed += this.runTest("create_idx_tenpct_float_bt");
-			elapsed += this.runTest("create_idx_updates_int_bt");
-			elapsed += this.runTest("create_idx_tenpct_decim_bt");
-			elapsed += this.runTest("create_idx_hundred_code_h");
-			elapsed += this.runTest("create_idx_tenpct_name_h");
-			elapsed += this.runTest("create_idx_updates_code_h");
-			elapsed += this.runTest("create_idx_tenpct_code_h");
-			elapsed += this.runTest("create_idx_updates_double_bt");
-			elapsed += this.runTest("create_idx_hundred_foreign");
-			
-			this.DatabaseDisconnect();
-
-			if (this.log != null) 
-			{
-				this.log.Simple(
-					"\r\nDatabase creation time ( {0} )\r\n\r\n",
-					elapsed.ToString());
-			}
-		}
-
-		public void SingleUserTests() 
-		{
-			TimeSpan elapsed = new TimeSpan(0, 0, 0);
-
-			this.DatabaseConnect();
-						
-			elapsed += this.runTest("sel_1_cl");
-			elapsed += this.runTest("join_3_cl");
-			elapsed += this.runTest("sel_100_ncl");
-			elapsed += this.runTest("table_scan");
-			elapsed += this.runTest("agg_func");
-			elapsed += this.runTest("agg_scal");
-			elapsed += this.runTest("sel_100_cl");
-			elapsed += this.runTest("join_3_ncl");
-			elapsed += this.runTest("sel_10pct_ncl");
-			elapsed += this.runTest("agg_simple_report");
-			elapsed += this.runTest("agg_info_retrieval");
-			elapsed += this.runTest("agg_create_view");
-			elapsed += this.runTest("agg_subtotal_report");
-			elapsed += this.runTest("agg_total_report");
-			elapsed += this.runTest("join_2_cl");
-			elapsed += this.runTest("join_2");
-			elapsed += this.runTest("sel_variable_select_low");
-			elapsed += this.runTest("sel_variable_select_high");
-			elapsed += this.runTest("join_4_cl");
-			elapsed += this.runTest("proj_100");
-			elapsed += this.runTest("join_4_ncl");
-			elapsed += this.runTest("proj_10pct");
-			elapsed += this.runTest("sel_1_ncl");
-			elapsed += this.runTest("join_2_ncl");
-			elapsed += this.runTest("integrity_test");
-			elapsed += this.runTest("drop_updates_keys");
-			elapsed += this.runTest("bulk_save");
-			elapsed += this.runTest("bulk_modify");
-			elapsed += this.runTest("upd_append_duplicate");
-			elapsed += this.runTest("upd_remove_duplicate");
-			elapsed += this.runTest("upd_app_t_mid");
-			elapsed += this.runTest("upd_mod_t_mid");
-			elapsed += this.runTest("upd_del_t_mid");
-			elapsed += this.runTest("upd_app_t_end");
-			elapsed += this.runTest("upd_mod_t_end");
-			elapsed += this.runTest("upd_del_t_end");
-			elapsed += this.runTest("create_idx_updates_code_h");
-			elapsed += this.runTest("upd_app_t_mid");
-			elapsed += this.runTest("upd_mod_t_cod");
-			elapsed += this.runTest("upd_del_t_mid");
-			elapsed += this.runTest("create_idx_updates_int_bt");
-			elapsed += this.runTest("upd_app_t_mid");
-			elapsed += this.runTest("upd_mod_t_int");
-			elapsed += this.runTest("upd_del_t_mid");
-			elapsed += this.runTest("bulk_append");
-			elapsed += this.runTest("bulk_delete");
-
-			if (this.log != null) 
-			{
-				this.log.Simple(
-					"\r\nSingle user test ( {0} )\r\n\r\n",
-					elapsed.ToString());
-			}
-
-			this.DatabaseDisconnect();
-		}
-
-		public void MultiUserTests(int nInstances) 
-		{	
-			TimeSpan fTime;
-			DateTime sTime;
-
-			this.userProcess = new Thread[nInstances];
-			
-			if (this.log != null)
-			{
-				this.log.Simple(
-					"\"Executing multi-user tests with {0} user task{1}\"\r\n\r\n",
-					nInstances, ((nInstances != 1) ? "s" : ""));
-			}
-
-			/* Step 1 -- Backup updates relation, including indices, 
-			 * to tape or other device. This is done early on.
-			 */
-			
-						
-			/* Step 2 -- Run IR (Mix 1) test for 15 minutes.	*/
-			if (this.Progress != null)
-			{
-				this.Progress(
-					this, 
-					new ProgressMessageEventArgs(
-						"Run IR (Mix 1) test for {0} minutes ({1})",
-						this.timeToRun,
-						DateTime.Now.ToString()));
-			}
-
-			this.iters		= 0;
-			this.timeToRun	= 15;
-					
-			for (int i = 0; i < this.userProcess.Length; i++) 
-			{
-				this.userProcess[i]	= new Thread(new ThreadStart(this.ir_select));
-
-				this.userProcess[i].Name = "User " + i.ToString();
-				this.userProcess[i].Start();
-				this.userProcess[i].IsBackground = true;
-			}
-
-			/* Wait to the end of the threads	*/
-			for (int i = 0; i < this.userProcess.Length; i++) 
-			{
-				this.userProcess[i].Join();
-			}
-
-			/* Step 3 -- Measure throughput in IR test for five minutes.	*/
-			if (this.Progress != null)
-			{
-				this.Progress(
-					this, 
-					new ProgressMessageEventArgs(
-						"Run Measure throughput in IR test for {0} minutes ({1}).",
-						this.timeToRun,
-						DateTime.Now.ToString()));
-			}
-			
-			sTime			= DateTime.Now;
-			this.iters		= 0;			
-			this.timeToRun	= 5;
-						
-			for (int i = 0; i < this.userProcess.Length; i++)
-			{
-				this.userProcess[i] = new Thread(new ThreadStart(this.ir_select));
-
-				this.userProcess[i].Name = "User " + i.ToString();
-				this.userProcess[i].Start();
-				this.userProcess[i].IsBackground = true;
-			}
-						
-			/* Wait to the end of the threads	*/
-			for (int i = 0; i < this.userProcess.Length; i++) 
-			{
-				this.userProcess[i].Join();
-			}
-
-			fTime = DateTime.Now - sTime;
-
-			if (this.log != null)
-			{
-				this.log.Simple(
-					"Mixed IR (tup/sec)\t{0}\t returned in {1} minutes",
-					Math.Round((double)iters/fTime.TotalSeconds, 4)	, 
-					fTime.ToString());
-			}
-			
-			/* Step 4 -- A Mixed Workload IR Test, where one user executes a cross
-			 * section of ten update and retrieval queries, and all the others 
-			 * execute the same IR query as in the second test.
-			 */
-			if (this.Progress != null)
-			{
-				this.Progress(
-					this, 
-					new ProgressMessageEventArgs(
-						"Run Mixed Workload IR test (Mix 3) ({0}).",
-						DateTime.Now.ToString()));
-			}
-			
-			this.userProcess[0]	= new Thread(new ThreadStart(this.cross_section_tests));
-
-			this.userProcess[0].Name = "User " + 0.ToString();
-			this.userProcess[0].Start();
-			this.userProcess[0].IsBackground = true;
-			
-			this.timeToRun	= -1;	// Exec the only one time in each thread
-			for (int i = 1; i < this.userProcess.Length; i++) 
-			{
-				this.userProcess[i] = new Thread(new ThreadStart(this.ir_select));
-
-				this.userProcess[i].Name = "User " + i.ToString();
-				this.userProcess[i].Start();
-				this.userProcess[i].IsBackground = true;
-			}
-						
-			/* Wait to the end of the threads	*/
-			for (int i = 0; i < this.userProcess.Length; i++) 
-			{
-				this.userProcess[i].Join();
-			}
-						
-			/* Step 5 -- Run queries to check correctness of the sequential
-			 * and random bulk updates.
-			 */
-			if (this.Progress != null)
-			{
-				Progress(
-					this, 
-					new ProgressMessageEventArgs(
-						"Check correctness of the sequential and random bulk updates ({0}).",
-						DateTime.Now.ToString()));
-			}
-			
-			this.DatabaseConnect();
-
-			this.runTest("mu_checkmod_100_seq");
-			this.runTest("mu_checkmod_100_rand");
-
-			this.DatabaseDisconnect();
-			
-			/* Step 6 - Recover updates relation from backup tape (Step 1)
-			 * and log (from Steps 2, 3, 4, and 5).	
-			 */
-
-
-			/* Step 7 - Perform correctness checks, checkmod_100_seq and 
-			 * checkmod_100_rand. Remove temporary tables: sel100seq and 
-			 * sel100rand.
-			 */
-			if (this.Progress != null)
-			{
-				this.Progress(
-					this, 
-					new ProgressMessageEventArgs(
-						"Check correctness of the sequential and random bulk updates ({0}).",
-						DateTime.Now.ToString()));
-			}
-			
-			this.DatabaseConnect();
-
-			this.runTest("mu_checkmod_100_seq");
-			this.runTest("mu_checkmod_100_rand");
-
-			this.runTest("mu_drop_sel100_seq");
-			this.runTest("mu_drop_sel100_rand");
-
-			this.DatabaseDisconnect();
-
-			/* Step 8 - Run OLTP test for 15 minutes.	*/
-			if (this.Progress != null)
-			{
-				this.Progress(
-					this, 
-					new ProgressMessageEventArgs(
-						"Run OLTP test for {0} minutes ({1})",
-						this.timeToRun,
-						DateTime.Now.ToString()));
-			}
-			
-			this.timeToRun = 15;
-			for (int i = 0; i < this.userProcess.Length; i++) 
-			{
-				this.userProcess[i] = new Thread(new ThreadStart(oltp_update));
-
-				this.userProcess[i].Name = "User " + i.ToString();
-				this.userProcess[i].Start();
-				this.userProcess[i].IsBackground = true;
-			}
-
-			/* Wait to the end of the threads	*/
-			for (int i = 0; i < this.userProcess.Length; i++) 
-			{
-				this.userProcess[i].Join();
-			}
-			
-			/* Step 9 -- Measure throughput in IR test for five minutes.	*/
-			if (this.Progress != null)
-			{
-				this.Progress(
-					this, 
-					new ProgressMessageEventArgs(
-						"Run Measure throughput in IR test for {0} minutes ({1}).",
-						this.timeToRun,
-						DateTime.Now.ToString()));
-			}
-
-			sTime			= DateTime.Now;
-			this.iters		= 0;
-			this.timeToRun	= 5;
-			
-			for (int i = 0; i < this.userProcess.Length; i++)
-			{
-				this.userProcess[i] = new Thread(new ThreadStart(this.ir_select));
-
-				this.userProcess[i].Name = "User " + i.ToString();
-				this.userProcess[i].Start();
-				this.userProcess[i].IsBackground = true;
-			}
-			
-			/* Wait to the end of the threads	*/
-			for (int i = 0; i < this.userProcess.Length; i++) 
-			{
-				this.userProcess[i].Join();
-			}
-						
-			fTime = DateTime.Now - sTime;
-			
-			if (this.log != null)
-			{
-				this.log.Simple(
-					"Mixed OLTP (tup/sec)\t{0}\t returned in {1} minutes\n",
-					Math.Round((double)iters/fTime.TotalSeconds, 4), 
-					fTime.ToString());
-			}
-
-			/* Step 10 -- Replace one background OLTP script with the cross 
-			 * section script. This is the Mixed Workload OLTP test (Mix 4). 
-			 * This step is variable length.
-			 */
-			if (this.Progress != null)
-			{
-				this.Progress(
-					this, 
-					new ProgressMessageEventArgs(
-						"Run Mixed Workload OLTP test (Mix 4) ({0}).",
-						DateTime.Now.ToString()));
-			}
-						
-			this.userProcess[0] = new Thread(new ThreadStart(this.cross_section_tests));
-			
-			this.userProcess[0].Name = "User " + 0.ToString();
-			this.userProcess[0].Start();
-			this.userProcess[0].IsBackground = true;
-
-			this.timeToRun = -1;	// Exec the only one time in each thread
-
-			for (int i = 1; i < this.userProcess.Length; i++)
-			{
-				this.userProcess[i] = new Thread(new ThreadStart(this.oltp_update));
-
-				this.userProcess[i].Name = "User " + i.ToString();
-				this.userProcess[i].Start();
-				this.userProcess[i].IsBackground = true;
-			}			
-
-			/* Wait to the end of the threads	*/
-			for (int i = 0; i < this.userProcess.Length; i++) 
-			{
-				this.userProcess[i].Join();
-			}
-									
-			/* Step 11 -- Perform correctness checks, checkmod_100_seq and 
-			 * checkmod_100_rand. Remove temporary tables: sel100seq and 
-			 * sel100rand.
-			 */
-			if (this.Progress != null)
-			{
-				this.Progress(
-					this, 
-					new ProgressMessageEventArgs(
-						"Check correctness of the sequential and random bulk updates ({0}).",
-						DateTime.Now.ToString()));
-			}
-			
-			this.DatabaseConnect();
-
-			this.runTest("mu_checkmod_100_seq");			
-			this.runTest("mu_checkmod_100_rand");
-			
-			this.runTest("mu_drop_sel100_seq");
-			this.runTest("mu_drop_sel100_rand");
-
-			this.DatabaseDisconnect();
-		}
-
-		private void cross_section_tests() 
-		{
-			try
-			{
-				DateTime startTime;
-
-				this.DatabaseConnect();
-
-				startTime = DateTime.Now;
-
-				this.runTest("o_mode_tiny");
-				this.runTest("o_mode_100k");
-				this.runTest("sel_1_ncl");
-				this.runTest("sel_1_ncl");
-				this.runTest("sel_1_ncl");
-				this.runTest("agg_simple_report");
-				this.runTest("mu_sel_100_seq");
-				this.runTest("mu_sel_100_rand");
-				this.runTest("mu_mod_100_seq");
-				this.runTest("mu_mod_100_rand");
-				this.runTest("mu_unmod_100_seq");
-				this.runTest("mu_unmod_100_rand");
-
-				TimeSpan elapsed = startTime - DateTime.Now;
-
-				this.DatabaseDisconnect();
-
-				if (this.log != null)
-				{
-					this.log.Simple("CrossSectionTests \t( {0} )", elapsed.ToString());
-				}
-			}
-			catch (ThreadAbortException)
-			{
-			}
-		}
-
-		private void ir_select()
-		{	
-			try
-			{
-				ITestSuite testSuite = TestSuiteFactory.GetTestSuite(
-					testSuiteName, configuration);
-
-				testSuite.DatabaseConnect();
-							
-				if (timeToRun > 0)
-				{
-					DateTime endTime = DateTime.Now.AddMinutes(timeToRun);
-
-					while (endTime >= DateTime.Now)
-					{					
-						testSuite.mu_ir_select();
-						iters++;
-					}
-				}
-				else
-				{
-					this.mu_ir_select();
-				}
-			
-				testSuite.DatabaseDisconnect();
-			}
-			catch (ThreadAbortException)
-			{
-			}
-		}
-		
-		private void oltp_update()
-		{	
-			try
-			{
-				ITestSuite testSuite = TestSuiteFactory.GetTestSuite(
-					testSuiteName, configuration);
-			
-				testSuite.DatabaseConnect();
-			
-				if (timeToRun > 0)
-				{
-					DateTime endTime = DateTime.Now.AddMinutes(timeToRun);
-
-					while (endTime >= DateTime.Now)
-					{
-						testSuite.mu_oltp_update();
-					}
-				}
-				else
-				{
-					testSuite.mu_oltp_update();
-				}
-			
-				testSuite.DatabaseDisconnect();
-			}
-			catch (ThreadAbortException)
-			{
-			}
-		}
-
-		private TimeSpan runTest(string testName)
-		{
-			Type 		type	= null;
-			MethodInfo	method	= null;
-			DateTime	stime	= DateTime.Now;
-
-			this.testFailed	= false;
-
-			type	= this.GetType();
-			method 	= type.GetMethod(
-				testName, 
-				BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance);
-			
-			// Set IsolationLevel for test execution
-			this.SetIsolationLevel(testName);
-
-			// Reset this.testFailed property value
-			this.testFailed = false;
-
-			stime = DateTime.Now;
-
-			method.Invoke(this, null);
-
-			TimeSpan elapsed = DateTime.Now - stime;
-
-			testName = formatTestName(testName);
-
-			if (this.Result != null)
-			{
-				this.Result(
-					this, 
-					new TestResultEventArgs(
-						testName, this.testResult, elapsed, this.testFailed));
-			}
-
-			StringBuilder logMessage = new StringBuilder();
-
-			if (this.testFailed)
-			{
-				if (log != null) log.Simple("-----> {0}\tfailed <-----", testName);
-			}
-			else
-			{
-				logMessage.AppendFormat(
-					"{0} ( {1} )\treturn value = {2} \t\t"	,
-					testName								,
-					elapsed.ToString(),
-					this.testResult);
-			}
-
-			if (this.log != null)
-			{
-				this.log.Simple(logMessage.ToString());
-			}
-
-			return elapsed;
-		}
-
-		private string formatTestName(string methodName)
-		{
-			int length = 30 - methodName.Length;
-
-			for (int i = 0; i < length; i++)
-			{
-				methodName = " " + methodName;
-			}
-
-			return methodName;
 		}
 
 		#endregion

@@ -205,7 +205,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region SOPA Methods
+		#region SOAP Methods
 
 		public static BenchMarkConfiguration Load(string fileName)
 		{

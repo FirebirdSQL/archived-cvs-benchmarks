@@ -40,35 +40,29 @@ namespace AS3AP.BenchMark
 
 		#region Methods
 
-		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public override void join_2() 
-		{
-			try
-			{			
-				this.testResult = this.ExecuteReader(
-					"select uniques.col_signed, uniques.col_name, "					+
-						"hundred.col_signed, hundred.col_name "						+
-					"from uniques "													+
-						"join hundred ON uniques.col_address = hundred.col_address "+
-					"where uniques.col_address = 'SILICON VALLEY'");
-			}
-			catch (Exception)
-			{
-				base.testFailed = true;
-			}
-		}
+		/* AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems
+		 * 
+		 * Joins (Table 7.3)
+		 */
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_2_cl() 
 		{
 			try
 			{
-				this.testResult = this.ExecuteReader(
+				int count = this.ExecuteReader(
 					"select uniques.col_signed, uniques.col_name, "			+
 						"hundred.col_signed, hundred.col_name "				+
 					"from uniques "											+
 						"join hundred ON uniques.col_key = hundred.col_key "+
-					"where uniques.col_key = 1000");				
+					"where uniques.col_key = 1000");
+		
+				if (count != 1)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
@@ -81,12 +75,44 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.testResult = this.ExecuteReader(
+				int count = this.ExecuteReader(
 					"select uniques.col_signed, uniques.col_name, "				+
 						"hundred.col_signed, hundred.col_name "					+
 					"from uniques "												+
 						"join hundred on uniques.col_code = hundred.col_code "	+
 					"where uniques.col_code = 'BENCHMARKS'");
+
+				if (count != 1)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				base.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public override void join_2() 
+		{
+			try
+			{			
+				int count = this.ExecuteReader(
+					"select uniques.col_signed, uniques.col_name, "				+
+					"hundred.col_signed, hundred.col_name "						+
+					"from uniques "												+
+					"join hundred ON uniques.col_address = hundred.col_address "+
+					"where uniques.col_address = 'SILICON VALLEY'");
+
+				if (count != 1)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
@@ -99,7 +125,7 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.testResult = this.ExecuteReader(
+				int count = this.ExecuteReader(
 					"select uniques.col_signed, uniques.col_date, "			+
 						"hundred.col_signed, hundred.col_date, "			+
 						"tenpct.col_signed, tenpct.col_date "				+
@@ -107,6 +133,13 @@ namespace AS3AP.BenchMark
 						"join hundred on uniques.col_key = hundred.col_key "+
 						"join tenpct on uniques.col_key = tenpct.col_key "	+
 					"where uniques.col_key = 1000");				
+
+				if (count != 1)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
@@ -119,7 +152,7 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.testResult = this.ExecuteReader(
+				int count = this.ExecuteReader(
 					"select uniques.col_signed, uniques.col_date, "				+
 						"hundred.col_signed, hundred.col_date, "				+
 						"tenpct.col_signed, tenpct.col_date "					+
@@ -127,6 +160,13 @@ namespace AS3AP.BenchMark
 						"join hundred on uniques.col_code = hundred.col_code "	+
 						"join tenpct on uniques.col_code = tenpct.col_code "	+
 					"where uniques.col_code = 'BENCHMARKS'");				
+
+				if (count != 1)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
@@ -139,7 +179,7 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.testResult = this.ExecuteReader(
+				int count = this.ExecuteReader(
 					"select uniques.col_date, hundred.col_date, "			+
 						"tenpct.col_date, updates.col_date "				+
 					"from uniques "											+
@@ -147,6 +187,13 @@ namespace AS3AP.BenchMark
 						"join tenpct on uniques.col_key = tenpct.col_key "	+
 						"join updates on uniques.col_key = updates.col_key "+
 					"where uniques.col_key = 1000");
+
+				if (count != 1)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
@@ -159,7 +206,7 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.testResult = this.ExecuteReader(
+				int count = this.ExecuteReader(
 					"select uniques.col_date, hundred.col_date, "				+
 						"tenpct.col_date, updates.col_date "					+
 					"from uniques "												+
@@ -167,6 +214,37 @@ namespace AS3AP.BenchMark
 						"join tenpct on uniques.col_code = tenpct.col_code "	+
 						"join updates on uniques.col_code = updates.col_code "	+
 						"where uniques.col_code = 'BENCHMARKS'");
+
+				if (count != 1)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
+			}
+			catch (Exception)
+			{
+				base.testFailed = true;
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public override void join_1_10() 
+		{
+			try
+			{
+				int count = this.ExecuteReader(
+					"select uniques.col_key, uniques.col_name, " +
+					"tenpct.col_name, tenpct.col_signed " +
+					"from uniques, tenpct " +
+					"where uniques.col_key = tenpct.col_signed");
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{

@@ -1,6 +1,18 @@
 AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems.
 =============================================================================================
 
+2004-04-18 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+
+	* source/Sql87TestSuite.cs:
+	* source/Sql92TestSuite.cs:
+	* source/BaseTestSuite.cs:
+
+		- Fixed some tests according to the AS3AP documentation.
+
+		- Added some little comments.
+
+		- Method reorganiozation
+
 
 2004-03-04 Carlos Guzman Alvarez  <carlosga@telefonica.net>
 
