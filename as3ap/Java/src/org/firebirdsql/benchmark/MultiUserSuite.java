@@ -29,8 +29,6 @@ import junit.framework.*;
 public class MultiUserSuite extends BenchmarkSuite {
     
     public static final int KEY_RANGE = 10 * 1000;
-    public static final int BG_TEST_DURATION = 1 * 10 * 1000;
-    public static final int IR_TEST_DURATION = 1 * 10 * 1000;
     
     private BenchmarkListener listener;
     
@@ -92,14 +90,15 @@ public class MultiUserSuite extends BenchmarkSuite {
             
             bgIrSuite.run(testResult);
             
-            Thread.sleep(BG_TEST_DURATION);
+            Thread.sleep(getDatabaseManager().getConfig().getBackgroundTestDuration());
             
             System.out.println("step 2 completed");
             
             // Step 3          
             
             MainstreamMultiUserTest perfIrTest = 
-                new MainstreamMultiUserTest("testIrSelect", getKeyRange(), IR_TEST_DURATION);
+                new MainstreamMultiUserTest("testIrSelect", getKeyRange(), 
+                    getDatabaseManager().getConfig().getPerformanceDuration());
             
             perfIrTest.run(testResult);
             
@@ -152,7 +151,7 @@ public class MultiUserSuite extends BenchmarkSuite {
             
             bgOltpSuite.run(testResult);
             
-            Thread.sleep(BG_TEST_DURATION);
+            Thread.sleep(getDatabaseManager().getConfig().getBackgroundTestDuration());
             
             System.out.println("step 8 completed");
             

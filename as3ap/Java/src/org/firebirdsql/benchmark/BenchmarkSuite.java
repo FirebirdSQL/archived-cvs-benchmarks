@@ -29,13 +29,8 @@ import java.sql.SQLException;
  */
 public abstract class BenchmarkSuite extends TestSuite {
     
-    public static final boolean CREATE_DATABASE = false;
+    public static final boolean CREATE_DATABASE = true;
 
-    /** @todo make these params configurable */
-    public static final String DATA_PATH = "../../as3ap/data-4mb";
-    public static final String DATABASE_PATH = "localhost/3050:d:/database/as3ap.gdb";
-    public static final String USER_NAME = "SYSDBA";
-    public static final String PASSWORD = "masterkey";
         
     private static BenchmarkDatabaseManager databaseManager;
     private static BenchmarkFixture fixture;
@@ -49,8 +44,7 @@ public abstract class BenchmarkSuite extends TestSuite {
     }
     
     protected BenchmarkDatabaseManager createDatabaseManager() throws SQLException {
-        return new BenchmarkDatabaseManager(
-            DATABASE_PATH, USER_NAME, PASSWORD, isCreateDatabase());
+        return new BenchmarkDatabaseManager(isCreateDatabase());
     }
     
     /**
@@ -68,7 +62,8 @@ public abstract class BenchmarkSuite extends TestSuite {
                 databaseManager = createDatabaseManager();
                     
                 fixture = 
-                    new BenchmarkFixture(databaseManager, new File(DATA_PATH));
+                    new BenchmarkFixture(databaseManager, 
+                        new File(databaseManager.getConfig().getDataPath()));
                     
                 if (isCreateDatabase())
                     fixture.createDatabase();
