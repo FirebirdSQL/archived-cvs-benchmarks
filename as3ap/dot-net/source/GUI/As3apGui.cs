@@ -906,6 +906,9 @@ namespace AS3AP.BenchMark
 						configuration = BenchMarkConfiguration.Load(info.FullName);
 
 						updateControls();
+
+						// Set the second TAB as the active
+						this.tabBenchmark.SelectedTab = this.tabRun;
 					}
 					catch (Exception ex)
 					{
