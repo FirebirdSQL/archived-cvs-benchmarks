@@ -40,21 +40,21 @@ namespace AS3AP.BenchMark.Backends
 			get;
 		}
 
-		int  CountTuples(string table);
-		void CreateIndexBtree(string iName, string tName, string fields);
-		void CreateIndexCluster(string iName, string tName, string fields);
-		void CreateIndexForeign(string tName, string keyName, string keyCol,
-								string fTable, string fFields);
-		void CreateIndexHash(string iName, string tName, string fields);
-		void CreateTable(string stg);
-		void CursorOpen(string stg);
+		void CreateIndexBtree(string indexName, string tableName, string fields);
+		void CreateIndexCluster(string indexName, string tableName, string fields);
+		void CreateForeignKey(string foreignTable, string constraintName, 
+								string foreignKeyColumns,
+								string referencesTableName, 
+								string referencesFields);
+		void CreateIndexHash(string indexName, string tableName, string fields);
+		void CreateTable(string tableName, string tableStructure, string primaryKey);
+		void CursorOpen(string statement);
 		bool CursorFetch();
 		void CursorClose();		
 		void DatabaseConnect();
-		void DatabaseCreate(string dName);
+		void DatabaseCreate(string databaseName);
 		void DatabaseDisconnect();
-		void ddl(string stg);
-		void dml(string stg);
+		void ExecuteStatement(string statement);
 		int CreateData(long dataSize);
 		void TransactionBegin();
 		void TransactionCommit();
