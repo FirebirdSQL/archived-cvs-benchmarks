@@ -41,43 +41,6 @@ namespace AS3AP.BenchMark
 		#region METHODS
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public override void agg_simple_report()
-		{
-			try
-			{
-				beginTransaction();
-				cursorOpen(
-					"select avg(updates.col_decim) "					+
-					"from updates "										+
-					"where updates.col_key in "							+
-						"(select updates.col_key "						+
-							"from updates, hundred "					+
-							"where hundred.col_key = updates.col_key "	+
-							"and updates.col_decim > 980000000)");
-				
-				cursorFetch();
-
-				base.testResult = cursor.GetValue(0);
-			}
-			catch (Exception)
-			{
-				base.testFailed = true;
-			}
-			finally
-			{
-				cursorClose();
-				if (base.testFailed)
-				{
-					rollbackTransaction();
-				}
-				else
-				{
-					commitTransaction();
-				}
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_2() 
 		{
 			int	count = 0;
@@ -166,8 +129,8 @@ namespace AS3AP.BenchMark
 			{
 				beginTransaction();
 				cursorOpen( 
-					"select uniques.col_signed, uniques.col_name, "		+
-					"hundred.col_signed, hundred.col_name "		+
+					"select uniques.col_signed, uniques.col_name, "	+
+					"hundred.col_signed, hundred.col_name "			+
 					"from uniques, hundred "						+
 					"where uniques.col_code = hundred.col_code "	+
 					"and uniques.col_code = 'BENCHMARKS'"			);
@@ -249,8 +212,8 @@ namespace AS3AP.BenchMark
 				beginTransaction();
 				cursorOpen( 
 					"select uniques.col_signed, uniques.col_date, "		+
-					"hundred.col_signed, hundred.col_date, "	+
-					"tenpct.col_signed, tenpct.col_date "		+
+					"hundred.col_signed, hundred.col_date, "			+
+					"tenpct.col_signed, tenpct.col_date "				+
 					"from uniques, hundred, tenpct "					+
 					"where uniques.col_code = hundred.col_code "		+
 					"and uniques.col_code = tenpct.col_code "			+

@@ -65,6 +65,8 @@ namespace AS3AP.BenchMark
 		private string	floatTypeName		= "float";
 		private string	doubleTypeName		= "double precision";
 
+		private bool	forcedWrites		= true;
+
 		#endregion
 
 		#region PROPERTIES
@@ -211,6 +213,12 @@ namespace AS3AP.BenchMark
 		{
 			get { return doubleTypeName; }
 			set { doubleTypeName = value; }
+		}
+
+		public bool ForcedWrites
+		{
+			get { return forcedWrites; }
+			set { forcedWrites = value; }
 		}
 
 		#endregion

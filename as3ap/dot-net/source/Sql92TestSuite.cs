@@ -41,40 +41,6 @@ namespace AS3AP.BenchMark
 		#region METHODS
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
-		public override void agg_simple_report()
-		{
-			try
-			{
-				beginTransaction();
-				cursorOpen(
-					"select avg(updates.col_decim)"							+
-					"from updates"											+
-						"join hundred ON hundred.col_key = updates.col_key"	+
-					"where updates.col_decim > 980000000");
-				
-				cursorFetch();
-
-				base.testResult = cursor.GetValue(0);
-			}
-			catch (Exception)
-			{
-				base.testFailed = true;
-			}
-			finally
-			{
-				cursorClose();
-				if (base.testFailed)
-				{
-					rollbackTransaction();
-				}
-				else
-				{
-					commitTransaction();
-				}
-			}
-		}
-
-		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_2() 
 		{
 			int	count = 0;

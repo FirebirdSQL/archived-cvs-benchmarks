@@ -211,7 +211,7 @@ namespace AS3AP.BenchMark
 
 		#region ABSTRACT_METHODS
 
-		public abstract void agg_simple_report();
+		// public abstract void agg_simple_report();
 
 		public abstract void join_2();
 		
@@ -381,6 +381,42 @@ namespace AS3AP.BenchMark
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void agg_simple_report()
+		{
+			try
+			{
+				beginTransaction();
+				cursorOpen(
+					"select * "						+
+					"from updates "					+
+					"where updates.col_key in "		+
+					"(select updates.col_key "		+
+					"from updates, hundred "		+
+					"where hundred.col_key = updates.col_key)");
+				
+				cursorFetch();
+
+				testResult = cursor.GetValue(0);
+			}
+			catch (Exception)
+			{
+				testFailed = true;
+			}
+			finally
+			{
+				cursorClose();
+				if (testFailed)
+				{
+					rollbackTransaction();
+				}
+				else
+				{
+					commitTransaction();
+				}
+			}
+		}
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void agg_info_retrieval() 
 		{
 			try
@@ -448,6 +484,8 @@ namespace AS3AP.BenchMark
 				}
 			}
 		}
+
+
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void agg_subtotal_report() 
@@ -2812,8 +2850,6 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception ex)
 			{
-				if (log != null) log.Error("executeStatement failed {0}", ex.Message);
-
 				rollbackTransaction();
 				
 				throw ex;
@@ -2995,7 +3031,6 @@ namespace AS3AP.BenchMark
 			return new FbCommand(commandText, connection, transaction);
 		}
 
-		#endregion
-		
+		#endregion	
 	}
 }
