@@ -10,6 +10,8 @@ AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 		- Added changes for make use of the Common.Data.Helper assembly.
 
 	* source/GUI/AS3APGui.cs:
+			
+		- Added some improvements to exception handling.
 
 		- Added changes for make use of the Common.Data.Helper assembly.
 
