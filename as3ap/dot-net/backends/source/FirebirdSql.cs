@@ -103,7 +103,6 @@ namespace AS3AP.BenchMark.Backends
 
 		#endregion
 
-
 		#region METHODS
 
 		public void CloseLogger()
@@ -573,8 +572,8 @@ namespace AS3AP.BenchMark.Backends
 			DataSet			dataset = null;
 
 			/* These characters can be used without hassle in comma-separated-value files */
-			// string csv_safe_chars = "#%&()[]{};:/~@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-=";
-			string csv_safe_chars = "#%&()[]{}:_/~@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-=";
+			string csv_safe_chars = "#%&()[]{};:/~@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-=";
+			// string csv_safe_chars = "#%&()[]{}:_/~@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-=";
 		    
 			int Nlen;				
 
@@ -678,9 +677,9 @@ namespace AS3AP.BenchMark.Backends
 					 * the field with additional randomly selected characters. (By writing
 					 * the digits backwards, we should help to keep the data disorderly :)
 					 */
-					Drec = (int)rec;
-					col_code = String.Empty;
-					col_name = String.Empty;
+					Drec		= (int)rec;
+					col_code	= String.Empty;
+					col_name	= String.Empty;
 					col_address = String.Empty;
 					while (Drec > 0) 
 					{
@@ -896,16 +895,56 @@ namespace AS3AP.BenchMark.Backends
 
 				hundred_unique_name[i] = "THE+ASAP+BENCHMARKS+";
 		    
-				/* Now generate our testing tables */
-				hundred_key	= 0;
-					    
+				
+				/* Now generate our testing tables */									    
+		
+				/* Insert data in Uniques table	*/
+				TransactionBegin();
+				
+				FbCommand cmdUniques = new FbCommand();
+		
+				cmdUniques.Connection	= connection;
+				cmdUniques.Transaction	= transaction;
+				cmdUniques.CommandText	= 
+					"insert into UNIQUES "										+
+						"select sparse_key, sparse_key, sparse_signed,"			+
+								"zipf10_float, double_normal, double_normal,"	+
+								"col_date, code, name, address "				+
+						"from random_data";
+
+				cmdUniques.ExecuteNonQuery();				
+				cmdUniques.Dispose();
+
+				TransactionCommit();
+
+				/* Insert data in Updates table	*/
 				TransactionBegin();
 
+				FbCommand cmdUpdates = new FbCommand();
+
+				cmdUpdates.Connection	= connection;
+				cmdUpdates.Transaction	= transaction;
+				cmdUpdates.CommandText	= 
+					"insert into UPDATES "										+
+						"select dense_key, dense_key, sparse_signed,"			+
+								"zipf10_float, double_normal, double_normal,"	+
+								"col_date, code, name, address "				+
+						"from random_data";
+
+				cmdUpdates.ExecuteNonQuery();
+
+				cmdUpdates.Dispose();
+
+				TransactionCommit();
+
+				/* Insert data in Hundred table	*/
+				TransactionBegin();
+				
 				command = new FbCommand(
 					"SELECT randomizer, sparse_key, dense_key, sparse_signed,"	+
 					" uniform100_dense, zipf10_float, zipf100_float,"			+
 					" uniform100_float, double_normal,"							+
-					" col_date, code, name, address"										+
+					" col_date, code, name, address"							+
 					" FROM random_data"											+
 					" ORDER BY randomizer", connection, transaction);
 			
@@ -913,58 +952,9 @@ namespace AS3AP.BenchMark.Backends
 			
 				dataset = new DataSet("RANDOM_DATA");
 				adapter.Fill(dataset, "RANDOM_DATA");
-
-				FbCommand cmdUpdates = new FbCommand();
-				FbCommand cmdUniques = new FbCommand();
+				
 				FbCommand cmdHundred = new FbCommand();
 
-				/* Configure Uniques statement	*/
-				cmdUniques.Connection	= connection;
-				cmdUniques.Transaction	= transaction;
-				cmdUniques.CommandText	= 
-					"INSERT INTO uniques ("								+
-					" col_key, col_int, col_signed,"					+
-					" col_float, col_double, col_decim,"				+
-					" col_date, col_code, col_name, col_address)"		+
-					" VALUES (?,?,?,?,?,?,?,?,?,?)";
-
-				cmdUniques.Parameters.Add("@col_key", FbType.Integer);
-				cmdUniques.Parameters.Add("@col_int", FbType.Integer);
-				cmdUniques.Parameters.Add("@col_signed", FbType.Integer);
-				cmdUniques.Parameters.Add("@col_float", FbType.Float);
-				cmdUniques.Parameters.Add("@col_double", FbType.Double);
-				cmdUniques.Parameters.Add("@col_decim", FbType.Decimal);
-				cmdUniques.Parameters.Add("@col_date", FbType.VarChar);
-				cmdUniques.Parameters.Add("@col_code", FbType.VarChar);
-				cmdUniques.Parameters.Add("@col_name", FbType.VarChar);
-				cmdUniques.Parameters.Add("@col_address", FbType.VarChar);
-
-				cmdUniques.Prepare();
-
-				/* Configure Updates statement	*/
-				cmdUpdates.Connection	= connection;
-				cmdUpdates.Transaction	= transaction;
-				cmdUpdates.CommandText	= 
-					"INSERT INTO updates ("								+
-					" col_key, col_int, col_signed,"				+
-					" col_float, col_double, col_decim,"			+
-					" col_date, col_code, col_name, col_address)"	+
-					" VALUES (?,?,?,?,?,?,?,?,?,?)";
-
-				cmdUpdates.Parameters.Add("@col_key", FbType.Integer);
-				cmdUpdates.Parameters.Add("@col_int", FbType.Integer);
-				cmdUpdates.Parameters.Add("@col_signed", FbType.Integer);
-				cmdUpdates.Parameters.Add("@col_float", FbType.Float);
-				cmdUpdates.Parameters.Add("@col_double", FbType.Double);
-				cmdUpdates.Parameters.Add("@col_decim", FbType.Decimal);
-				cmdUpdates.Parameters.Add("@col_date", FbType.VarChar);
-				cmdUpdates.Parameters.Add("@col_code", FbType.VarChar);
-				cmdUpdates.Parameters.Add("@col_name", FbType.VarChar);
-				cmdUpdates.Parameters.Add("@col_address", FbType.VarChar);
-
-				cmdUpdates.Prepare();
-
-				/* Configure Uniques statement	*/
 				cmdHundred.Connection	= connection;
 				cmdHundred.Transaction	= transaction;
 				cmdHundred.CommandText	= 
@@ -987,36 +977,10 @@ namespace AS3AP.BenchMark.Backends
 
 				cmdHundred.Prepare();
 
+				hundred_key	= 0;
+
 				foreach (DataRow row in dataset.Tables["RANDOM_DATA"].Rows)
-				{
-					/* Insert into Uniques	*/
-					cmdUniques.Parameters[0].Value = Convert.ToInt64(row["sparse_key"]);
-					cmdUniques.Parameters[1].Value = Convert.ToInt64(row["sparse_key"]);
-					cmdUniques.Parameters[2].Value = Convert.ToInt64(row["sparse_signed"]);
-					cmdUniques.Parameters[3].Value = Convert.ToSingle(row["zipf10_float"]);
-					cmdUniques.Parameters[4].Value = Convert.ToDouble(row["double_normal"]);
-					cmdUniques.Parameters[5].Value = Convert.ToDouble(row["double_normal"]);
-					cmdUniques.Parameters[6].Value = Convert.ToString(row["col_date"]);
-					cmdUniques.Parameters[7].Value = Convert.ToString(row["code"]);
-					cmdUniques.Parameters[8].Value = Convert.ToString(row["name"]);
-					cmdUniques.Parameters[9].Value = Convert.ToString(row["address"]);
-
-					cmdUniques.ExecuteNonQuery();
-
-					/* Insert into Updates	*/
-					cmdUpdates.Parameters[0].Value = Convert.ToSingle(row["dense_key"]);
-					cmdUpdates.Parameters[1].Value = Convert.ToSingle(row["dense_key"]);
-					cmdUpdates.Parameters[2].Value = Convert.ToSingle(row["sparse_signed"]);
-					cmdUpdates.Parameters[3].Value = Convert.ToSingle(row["zipf10_float"]);
-					cmdUpdates.Parameters[4].Value = Convert.ToDouble(row["double_normal"]);
-					cmdUpdates.Parameters[5].Value = Convert.ToDouble(row["double_normal"]);
-					cmdUpdates.Parameters[6].Value = Convert.ToString(row["col_date"]);
-					cmdUpdates.Parameters[7].Value = Convert.ToString(row["code"]);
-					cmdUpdates.Parameters[8].Value = Convert.ToString(row["name"]);
-					cmdUpdates.Parameters[9].Value = Convert.ToString(row["address"]);
-
-					cmdUpdates.ExecuteNonQuery();
-			
+				{			
 					if (++hundred_key >= 100)
 					{
 						hundred_key = 0;
@@ -1036,8 +1000,7 @@ namespace AS3AP.BenchMark.Backends
 
 					cmdHundred.ExecuteNonQuery();
 				}
-				cmdUpdates.Dispose();
-				cmdUniques.Dispose();
+				
 				cmdHundred.Dispose();
 
 				command.Dispose();
@@ -1045,70 +1008,28 @@ namespace AS3AP.BenchMark.Backends
 				dataset.Dispose();
 				TransactionCommit();
 
-				/* now create tenpct here */
+				/* Insert data in TenPct table	*/
 				TransactionBegin();
-				command = new FbCommand(
-					"SELECT random_data.sparse_key, random_tenpct.col_signed,"					+
-					"random_tenpct.col_float, random_tenpct.col_double, random_data.col_date,"	+
-					"random_data.code, random_data.name, random_tenpct.col_address "			+
-					"FROM  random_data, random_tenpct "											+
-					"WHERE random_data.r10pct_key = random_tenpct.col_key", 
-					connection, transaction);
-			
-				adapter = new FbDataAdapter(command);
-			
-				dataset = new DataSet("RANDOM_TENPCT");
-				adapter.Fill(dataset, "RANDOM_TENPCT");
-
+				
 				FbCommand cmdTenPct = new FbCommand();
 
 				cmdTenPct.Connection	= connection;
 				cmdTenPct.Transaction	= transaction;
 				cmdTenPct.CommandText	=
-					"INSERT INTO tenpct ("								+
-					" col_key, col_int, col_signed,"					+
-					" col_float, col_double, col_decim,"				+
-					" col_date, col_code, col_name, col_address)"		+
-					" VALUES (?,?,?,?,?,?,?,?,?,?)";
+					"INSERT INTO tenpct "																				+
+						"SELECT random_data.sparse_key, random_data.sparse_key, random_tenpct.col_signed,"				+
+								"random_tenpct.col_float, random_tenpct.col_double, random_tenpct.col_double,"			+
+								"random_data.col_date, random_data.code, random_data.name, random_tenpct.col_address "	+
+						"FROM  random_data, random_tenpct "																+
+						"WHERE random_data.r10pct_key = random_tenpct.col_key";
 
-				cmdTenPct.Parameters.Add("@col_key", FbType.Integer);
-				cmdTenPct.Parameters.Add("@col_int", FbType.Integer);
-				cmdTenPct.Parameters.Add("@col_signed", FbType.Integer);
-				cmdTenPct.Parameters.Add("@col_float", FbType.Float);
-				cmdTenPct.Parameters.Add("@col_double", FbType.Double);
-				cmdTenPct.Parameters.Add("@col_decim", FbType.Decimal);
-				cmdTenPct.Parameters.Add("@col_date", FbType.VarChar);
-				cmdTenPct.Parameters.Add("@col_code", FbType.VarChar);
-				cmdTenPct.Parameters.Add("@col_name", FbType.VarChar);
-				cmdTenPct.Parameters.Add("@col_address", FbType.VarChar);
-
-				cmdTenPct.Prepare();
-
-				foreach (DataRow row in dataset.Tables["RANDOM_TENPCT"].Rows)
-				{
-					/* Insert into TenPct	*/
-					cmdTenPct.Parameters[0].Value = Convert.ToInt64(row["sparse_key"]);
-					cmdTenPct.Parameters[1].Value = Convert.ToInt64(row["sparse_key"]);
-					cmdTenPct.Parameters[2].Value = Convert.ToInt64(row["col_signed"]);
-					cmdTenPct.Parameters[3].Value = Convert.ToSingle(row["col_float"]);
-					cmdTenPct.Parameters[4].Value = Convert.ToDouble(row["col_double"]);
-					cmdTenPct.Parameters[5].Value = Convert.ToDouble(row["col_double"]);
-					cmdTenPct.Parameters[6].Value = Convert.ToString(row["col_date"]);
-					cmdTenPct.Parameters[7].Value = Convert.ToString(row["code"]);;
-					cmdTenPct.Parameters[8].Value = Convert.ToString(row["name"]);
-					cmdTenPct.Parameters[9].Value = Convert.ToString(row["col_address"]);
-
-					cmdTenPct.ExecuteNonQuery();
-				}
+				cmdTenPct.ExecuteNonQuery();
 
 				cmdTenPct.Dispose();
 
-				command.Dispose();
-				adapter.Dispose();
-				dataset.Dispose();
 				TransactionCommit();
 
-				/* now create tiny here */
+				/* Insert data in Tiny table	*/
 
 				TransactionBegin();			
 				ExecuteStatement("INSERT INTO tiny values(0)" );
