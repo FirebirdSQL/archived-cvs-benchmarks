@@ -22,18 +22,14 @@ package org.firebirdsql.benchmark;
 import junit.framework.*;
 import java.sql.Connection;
 import java.io.File;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * This is a base class for all benchmark tests.
  */
 public class BenchmarkTest extends BenchmarkDDL {
 
-    public static final String HUNDRED_FILE = "asap.hundred";
-    public static final String TEN_PCS_FILE = "asap.tenpct";
-    public static final String TINY_FILE = "asap.tiny";
-    public static final String UNIQUES_FILE = "asap.uniques";
-    public static final String UPDATES_FILE = "asap.updates";
-    
     public BenchmarkTest(String name) {
         super(name);
     }
@@ -65,23 +61,27 @@ public class BenchmarkTest extends BenchmarkDDL {
         return connection;
     }
 
-    public void testLoadData() throws Exception {
+    /**
+     * This class can fetch complete result set to the client. 
+     */
+    protected static class Fetcher {
+
+        private int colNum;
+
+        protected Fetcher(String[] columns) {
+            this.colNum = columns.length;
+        }
         
-        File dataPath = fixture.getDataPath();
-        
-        fixture.loadFile(new File(dataPath, UPDATES_FILE), 
-            BenchmarkInsertSQL.INSERT_UPDATES);
-            
-        fixture.loadFile(new File(dataPath, HUNDRED_FILE), 
-            BenchmarkInsertSQL.INSERT_HUNDRED);
-            
-        fixture.loadFile(new File(dataPath, TEN_PCS_FILE), 
-            BenchmarkInsertSQL.INSERT_TEN_PCT);
-            
-        fixture.loadFile(new File(dataPath, UNIQUES_FILE), 
-            BenchmarkInsertSQL.INSERT_UNIQUES);
-            
-        fixture.loadFile(new File(dataPath, TINY_FILE), 
-            BenchmarkInsertSQL.INSERT_TINY);
+        protected Fetcher(int colNum) {
+            this.colNum = colNum;
+        }
+
+        protected void fetchResultSet(ResultSet rs) throws SQLException {
+            while(rs.next()) {
+                for (int i = 0; i < colNum; i++) { 
+                    Object obj = rs.getObject(i + 1);
+                }
+            }
+        }
     }
 }
