@@ -1,6 +1,5 @@
 //
-// AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark
-//			for Relational Database Systems.
+// C# Logger 
 //
 // Author: Carlos Guzmán Álvarez <carlosga@telefonica.net>
 //
@@ -109,8 +108,8 @@ namespace AS3AP.LogData
 		/// </summary>
 		public bool DebugEnabled
 		{
-			get{return debugEnabled;}
-			set{debugEnabled=value;}
+			get { return debugEnabled; }
+			set { debugEnabled = value; }
 		}
 
 		/// <summary>
@@ -118,8 +117,8 @@ namespace AS3AP.LogData
 		/// </summary>
 		public bool WarnEnabled
 		{
-			get{return warnEnabled;}
-			set{warnEnabled=value;}
+			get { return warnEnabled; }
+			set { warnEnabled = value; }
 		}
 
 		/// <summary>
@@ -127,8 +126,8 @@ namespace AS3AP.LogData
 		/// </summary>
 		public bool ErrorEnabled
 		{
-			get{return errorEnabled;}
-			set{errorEnabled=value;}
+			get { return errorEnabled; }
+			set { errorEnabled = value; }
 		}
 
 		/// <summary>
@@ -136,8 +135,8 @@ namespace AS3AP.LogData
 		/// </summary>
 		public bool InfoEnabled
 		{
-			get{return infoEnabled;}
-			set{infoEnabled=value;}
+			get { return infoEnabled; }
+			set { infoEnabled=value; }
 		}
 
 		/// <summary>
@@ -145,8 +144,8 @@ namespace AS3AP.LogData
 		/// </summary>
 		public bool FatalEnabled
 		{
-			get{return fatalEnabled;}
-			set{fatalEnabled=value;}
+			get { return fatalEnabled; }
+			set { fatalEnabled = value; }
 		}
 		
 		/// <summary>
@@ -154,8 +153,8 @@ namespace AS3AP.LogData
 		/// </summary>
 		public Type ClassType
 		{
-			get{return classType;}
-			set{classType=value;}
+			get { return classType; }
+			set { classType = value; }
 		}
 
 		#endregion
@@ -672,7 +671,7 @@ namespace AS3AP.LogData
 		/// <param name="args">Parameter list</param>
 		public virtual void Simple(string strFormat, params object[] args)
 		{
-			StringBuilder msgInfo = new StringBuilder();
+			StringBuilder msgSimple = new StringBuilder();
 
 			try
 			{
@@ -682,9 +681,13 @@ namespace AS3AP.LogData
 					{
 						if ( this.GetParamCount(strFormat) != 0 )
 						{
-							msgInfo.AppendFormat(strFormat, args);					
+							msgSimple.AppendFormat(strFormat, args);					
 						}
-						debugListener.WriteLine(msgInfo.ToString());
+						else
+						{
+							msgSimple.Append(strFormat);
+						}
+						debugListener.WriteLine(msgSimple);
 						debugListener.Flush();
 					}
 				}
