@@ -90,7 +90,9 @@ public abstract class BenchmarkDatabaseManager {
      * @throws SQLException if something happened during connection tear down.
      */
     protected void tearDown(Connection connection) throws SQLException {
-        connection.commit();
+        // commit transaction if we are running in non-autocommit mode
+        if (!connection.getAutoCommit())
+            connection.commit();
     }
     
     /**
