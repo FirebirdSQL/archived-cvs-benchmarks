@@ -4,6 +4,23 @@ AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 
 2004-01-13 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
+	* source/GUI/BaseTestSuite.cs:
+	* source/AS3AP.cs:
+	* source/ITestSuite.cs:
+
+		- Added changes for allow database dropping
+
+		- Now the database will be recreated (drop/create) before run
+		the single or multiuser tests.
+
+		- The test suite needs to be executed without use Connection Pooling.
+
+	* source/AS3AP.cs:
+	* source/Sql87TestSuite.cs:
+	* source/Sql92TestSuite.cs:
+
+		- Unified use of "this."
+
 	* Updated source file Headers.
 
 	* source/GUI/BaseTestSuite.cs:

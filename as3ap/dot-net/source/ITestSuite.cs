@@ -153,17 +153,19 @@ namespace AS3AP.BenchMark
 
 		#region Methods
 
-		void set_isolation_level(string methodName);
-
-		void setup_database();
+		void SetIsolationLevel(string methodName);
 				
-		void create_database();
+		void CreateDatabase();
 
-		void single_user_tests();
+		void DatabaseConnect();
+				
+		void DatabaseDisconnect();
 
-		void multi_user_tests(int nInstances);
+		void SingleUserTests();
+
+		void MultiUserTests(int nInstances);
 		
-		int count_rows(string table);
+		int CountRows(string table);
 
 		void agg_create_view();
 
@@ -315,12 +317,7 @@ namespace AS3AP.BenchMark
 
 		void upd_mod_t_mid();
 
-		void upd_remove_duplicate();
-
-		void DatabaseConnect();
-				
-		void DatabaseDisconnect();
-		
+		void upd_remove_duplicate();		
 
 		#endregion
 	}

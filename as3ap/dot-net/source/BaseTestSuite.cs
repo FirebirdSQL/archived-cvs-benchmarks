@@ -249,36 +249,7 @@ namespace AS3AP.BenchMark
 
 		#region Misc Methods
 
-		public void setup_database()
-		{
-			try
-			{
-				this.DatabaseConnect();
-
-				this.beginTransaction();
-
-				// Remove reportview
-				this.executeStatement("drop view reportview");
-
-				// Remove saveupdates table
-				this.executeStatement("drop table saveupdates");
-
-				this.commitTransaction();
-
-				// Create indexes for updates table				
-				this.create_idx_updates_double_bt();
-				this.create_idx_updates_decim_bt();
-			}
-			catch (Exception)
-			{
-			}
-			finally
-			{
-				this.DatabaseDisconnect();
-			}
-		}
-
-		public int count_rows(string table)
+		public int CountRows(string table)
 		{
 			StringBuilder	commandText = new StringBuilder();
 			int				count = 0;
@@ -314,7 +285,7 @@ namespace AS3AP.BenchMark
 			return count;
 		}
 
-		public void set_isolation_level(string methodName)
+		public void SetIsolationLevel(string methodName)
 		{
 			IsolationLevel			isolationLevel = IsolationLevel.ReadCommitted;
 			IsolationLevelAttribute att;
@@ -2173,8 +2144,9 @@ namespace AS3AP.BenchMark
 
 		#region AS3AP Methods
 
-		public void create_database() 
+		public void CreateDatabase() 
 		{
+			this.dropDatabase();
 			this.databaseCreate();
 
 			this.DatabaseConnect();
@@ -2205,7 +2177,7 @@ namespace AS3AP.BenchMark
 			this.DatabaseDisconnect();
 		}
 
-		public void single_user_tests() 
+		public void SingleUserTests() 
 		{
 			long		clocks;
 			TimeSpan	elapsed;
@@ -2269,7 +2241,7 @@ namespace AS3AP.BenchMark
 			this.DatabaseDisconnect();
 		}
 
-		public void multi_user_tests(int nInstances) 
+		public void MultiUserTests(int nInstances) 
 		{	
 			TimeSpan	fTime;
 			long		sTime;			
@@ -2660,7 +2632,7 @@ namespace AS3AP.BenchMark
 				BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance);
 			
 			// Set IsolationLevel for test execution
-			this.set_isolation_level(testName);
+			this.SetIsolationLevel(testName);
 
 			// Reset this.testFailed property value
 			this.testFailed = false;
@@ -2721,6 +2693,112 @@ namespace AS3AP.BenchMark
 		#endregion
 		
 		#region Database Creation Methods
+
+		private void databaseCreate()
+		{
+			this.dataHelper.CreateDatabase(this.parseConnectionString());
+		}
+
+		private void dropDatabase()
+		{
+			try
+			{
+				this.dataHelper.DropDatabase(this.parseConnectionString());
+			}
+			catch (Exception)
+			{
+			}
+		}
+
+		private Hashtable parseConnectionString()
+		{
+			string	dataSource	= "localhost";
+			int		port		= 3050;
+			string	database	= @"c:\asp3ap.fdb";
+			string	user		= "SYSDBA";
+			string	password	= "masterkey";
+			byte	dialect		= 3;
+			bool	forcedWrite = configuration.ForcedWrites;
+			short	pageSize	= 4096;
+			string	charset		= "NONE";
+			bool	ssl			= false;
+			int		serverType	= 0;
+			string	isecurity	= "SSPI";
+
+			Regex			search	 = new Regex(@"([\w\s\d]*)\s*=\s*([^;]*)");
+			MatchCollection	elements = search.Matches(this.configuration.ConnectionString);
+
+			foreach (Match element in elements)
+			{
+				switch (element.Groups[1].Value.Trim().ToLower())
+				{
+					case "datasource":
+					case "data source":
+					case "server":
+					case "host":
+						dataSource = element.Groups[2].Value.Trim();
+						break;
+
+					case "database":
+						database = element.Groups[2].Value.Trim();
+						break;
+
+					case "user name":
+					case "user":
+					case "user id":
+					case "userid":
+						user = element.Groups[2].Value.Trim();
+						break;
+
+					case "user password":
+					case "password":
+						password = element.Groups[2].Value.Trim();
+						break;
+
+					case "port":
+						port = Int32.Parse(element.Groups[2].Value.Trim());
+						break;
+
+					case "dialect":
+						dialect = byte.Parse(element.Groups[2].Value.Trim());
+						break;
+
+					case "ssl":
+						ssl = Boolean.Parse(element.Groups[2].Value.Trim());
+						break;
+
+					case "charset":
+						charset = element.Groups[2].Value.Trim();
+						break;
+
+					case "servertype":
+					case "server type":
+						serverType = Int32.Parse(element.Groups[2].Value.Trim());
+						break;
+
+					case "Integrated Security":
+						isecurity = element.Groups[2].Value.Trim();
+						break;
+				}
+			}
+
+			Hashtable values = new Hashtable();
+
+			values.Add("DataSource"			, dataSource);
+			values.Add("Port"				, port);
+			values.Add("Database"			, database);
+			values.Add("User"				, user);
+			values.Add("Password"			, password);
+			values.Add("Dialect"			, dialect);
+			values.Add("ForcedWrites"		, forcedWrite);
+			values.Add("PageSize"			, pageSize);
+			values.Add("Charset"			, charset);
+			values.Add("ServerType"			, serverType);
+			values.Add("SSL"				, ssl);
+			values.Add("Integrated Security", isecurity);
+
+			return values;
+		}
 
 		private void createIndex(IndexType indextype, string indexName, string tableName, string fields)
 		{
@@ -2918,106 +2996,20 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		private void databaseCreate()
-		{
-			string	dataSource	= "localhost";
-			int		port		= 3050;
-			string	database	= @"c:\asp3ap.fdb";
-			string	user		= "SYSDBA";
-			string	password	= "masterkey";
-			byte	dialect		= 3;
-			bool	forcedWrite = configuration.ForcedWrites;
-			short	pageSize	= 4096;
-			string	charset		= "NONE";
-			bool	ssl			= false;
-			int		serverType	= 0;
-			string	isecurity	= "SSPI";
-
-			Regex			search	 = new Regex(@"([\w\s\d]*)\s*=\s*([^;]*)");
-			MatchCollection	elements = search.Matches(this.configuration.ConnectionString);
-
-			foreach (Match element in elements)
-			{
-				switch (element.Groups[1].Value.Trim().ToLower())
-				{
-					case "datasource":
-					case "data source":
-					case "server":
-					case "host":
-						dataSource = element.Groups[2].Value.Trim();
-						break;
-
-					case "database":
-						database = element.Groups[2].Value.Trim();
-						break;
-
-					case "user name":
-					case "user":
-					case "user id":
-					case "userid":
-						user = element.Groups[2].Value.Trim();
-						break;
-
-					case "user password":
-					case "password":
-						password = element.Groups[2].Value.Trim();
-						break;
-
-					case "port":
-						port = Int32.Parse(element.Groups[2].Value.Trim());
-						break;
-
-					case "dialect":
-						dialect = byte.Parse(element.Groups[2].Value.Trim());
-						break;
-
-					case "ssl":
-						ssl = Boolean.Parse(element.Groups[2].Value.Trim());
-						break;
-
-					case "charset":
-						charset = element.Groups[2].Value.Trim();
-						break;
-
-					case "servertype":
-					case "server type":
-						serverType = Int32.Parse(element.Groups[2].Value.Trim());
-						break;
-
-					case "Integrated Security":
-						isecurity = element.Groups[2].Value.Trim();
-						break;
-				}
-			}
-
-			Hashtable values = new Hashtable();
-
-			values.Add("DataSource"			, dataSource);
-			values.Add("Port"				, port);
-			values.Add("Database"			, database);
-			values.Add("User"				, user);
-			values.Add("Password"			, password);
-			values.Add("Dialect"			, dialect);
-			values.Add("ForcedWrites"		, forcedWrite);
-			values.Add("PageSize"			, pageSize);
-			values.Add("Charset"			, charset);
-			values.Add("ServerType"			, serverType);
-			values.Add("SSL"				, ssl);
-			values.Add("Integrated Security", isecurity);
-
-			this.dataHelper.CreateDatabase(values);
-		}
-
 		public void DatabaseDisconnect()
 		{
 			try
 			{
+				if (this.transaction != null)
+				{
+					this.transaction.Rollback();
+					this.transaction = null;
+				}
+
 				if (this.connection != null)
 				{
 					this.connection.Close();
-					
 					this.connection	= null;
-					this.transaction = null;
 				}
 			}
 			catch (Exception ex)

@@ -47,15 +47,15 @@ namespace AS3AP.BenchMark
 
 			try
 			{			
-				beginTransaction();
-				cursorOpen( 
+				this.beginTransaction();
+				this.cursorOpen( 
 					"select uniques.col_signed, uniques.col_name, "					+
 						"hundred.col_signed, hundred.col_name "						+
 					"from uniques "													+
 						"join hundred ON uniques.col_address = hundred.col_address "+
 					"where uniques.col_address = 'SILICON VALLEY'");
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{
 					count++;
 				}
@@ -66,14 +66,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				cursorClose();
+				this.cursorClose();
 				if (base.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
@@ -87,15 +87,15 @@ namespace AS3AP.BenchMark
 			
 			try
 			{
-				beginTransaction();
-				cursorOpen(
+				this.beginTransaction();
+				this.cursorOpen(
 					"select uniques.col_signed, uniques.col_name, "			+
 						"hundred.col_signed, hundred.col_name "				+
 					"from uniques "											+
 						"join hundred ON uniques.col_key = hundred.col_key "+
 					"where uniques.col_key = 1000");
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{
 					count++;
 				}
@@ -106,14 +106,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				cursorClose();
+				this.cursorClose();
 				if (base.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
@@ -127,15 +127,15 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen( 
+				this.beginTransaction();
+				this.cursorOpen( 
 					"select uniques.col_signed, uniques.col_name, "				+
 						"hundred.col_signed, hundred.col_name "					+
 					"from uniques "												+
 						"join hundred on uniques.col_code = hundred.col_code "	+
 					"where uniques.col_code = 'BENCHMARKS'");
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{
 					count++;
 				}
@@ -146,14 +146,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				cursorClose();
+				this.cursorClose();
 				if (base.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
@@ -167,8 +167,8 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen(
+				this.beginTransaction();
+				this.cursorOpen(
 					"select uniques.col_signed, uniques.col_date, "			+
 						"hundred.col_signed, hundred.col_date, "			+
 						"tenpct.col_signed, tenpct.col_date "				+
@@ -177,7 +177,7 @@ namespace AS3AP.BenchMark
 						"join tenpct on uniques.col_key = tenpct.col_key "	+
 					"where uniques.col_key = 1000");
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{
 					count++;
 				}
@@ -188,14 +188,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				cursorClose();
+				this.cursorClose();
 				if (base.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
@@ -209,8 +209,8 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen( 
+				this.beginTransaction();
+				this.cursorOpen( 
 					"select uniques.col_signed, uniques.col_date, "				+
 						"hundred.col_signed, hundred.col_date, "				+
 						"tenpct.col_signed, tenpct.col_date "					+
@@ -219,7 +219,7 @@ namespace AS3AP.BenchMark
 						"join tenpct on uniques.col_code = tenpct.col_code "	+
 					"where uniques.col_code = 'BENCHMARKS'");
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{
 					count++;
 				}
@@ -230,14 +230,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				cursorClose();
+				this.cursorClose();
 				if (base.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
@@ -251,8 +251,8 @@ namespace AS3AP.BenchMark
 	
 			try
 			{
-				beginTransaction();
-				cursorOpen(
+				this.beginTransaction();
+				this.cursorOpen(
 					"select uniques.col_date, hundred.col_date, "			+
 						"tenpct.col_date, updates.col_date "				+
 					"from uniques "											+
@@ -261,7 +261,7 @@ namespace AS3AP.BenchMark
 						"join updates on uniques.col_key = updates.col_key "+
 					"where uniques.col_key = 1000");
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{
 					count++;
 				}
@@ -272,14 +272,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				cursorClose();
+				this.cursorClose();
 				if (base.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
@@ -289,12 +289,12 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_4_ncl() 
 		{
-			int count=0;
+			int count = 0;
 
 			try
 			{
-				beginTransaction();
-				cursorOpen( 
+				this.beginTransaction();
+				this.cursorOpen( 
 					"select uniques.col_date, hundred.col_date, "				+
 						"tenpct.col_date, updates.col_date "					+
 					"from uniques "												+
@@ -303,7 +303,7 @@ namespace AS3AP.BenchMark
 						"join updates on uniques.col_code = updates.col_code "	+
 						"where uniques.col_code = 'BENCHMARKS'");
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{
 					count++;
 				}				
@@ -314,14 +314,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				cursorClose();
+				this.cursorClose();
 				if (base.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
