@@ -85,7 +85,15 @@ public class MultiUserTest extends BenchmarkTest {
         super.tearDown();
     }
     
+    public void testBgOltpUpdate() throws Exception {
+        doOltpUpdate();
+    }
+    
     public void testOltpUpdate() throws Exception {
+        doOltpUpdate();
+    }
+    
+    public void doOltpUpdate() throws Exception {
         stmt.executeUpdate(""
             + "UPDATE " + UPDATES_TABLE + " "
             + "SET " + SIGNED_COL + " = " + SIGNED_COL + " + 1"
@@ -93,7 +101,15 @@ public class MultiUserTest extends BenchmarkTest {
         );
     }
     
+    public void testBgIrSelect() throws Exception {
+        doIrSelect();
+    }
+    
     public void testIrSelect() throws Exception {
+        doIrSelect();
+    }
+    
+    public void doIrSelect() throws Exception {
         ResultSet rs = stmt.executeQuery(""
             + "SELECT " 
             + KEY_COL + ", " + CODE_COL + ", " + DATE_COL + ", "

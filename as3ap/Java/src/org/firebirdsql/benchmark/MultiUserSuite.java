@@ -71,7 +71,7 @@ public class MultiUserSuite extends BenchmarkSuite {
             
             // Step 2
             ActiveBenchmarkSuite bgIrTests = new ActiveBenchmarkSuite(0, getUserCount());
-            bgIrTests.addTest(new MultiUserTest("testIrSelect", KEY_RANGE));
+            bgIrTests.addTest(new MultiUserTest("testBgIrSelect", KEY_RANGE));
             
             bgIrTests.run(testResult);
             
@@ -106,7 +106,7 @@ public class MultiUserSuite extends BenchmarkSuite {
             
             // Step 8
             ActiveBenchmarkSuite bgOltpTests = new ActiveBenchmarkSuite(0, getUserCount());
-            bgOltpTests.addTest(new MultiUserTest("testOltpUpdate", KEY_RANGE));
+            bgOltpTests.addTest(new MultiUserTest("testBgOltpUpdate", KEY_RANGE));
             
             bgOltpTests.run(testResult);
             

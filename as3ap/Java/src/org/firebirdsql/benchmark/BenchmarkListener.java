@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 
 import java.io.PrintStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -83,29 +84,96 @@ public class BenchmarkListener implements TestListener {
     
     public synchronized void printStatistics(PrintStream out) {
         out.println("Test execution statistics:");
+        
+        HashMap stats = new HashMap();
+        
         Iterator iter = executionTrace.iterator();
         while(iter.hasNext()) {
             Test test = (Test)iter.next();
             
-            String message;            
+            String testName = getTestName(test);            
             
             Long testTime = (Long)testTimes.get(test);
+
             AssertionFailedError failure = 
                 (AssertionFailedError)failures.get(test);
+
             Throwable error = (Throwable)errors.get(test);
             
+            StatisticsEntry entry = (StatisticsEntry)stats.get(testName);
+            
+            if (entry == null) {
+                entry = new StatisticsEntry();
+                entry.testName = testName;
+                stats.put(test, entry);
+            }
+            
+            entry.totalCount++;
+            
             if (testTime != null)
-                message = testTime.toString() + " ms";
-            else
-            if (failure != null)
-                message = "FAILED : " + failure.toString();
-            else
+                entry.totalDuration += testTime.longValue();
+            
             if (error != null)
-                message = "ERROR : " + error.toString();
-            else
-                message = "UNKNOWN";
+                entry.errors.add(error);
                 
-            out.println(getTestName(test) + " " + message);
+            if (failure != null)
+                entry.failures.add(failure);
+            
+        }
+        
+        Iterator statsIter = executionTrace.iterator();
+		while (statsIter.hasNext()) {
+            Test test = (Test)statsIter.next();
+
+			StatisticsEntry element = (StatisticsEntry) stats.get(test);
+            if (element != null)
+    			element.print(out);
+		}
+    }
+    
+    private static class StatisticsEntry {
+        private String testName;
+        private long totalDuration;
+        private int totalCount;
+        private HashSet failures = new HashSet();
+        private HashSet errors = new HashSet();
+        
+        private void print(PrintStream out) {
+            StringBuffer msg = new StringBuffer();
+            
+            msg.append(testName).append(" - ");
+            msg.append(totalCount).append(" time(s)");
+            msg.append(", ");
+            msg.append("in ").append(totalDuration).append(" ms.");
+            
+            if (failures.size() > 0) {
+                msg.append(", ");
+                msg.append(failures.size()).append(" failures");
+            }
+            
+            if (errors.size() > 0) {
+                msg.append(", ");
+                msg.append(errors.size()).append(" errors");
+            }
+            
+            msg.append(".");
+            
+            if (failures.size() > 0 || errors.size() > 0) {
+                
+                Iterator iter = failures.iterator();
+				while (iter.hasNext()) {
+                    AssertionFailedError element = (AssertionFailedError)iter.next();
+					msg.append("\n").append(element.toString());
+				}
+                
+                iter = errors.iterator();
+                while (iter.hasNext()) {
+                    Throwable element = (Throwable)iter.next();
+                    msg.append("\n").append(element.toString());
+                }
+            }
+            
+            out.println(msg.toString());
         }
     }
 }
