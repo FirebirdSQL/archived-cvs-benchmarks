@@ -13,7 +13,7 @@
     <property name="build.dir" value="build" />
     <property name="base.dir" value="." />
 	<property name="as3ap.src.dir" value=".\source" />
-    <property name="FirebirdSql.Data.Firebird.dir" value="D:\DESARROLLO\FIREBIRDPROJECT\NET-PROVIDER\BUILD" />
+    <property name="FirebirdSql.Data.Firebird.dir" value="..\Net-Provider_15\BUILD" />
 
     <!-- Targets -->
     <target name="clean" description="cleans build directory">
@@ -24,6 +24,7 @@
         <property name="build.debug" value="true" />
 		
         <mkdir dir="${build.dir}" />
+        <mkdir dir="${build.dir}/config" />
         <call target="build-as3ap" />
     </target>
     
@@ -31,6 +32,7 @@
         <property name="build.debug" value="false" />
 		
         <mkdir dir="${build.dir}" />
+        <mkdir dir="${build.dir}/config" />
         <call target="build-as3ap" />
     </target>
     
@@ -44,6 +46,12 @@
         <copy todir="${build.dir}">
             <fileset basedir="${base.dir}\data">
                 <includes name="as3ap.fdb" />
+            </fileset>
+        </copy>
+
+        <copy todir="${build.dir}">
+            <fileset basedir="${as3ap.src.dir}">
+                <includes name="as3ap.Benchmark.exe.config" />
             </fileset>
         </copy>
         
