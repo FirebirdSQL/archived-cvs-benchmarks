@@ -60,14 +60,16 @@ namespace AS3AP.BenchMark
 
 		public AS3AP()
 		{
-			if (ConfigurationSettings.AppSettings["LogMode"].ToUpper() == "APPEND")
-			{
-				log	= new Logger(GetType(), ConfigurationSettings.AppSettings["LogFile"], Mode.APPEND);
-			}
-			else
-			{
-				log	= new Logger(GetType(), ConfigurationSettings.AppSettings["LogFile"], Mode.OVERWRITE);
-			}
+			string logName = "as3ap_"								+
+							System.DateTime.Now.Year.ToString()		+ "_"	+
+							System.DateTime.Now.Month.ToString()	+ "_"	+
+							System.DateTime.Now.Day.ToString()		+ "_"	+
+							System.DateTime.Now.Hour.ToString()		+ "_"	+
+							System.DateTime.Now.Minute.ToString()	+ "_"	+
+							System.DateTime.Now.Second.ToString()	+
+							".log";
+
+			log	= new Logger(GetType(), logName, Mode.OVERWRITE);
 			getConfiguration();
 
 			callableSql	= new CallableSql(backendName);
@@ -103,13 +105,10 @@ namespace AS3AP.BenchMark
 			if (runCreate) 
 			{
 				callableSql.Backend.DatabaseCreate("AS3AP");
-				callableSql.Backend.DatabaseConnect();
 
 				/* Database data generation should go here */
 				Console.WriteLine("Creating tables and loading data {0}.", DateTime.Now);
 				timeIt("populateDataBase()", "populateDataBase");
-				
-				callableSql.Backend.DatabaseDisconnect();
 			}			
 
 			currentTest = "Counting tuples";
@@ -176,6 +175,7 @@ namespace AS3AP.BenchMark
 
 		private int populateDataBase() 
 		{
+			callableSql.Backend.DatabaseConnect();
 			timeIt("create_tables()"				, "create_tables");
 			timeIt("load()"							, "load", dataSize);
 			timeIt("create_idx_uniques_key_bt()"	, "create_idx_uniques_key_bt");
@@ -198,6 +198,7 @@ namespace AS3AP.BenchMark
 			timeIt("create_idx_tenpct_code_h()"		, "create_idx_tenpct_code_h");
 			timeIt("create_idx_updates_double_bt()"	, "create_idx_updates_double_bt");
 			timeIt("create_idx_hundred_foreign()"	, "create_idx_hundred_foreign");
+			callableSql.Backend.DatabaseDisconnect();
 			
 			return 0;
 		}

@@ -40,7 +40,6 @@ namespace AS3AP.BenchMark
 
 			Console.WriteLine("Finished!!");
 			Console.ReadLine();
-
 		}
 	}
 }
