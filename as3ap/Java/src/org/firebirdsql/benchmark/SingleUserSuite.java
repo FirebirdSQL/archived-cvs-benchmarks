@@ -34,7 +34,7 @@ public class SingleUserSuite extends BenchmarkSuite {
     public void fillSuite() {
         // add tests to the test suite here
         
-        if (CREATE_DATABASE)
+        if (isCreateDatabase())
             addTest(new LoadTest("testLoadData"));
         
         addTest(getSingleUserTests());
