@@ -37,12 +37,20 @@ namespace AS3AP.BenchMark
 {
 	public class Backend
 	{
+		#region CONSTANTS
+		
+		private const int HUNDREDMILLION	= 10*10*10*10*10*10*10*10;
+		private const int THOUSANDMILLION	= HUNDREDMILLION*10;
+		
+		#endregion
+
 		#region FIELDS
 
         private	Assembly		assembly;
 
 		private string			connectionClass;
 		private string			commandClass;
+		private string			dataAdapterClass;
 		private string			parameterClass;
 						
 		private IsolationLevel	isolation  = IsolationLevel.ReadCommitted;
@@ -88,6 +96,12 @@ namespace AS3AP.BenchMark
 		{
 			get { return commandClass; }
 			set { commandClass = value; }
+		}
+
+		public string DataAdapterClass
+		{
+			get { return dataAdapterClass; }
+			set { dataAdapterClass= value; }
 		}
 
 		public string ParameterClass
@@ -242,7 +256,6 @@ namespace AS3AP.BenchMark
 				throw ex;
 			}
 		}
-
 
 		public void CursorOpen(string commandText)
 		{
@@ -425,18 +438,6 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		private IDbCommand GetCommand(string commandText)
-		{
-			IDbCommand command = (IDbCommand)Activator.CreateInstance(
-									assembly.GetType(commandClass));
-			
-			command.CommandText = commandText;
-			command.Connection  = connection;
-			command.Transaction = transaction;
-
-			return command;
-		}
-
 		public void LoadData()
 		{
 			try
@@ -568,6 +569,28 @@ namespace AS3AP.BenchMark
 											parameters);
 		}
 
+		private IDbCommand GetCommand(string commandText)
+		{
+			IDbCommand command = (IDbCommand)Activator.CreateInstance(
+									assembly.GetType(commandClass));
+			
+			command.CommandText = commandText;
+			command.Connection  = connection;
+			command.Transaction = transaction;
+
+			return command;
+		}
+
+		private IDbDataAdapter GetDataAdapter(IDbCommand selectCommand)
+		{
+			IDbDataAdapter adapter = (IDbDataAdapter)Activator.CreateInstance(
+									assembly.GetType(dataAdapterClass));
+			
+			adapter.SelectCommand = selectCommand;
+
+			return adapter;
+		}
+
 		private IDataParameter GetParam(string parameterName, DbType parameterType, int size, byte precision, byte scale)
 		{
 			IDataParameter parameter =  (IDataParameter)Activator.CreateInstance(
@@ -587,7 +610,6 @@ namespace AS3AP.BenchMark
 
 		public void CreateData()
 		{
-			/*
 			string col_address				= String.Empty;
 			string col_code					= String.Empty;
 			string col_name					= String.Empty;
@@ -628,8 +650,8 @@ namespace AS3AP.BenchMark
 			StringBuilder	sqlCommand	= new StringBuilder();
 			Random			randNumber	= new Random();
 		
-			FbDataAdapter	adapter = null;
-			FbCommand		command = null;
+			IDbDataAdapter	adapter = null;
+			IDbCommand		command = null;
 			DataSet			dataset = null;
 
 			// These characters can be used without hassle in comma-separated-value files
@@ -690,31 +712,29 @@ namespace AS3AP.BenchMark
 			
 				TransactionBegin();
 
-				FbCommand cmdRandomData = new FbCommand();
-
-				cmdRandomData.CommandText = "INSERT INTO random_data ("												+
+				IDbCommand cmdRandomData = GetCommand(
+					"INSERT INTO random_data ("												+
 					" randomizer, sparse_key, dense_key, sparse_signed, uniform100_dense,"+
 					" zipf10_float, zipf100_float, uniform100_float, double_normal,"	+
 					" r10pct_key, col_date, code, name, address)"						+
-					" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+					" VALUES (@randomizer,@sparse_key,@dense_key,@sparse_signed,"		+
+					"@uniform100_dense,@zipf10_float,@zipf100_float,@uniform100_float,"	+
+					"@double_normal,@r10pct_key,@col_date,@col_code,@col_name,@col_address)");
 			
-				cmdRandomData.Connection	= connection;
-				cmdRandomData.Transaction	= transaction;
-
-				cmdRandomData.Parameters.Add("@randomizer", FbType.Integer);
-				cmdRandomData.Parameters.Add("@sparse_key", FbType.Integer);
-				cmdRandomData.Parameters.Add("@dense_key", FbType.Integer);
-				cmdRandomData.Parameters.Add("@sparse_signed", FbType.Integer);
-				cmdRandomData.Parameters.Add("@uniform100_dense", FbType.Float);
-				cmdRandomData.Parameters.Add("@zipf10_float", FbType.Float);
-				cmdRandomData.Parameters.Add("@zipf100_float", FbType.Float);
-				cmdRandomData.Parameters.Add("@uniform100_float", FbType.Float);
-				cmdRandomData.Parameters.Add("@double_normal", FbType.Double);
-				cmdRandomData.Parameters.Add("@r10pct_key", FbType.Integer);
-				cmdRandomData.Parameters.Add("@col_date", FbType.Date);
-				cmdRandomData.Parameters.Add("@col_code", FbType.VarChar);
-				cmdRandomData.Parameters.Add("@col_name", FbType.VarChar);
-				cmdRandomData.Parameters.Add("@col_address", FbType.VarChar);
+				cmdRandomData.Parameters.Add(GetParam("@randomizer", DbType.Int32, 4, 0, 0));
+				cmdRandomData.Parameters.Add(GetParam("@sparse_key", DbType.Int32, 4, 0, 0));
+				cmdRandomData.Parameters.Add(GetParam("@dense_key", DbType.Int32, 4, 0, 0));
+				cmdRandomData.Parameters.Add(GetParam("@sparse_signed", DbType.Int32, 4, 0, 0));
+				cmdRandomData.Parameters.Add(GetParam("@uniform100_dense", DbType.Single, 4, 0, 0));
+				cmdRandomData.Parameters.Add(GetParam("@zipf10_float", DbType.Single, 4, 0, 0));
+				cmdRandomData.Parameters.Add(GetParam("@zipf100_float", DbType.Single, 4, 0, 0));
+				cmdRandomData.Parameters.Add(GetParam("@uniform100_float", DbType.Single, 4, 0, 0));
+				cmdRandomData.Parameters.Add(GetParam("@double_normal", DbType.Double, 8, 0, 0));
+				cmdRandomData.Parameters.Add(GetParam("@r10pct_key", DbType.Int32, 4, 0, 0));
+				cmdRandomData.Parameters.Add(GetParam("@col_date", DbType.DateTime, 8, 0, 0));
+				cmdRandomData.Parameters.Add(GetParam("@col_code", DbType.String, 10, 0, 0));
+				cmdRandomData.Parameters.Add(GetParam("@col_name", DbType.String, 20, 0, 0));
+				cmdRandomData.Parameters.Add(GetParam("@col_address", DbType.String, 800, 0, 0));
 
 				cmdRandomData.Prepare();
 
@@ -842,20 +862,20 @@ namespace AS3AP.BenchMark
 						if (log != null) log.Error("random date error {0}", ex.Message);
 					}
 				
-					cmdRandomData.Parameters[0].Value = randomizer;
-					cmdRandomData.Parameters[1].Value = sparse_key;
-					cmdRandomData.Parameters[2].Value = dense_key;
-					cmdRandomData.Parameters[3].Value = sparse_signed;
-					cmdRandomData.Parameters[4].Value = uniform100_dense;
-					cmdRandomData.Parameters[5].Value = zipf10_float;
-					cmdRandomData.Parameters[6].Value = zipf100_float;
-					cmdRandomData.Parameters[7].Value = uniform100_float;
-					cmdRandomData.Parameters[8].Value = double_normal;
-					cmdRandomData.Parameters[9].Value = r10pct_key;				
-					cmdRandomData.Parameters[10].Value = col_date;
-					cmdRandomData.Parameters[11].Value = col_code;
-					cmdRandomData.Parameters[12].Value = col_name;
-					cmdRandomData.Parameters[13].Value = col_address;
+					((IDbDataParameter)cmdRandomData.Parameters[0]).Value = randomizer;
+					((IDbDataParameter)cmdRandomData.Parameters[1]).Value = sparse_key;
+					((IDbDataParameter)cmdRandomData.Parameters[2]).Value = dense_key;
+					((IDbDataParameter)cmdRandomData.Parameters[3]).Value = sparse_signed;
+					((IDbDataParameter)cmdRandomData.Parameters[4]).Value = uniform100_dense;
+					((IDbDataParameter)cmdRandomData.Parameters[5]).Value = zipf10_float;
+					((IDbDataParameter)cmdRandomData.Parameters[6]).Value = zipf100_float;
+					((IDbDataParameter)cmdRandomData.Parameters[7]).Value = uniform100_float;
+					((IDbDataParameter)cmdRandomData.Parameters[8]).Value = double_normal;
+					((IDbDataParameter)cmdRandomData.Parameters[9]).Value = r10pct_key;				
+					((IDbDataParameter)cmdRandomData.Parameters[10]).Value = col_date;
+					((IDbDataParameter)cmdRandomData.Parameters[11]).Value = col_code;
+					((IDbDataParameter)cmdRandomData.Parameters[12]).Value = col_name;
+					((IDbDataParameter)cmdRandomData.Parameters[13]).Value = col_address;
 
 					cmdRandomData.ExecuteNonQuery();
 				}
@@ -872,42 +892,40 @@ namespace AS3AP.BenchMark
 		
 				// Now generate a table with 10% of some of the fields
 				TransactionBegin();
-				command = new FbCommand(
-					"SELECT FIRST " + tenpct.ToString()			+
-					" sparse_signed, double_normal, address"	+
-					" FROM random_data"							+
-					" ORDER BY randomizer", connection, transaction);
-				adapter = new FbDataAdapter(command);
+				command = GetCommand(
+								"SELECT FIRST " + tenpct.ToString()			+
+								" sparse_signed, double_normal, address"	+
+								" FROM random_data"							+
+								" ORDER BY randomizer");
+				adapter = GetDataAdapter(command);
 			
 				dataset = new DataSet("RANDOM_DATA");
-				adapter.Fill(dataset, "RANDOM_DATA");
+				adapter.Fill(dataset);
 
-				FbCommand cmdRandomTenpct = new FbCommand();
-
-				cmdRandomTenpct.CommandText = 
-					"INSERT INTO random_tenpct ("	+
-					" col_key, col_signed, col_float, col_double, col_address)" +
-					" VALUES (?, ?, ?, ?, ?)";
+				IDbCommand cmdRandomTenpct = GetCommand(
+									"INSERT INTO random_tenpct ("	+
+									" col_key, col_signed, col_float, col_double, col_address)" +
+									" VALUES (@col_key,@col_signed,@col_float,@col_double,@col_address)");
 			
 				cmdRandomTenpct.Connection	= connection;
 				cmdRandomTenpct.Transaction	= transaction;
 
-				cmdRandomTenpct.Parameters.Add("@col_key", FbType.Integer);
-				cmdRandomTenpct.Parameters.Add("@col_signed", FbType.Integer);
-				cmdRandomTenpct.Parameters.Add("@col_float", FbType.Float);
-				cmdRandomTenpct.Parameters.Add("@col_double", FbType.Double);
-				cmdRandomTenpct.Parameters.Add("@col_address", FbType.VarChar);
+				cmdRandomTenpct.Parameters.Add(GetParam("@col_key", DbType.Int32, 4, 0, 0));
+				cmdRandomTenpct.Parameters.Add(GetParam("@col_signed", DbType.Int32, 4, 0, 0));
+				cmdRandomTenpct.Parameters.Add(GetParam("@col_float", DbType.Single, 4, 0, 0));
+				cmdRandomTenpct.Parameters.Add(GetParam("@col_double", DbType.Double, 8, 0, 0));
+				cmdRandomTenpct.Parameters.Add(GetParam("@col_address", DbType.String, 800, 0, 0));
 
 				cmdRandomTenpct.Prepare();
 
 				rec = 1;
 				foreach (DataRow row in dataset.Tables["RANDOM_DATA"].Rows)
-				{	    
-					cmdRandomTenpct.Parameters[0].Value = (rec == 1) ? 0 : rec;
-					cmdRandomTenpct.Parameters[1].Value = Convert.ToInt64(row["sparse_signed"]);
-					cmdRandomTenpct.Parameters[2].Value = Convert.ToSingle(Convert.ToDouble(row["double_normal"]) / 2.0);
-					cmdRandomTenpct.Parameters[3].Value = Convert.ToDouble(row["double_normal"]);
-					cmdRandomTenpct.Parameters[4].Value = Convert.ToString(row["address"]);
+				{	    					
+					((IDbDataParameter)cmdRandomTenpct.Parameters[0]).Value = (rec == 1) ? 0 : rec;
+					((IDbDataParameter)cmdRandomTenpct.Parameters[1]).Value = Convert.ToInt64(row["sparse_signed"]);
+					((IDbDataParameter)cmdRandomTenpct.Parameters[2]).Value = Convert.ToSingle(Convert.ToDouble(row["double_normal"]) / 2.0);
+					((IDbDataParameter)cmdRandomTenpct.Parameters[3]).Value = Convert.ToDouble(row["double_normal"]);
+					((IDbDataParameter)cmdRandomTenpct.Parameters[4]).Value = Convert.ToString(row["address"]);
 
 					cmdRandomTenpct.ExecuteNonQuery();
 
@@ -915,7 +933,6 @@ namespace AS3AP.BenchMark
 				}
 				cmdRandomTenpct.Dispose();
 				command.Dispose();
-				adapter.Dispose();
 				dataset.Dispose();
 				TransactionCommit();
 
@@ -926,9 +943,9 @@ namespace AS3AP.BenchMark
 				// Now generate a table with only 100 tuples of interesting data
 				TransactionBegin();
 				CursorOpen(
-					"SELECT FIRST 100"										+
+					"SELECT FIRST 100"									+
 					" uniform100_float, double_normal, name, address"	+
-					" FROM random_data"										+
+					" FROM random_data"									+
 					" ORDER BY randomizer");
 	
 				i = 0;
@@ -960,16 +977,12 @@ namespace AS3AP.BenchMark
 				// Insert data in Uniques table
 				TransactionBegin();
 				
-				FbCommand cmdUniques = new FbCommand();
-		
-				cmdUniques.Connection	= connection;
-				cmdUniques.Transaction	= transaction;
-				cmdUniques.CommandText	= 
-					"insert into UNIQUES "										+
-					"select sparse_key, sparse_key, sparse_signed,"			+
-					"zipf10_float, double_normal, double_normal,"	+
-					"col_date, code, name, address "				+
-					"from random_data";
+				IDbCommand cmdUniques = GetCommand(
+								"insert into UNIQUES "							+
+								"select sparse_key, sparse_key, sparse_signed,"	+
+								"zipf10_float, double_normal, double_normal,"	+
+								"col_date, code, name, address "				+
+								"from random_data");
 
 				cmdUniques.ExecuteNonQuery();				
 				cmdUniques.Dispose();
@@ -979,16 +992,12 @@ namespace AS3AP.BenchMark
 				// Insert data in Updates table
 				TransactionBegin();
 
-				FbCommand cmdUpdates = new FbCommand();
-
-				cmdUpdates.Connection	= connection;
-				cmdUpdates.Transaction	= transaction;
-				cmdUpdates.CommandText	= 
-					"insert into UPDATES "							+
-					"select dense_key, dense_key, sparse_signed,"	+
-					"zipf10_float, double_normal, double_normal,"	+
-					"col_date, code, name, address "				+
-					"from random_data";
+				IDbCommand cmdUpdates = GetCommand(
+								"insert into UPDATES " +
+								"select dense_key, dense_key, sparse_signed,"	+
+								"zipf10_float, double_normal, double_normal,"	+
+								"col_date, code, name, address "				+
+								"from random_data");
 
 				cmdUpdates.ExecuteNonQuery();
 
@@ -999,40 +1008,37 @@ namespace AS3AP.BenchMark
 				// Insert data in Hundred table
 				TransactionBegin();
 				
-				command = new FbCommand(
+				command = GetCommand(
 					"SELECT randomizer, sparse_key, dense_key, sparse_signed,"	+
 					" uniform100_dense, zipf10_float, zipf100_float,"			+
 					" uniform100_float, double_normal,"							+
 					" col_date, code, name, address"							+
 					" FROM random_data"											+
-					" ORDER BY randomizer", connection, transaction);
+					" ORDER BY randomizer");
 			
-				adapter = new FbDataAdapter(command);
+				adapter = GetDataAdapter(command);
 			
 				dataset = new DataSet("RANDOM_DATA");
-				adapter.Fill(dataset, "RANDOM_DATA");
+				adapter.Fill(dataset);
 				
-				FbCommand cmdHundred = new FbCommand();
-
-				cmdHundred.Connection	= connection;
-				cmdHundred.Transaction	= transaction;
-				cmdHundred.CommandText	= 
+				IDbCommand cmdHundred = GetCommand(
 					"INSERT INTO hundred ("								+
 					" col_key, col_int, col_signed,"					+
 					" col_float, col_double, col_decim,"				+
 					" col_date, col_code, col_name, col_address)"		+
-					" VALUES (?,?,?,?,?,?,?,?,?,?)";
+					" VALUES (@col_key,@col_int,@col_signed,@col_float,"+
+					"@col_double,@col_decim,@col_date,@col_code,@col_name,@col_address)");
 
-				cmdHundred.Parameters.Add("@col_key", FbType.Integer);
-				cmdHundred.Parameters.Add("@col_int", FbType.Integer);
-				cmdHundred.Parameters.Add("@col_signed", FbType.Integer);
-				cmdHundred.Parameters.Add("@col_float", FbType.Float);
-				cmdHundred.Parameters.Add("@col_double", FbType.Double);
-				cmdHundred.Parameters.Add("@col_decim", FbType.Decimal);
-				cmdHundred.Parameters.Add("@col_date", FbType.VarChar);
-				cmdHundred.Parameters.Add("@col_code", FbType.VarChar);
-				cmdHundred.Parameters.Add("@col_name", FbType.VarChar);
-				cmdHundred.Parameters.Add("@col_address", FbType.VarChar);
+				cmdHundred.Parameters.Add(GetParam("@col_key", DbType.Int32, 4, 0, 0));
+				cmdHundred.Parameters.Add(GetParam("@col_int", DbType.Int32, 4, 0, 0));
+				cmdHundred.Parameters.Add(GetParam("@col_signed", DbType.Int32, 4, 0, 0));
+				cmdHundred.Parameters.Add(GetParam("@col_float", DbType.Single, 4, 0, 0));
+				cmdHundred.Parameters.Add(GetParam("@col_double", DbType.Double, 8, 0, 0));
+				cmdHundred.Parameters.Add(GetParam("@col_decim", DbType.Decimal, 9, 18, 2));
+				cmdHundred.Parameters.Add(GetParam("@col_date", DbType.String, 20, 0, 0));
+				cmdHundred.Parameters.Add(GetParam("@col_code", DbType.String, 10, 0, 0));
+				cmdHundred.Parameters.Add(GetParam("@col_name", DbType.String, 20, 0, 0));
+				cmdHundred.Parameters.Add(GetParam("@col_address", DbType.String, 80, 0, 0));
 
 				cmdHundred.Prepare();
 
@@ -1045,17 +1051,17 @@ namespace AS3AP.BenchMark
 						hundred_key = 0;
 					}
 
-					// Insert into Hundred
-					cmdHundred.Parameters[0].Value = Convert.ToString(row["dense_key"]);
-					cmdHundred.Parameters[1].Value = Convert.ToString(row["dense_key"]);
-					cmdHundred.Parameters[2].Value = Convert.ToString(row["uniform100_dense"]);
-					cmdHundred.Parameters[3].Value = hundred_unique_float[hundred_key];
-					cmdHundred.Parameters[4].Value = hundred_unique_double[hundred_key];
-					cmdHundred.Parameters[5].Value = hundred_unique_double[hundred_key];
-					cmdHundred.Parameters[6].Value = Convert.ToString(row["col_date"]);
-					cmdHundred.Parameters[7].Value = Convert.ToString(row["code"]);
-					cmdHundred.Parameters[8].Value = hundred_unique_name[hundred_key];
-					cmdHundred.Parameters[9].Value = hundred_unique_address[hundred_key];
+					// Insert into Hundred					
+					((IDbDataParameter)cmdHundred.Parameters[0]).Value = Convert.ToString(row["dense_key"]);
+					((IDbDataParameter)cmdHundred.Parameters[1]).Value = Convert.ToString(row["dense_key"]);
+					((IDbDataParameter)cmdHundred.Parameters[2]).Value = Convert.ToString(row["uniform100_dense"]);
+					((IDbDataParameter)cmdHundred.Parameters[3]).Value = hundred_unique_float[hundred_key];
+					((IDbDataParameter)cmdHundred.Parameters[4]).Value = hundred_unique_double[hundred_key];
+					((IDbDataParameter)cmdHundred.Parameters[5]).Value = hundred_unique_double[hundred_key];
+					((IDbDataParameter)cmdHundred.Parameters[6]).Value = Convert.ToString(row["col_date"]);
+					((IDbDataParameter)cmdHundred.Parameters[7]).Value = Convert.ToString(row["code"]);
+					((IDbDataParameter)cmdHundred.Parameters[8]).Value = hundred_unique_name[hundred_key];
+					((IDbDataParameter)cmdHundred.Parameters[9]).Value = hundred_unique_address[hundred_key];
 
 					cmdHundred.ExecuteNonQuery();
 				}
@@ -1063,24 +1069,19 @@ namespace AS3AP.BenchMark
 				cmdHundred.Dispose();
 
 				command.Dispose();
-				adapter.Dispose();
 				dataset.Dispose();
 				TransactionCommit();
 
 				// Insert data in TenPct table
 				TransactionBegin();
 				
-				FbCommand cmdTenPct = new FbCommand();
-
-				cmdTenPct.Connection	= connection;
-				cmdTenPct.Transaction	= transaction;
-				cmdTenPct.CommandText	=
+				IDbCommand cmdTenPct = GetCommand(
 					"INSERT INTO tenpct "																				+
 					"SELECT random_data.sparse_key, random_data.sparse_key, random_tenpct.col_signed,"				+
 					"random_tenpct.col_float, random_tenpct.col_double, random_tenpct.col_double,"			+
 					"random_data.col_date, random_data.code, random_data.name, random_tenpct.col_address "	+
 					"FROM  random_data, random_tenpct "																+
-					"WHERE random_data.r10pct_key = random_tenpct.col_key";
+					"WHERE random_data.r10pct_key = random_tenpct.col_key");
 
 				cmdTenPct.ExecuteNonQuery();
 
@@ -1104,7 +1105,6 @@ namespace AS3AP.BenchMark
 				TransactionRollback();				
 				throw ex;
 			}
-			*/			
 		}
 
 		#endregion

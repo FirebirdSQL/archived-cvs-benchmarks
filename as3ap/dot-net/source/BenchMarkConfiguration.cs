@@ -50,6 +50,7 @@ namespace AS3AP.BenchMark
 		private bool	supportsHashIndexes = false;
 		private string	connectionClass		= "FirebirdSql.Data.Firebird.FbConnection";
 		private string	commandClass		= "FirebirdSql.Data.Firebird.FbCommand";
+		private string	dataAdapterClass	= "FirebirdSql.Data.Firebird.FbDataAdapter";
 		private string	parameterClass		= "FirebirdSql.Data.Firebird.FbParameter";
 		
 		#endregion
@@ -126,6 +127,12 @@ namespace AS3AP.BenchMark
 		{
 			get { return commandClass; }
 			set { commandClass = value; }
+		}
+
+		public string DataAdapterClass
+		{
+			get { return dataAdapterClass; }
+			set { dataAdapterClass = value; }
 		}
 
 		public string ParameterClass
