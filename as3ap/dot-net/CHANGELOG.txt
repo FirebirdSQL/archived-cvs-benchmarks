@@ -2,6 +2,31 @@ AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 =============================================================================================
 
 
+
+2003-02-09 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+
+	* backends/source/FirebirdSql/FirebirdSql.cs:
+	
+		- Commented the creation of a unqie index because firebird already 
+		add it when the table has a primary key 
+		(this change is in accordance to the as3ap benchmark documentation).
+
+
+2003-02-08 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+
+	* source/AS3AP.BenchMark.exe.config:
+	
+		- Added comments to config file.
+		
+		- Added a new key RunSequence.
+
+	* source/AS3AP.cs:
+	
+		- Changed log filename.
+		
+		- Added changes for implement a run sequence for the tests (suggestions of Sean Layne).
+
+
 2003-02-07 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
 	* Added implementation of CreateData method ported from OSDB project, 
