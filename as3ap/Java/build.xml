@@ -82,12 +82,19 @@
            target="1.3"
            debug="on"
            deprecation="on"
-           optimize="on"
+           optimize="off"
            includes="org/**"
            excludes="**/temp*"
     >
       <classpath refid="javac.classpath"/>
     </javac>
+  	
+    <copy todir="${build.classes}" filtering="no">
+      <fileset dir="${source.java}">
+         <include name="**/*.properties"/>
+      </fileset>
+    </copy>
+  	
   </target>
 
   <!-- =================================================================== -->
