@@ -41,6 +41,7 @@ namespace AS3AP.BenchMark
 		private string	runSequence			= "SQL87;singleuser;SQL92;singleuser";
 		private bool	runCreate			= true;
 		private string	dataPath			= String.Empty;
+		private bool	useIndexes			= true;
 
 		private string	connectionString	= "AS3AP.FDB;User=SYSDBA;Password=masterkey;Server=localhost;Port=3050;Dialect=3;Charset=NONE;Role=;Connection Lifetime=15;Pooling=true";
 
@@ -84,6 +85,12 @@ namespace AS3AP.BenchMark
 		{
 			get { return dataPath; }
 			set { dataPath = value; }
+		}
+
+		public bool UseIndexes
+		{
+			get { return useIndexes; }
+			set { useIndexes = value; }
 		}
 
 		public string ConnectionString

@@ -187,8 +187,6 @@ namespace AS3AP.BenchMark
 		{
 			testSuite.Backend.DatabaseCreate("AS3AP");
 
-			testSuite.Backend.DataSize = configuration.DataSize;
-
 			testSuite.Backend.DatabaseConnect();
 			timeIt("create_tables");
 			timeIt("LoadData");

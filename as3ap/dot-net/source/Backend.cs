@@ -39,68 +39,20 @@ namespace AS3AP.BenchMark
 
         private	Assembly		assembly;
 
-		private string			connectionClass;
-		private string			commandClass;
-		private string			dataAdapterClass;
-		private string			parameterClass;
-						
-		private IsolationLevel	isolation  = IsolationLevel.ReadCommitted;
+		private BenchMarkConfiguration configuration;
+
 		private Logger			log;
-		private string			dataPath;
-		private string			connectionString;
+
+		private IsolationLevel	isolation  = IsolationLevel.ReadCommitted;
 		private IDbConnection	connection;
 		private IDbTransaction	transaction;
 		private IDataReader		cursor;
 		private IDbCommand		cmdCursor;	
 
-		private long			dataSize;
-
 		#endregion
 
 		#region PROPERTIES
-
-		public long DataSize
-		{
-			get { return dataSize; }
-			set { dataSize = value; }
-		}
-
-		public string DataPath
-		{
-			get { return dataPath; }
-			set { dataPath = value; }
-		}
-
-		public string ConnectionString
-		{
-			get { return connectionString; }
-			set { connectionString = value; }
-		}
-		
-		public string ConnectionClass
-		{
-			get { return connectionClass; }
-			set { connectionClass = value; }
-		}
-
-		public string CommandClass
-		{
-			get { return commandClass; }
-			set { commandClass = value; }
-		}
-
-		public string DataAdapterClass
-		{
-			get { return dataAdapterClass; }
-			set { dataAdapterClass= value; }
-		}
-
-		public string ParameterClass
-		{
-			get { return parameterClass; }
-			set { parameterClass = value; }
-		}
-		
+	
 		public IDataReader Cursor
 		{
 			get { return cursor; }
@@ -116,8 +68,10 @@ namespace AS3AP.BenchMark
 
 		#region CONSTRUCTORS
 	
-		public Backend()
-		{		
+		public Backend(BenchMarkConfiguration configuration)
+		{	
+			this.configuration = configuration;
+
 			log = new Logger("AS3AP_ERRORS.LOG", Mode.OVERWRITE);
 		}
 
@@ -328,9 +282,9 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				parameters[0] = connectionString;
+				parameters[0] = configuration.ConnectionString;
 				connection = (IDbConnection)Activator.CreateInstance(
-										assembly.GetType(connectionClass),
+										assembly.GetType(configuration.ConnectionClass),
 										parameters);
 				connection.Open();
 			}
@@ -490,9 +444,9 @@ namespace AS3AP.BenchMark
 
 			stream = new StreamReader(
 				(System.IO.Stream)File.Open(
-				dataPath + "asap." + table	,
-				FileMode.Open				,
-				FileAccess.Read				,
+				configuration.DataPath + "asap." + table	,
+				FileMode.Open								,
+				FileAccess.Read								,
 				FileShare.None));
 
 			while (stream.Peek() > -1)
@@ -530,9 +484,9 @@ namespace AS3AP.BenchMark
 
 			stream = new StreamReader(
 				(System.IO.Stream)File.Open(
-				dataPath + "asap." + table	,
-				FileMode.Open				,
-				FileAccess.Read				,
+				configuration.DataPath + "asap." + table	,
+				FileMode.Open								,
+				FileAccess.Read								,
 				FileShare.None));
 
 			while (stream.Peek() > -1)
@@ -556,14 +510,14 @@ namespace AS3AP.BenchMark
 			parameters[2] = transaction;
 
 			return (IDbCommand)Activator.CreateInstance(
-											assembly.GetType(commandClass), 
+											assembly.GetType(configuration.CommandClass), 
 											parameters);
 		}
 
 		private IDbCommand GetCommand(string commandText)
 		{
 			IDbCommand command = (IDbCommand)Activator.CreateInstance(
-									assembly.GetType(commandClass));
+									assembly.GetType(configuration.CommandClass));
 			
 			command.CommandText = commandText;
 			command.Connection  = connection;
@@ -575,7 +529,7 @@ namespace AS3AP.BenchMark
 		private IDbDataAdapter GetDataAdapter(IDbCommand selectCommand)
 		{
 			IDbDataAdapter adapter = (IDbDataAdapter)Activator.CreateInstance(
-									assembly.GetType(dataAdapterClass));
+									assembly.GetType(configuration.DataAdapterClass));
 			
 			adapter.SelectCommand = selectCommand;
 
@@ -584,13 +538,13 @@ namespace AS3AP.BenchMark
 
 		private IDataParameter GetParam(string parameterName, DbType parameterType, int size, byte precision, byte scale)
 		{
-			IDataParameter parameter =  (IDataParameter)Activator.CreateInstance(
-										assembly.GetType(this.parameterClass));
+			IDataParameter parameter = (IDataParameter)Activator.CreateInstance(
+										assembly.GetType(configuration.ParameterClass));
 
 			parameter.ParameterName = parameterName;
 			parameter.DbType		= parameterType;
 			((IDbDataParameter)parameter).Size = size;
-			if (parameter.DbType == DbType.Decimal)				
+			if (parameter.DbType == DbType.Decimal)
 			{
 				((IDbDataParameter)parameter).Precision = precision;
 				((IDbDataParameter)parameter).Scale		= scale;

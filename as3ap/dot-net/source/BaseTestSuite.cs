@@ -48,8 +48,7 @@ namespace AS3AP.BenchMark
 
 		private BenchMarkConfiguration configuration;
 
-		private Backend		backend		= new Backend();
-		private bool		doIndexes	= true;
+		private Backend		backend;
 		private bool		testFailed	= false;
 		private object		testResult	= 0;
 		private int			tupleCount	= 0;
@@ -93,15 +92,8 @@ namespace AS3AP.BenchMark
 
 		public BaseTestSuite(BenchMarkConfiguration configuration)
 		{
-			this.configuration			= configuration;
-
-			doIndexes					= true;
-			backend.ConnectionString	= configuration.ConnectionString;
-			backend.DataPath			= configuration.DataPath;
-			backend.DataSize			= configuration.DataSize;
-			backend.CommandClass		= configuration.CommandClass;
-			backend.ConnectionClass		= configuration.ConnectionClass;
-			backend.ParameterClass		= configuration.ParameterClass;
+			this.configuration	= configuration;
+			this.backend		= new Backend(this.configuration);
 
 			backend.LoadAssembly(configuration.ProviderAssembly);
 		}
@@ -522,7 +514,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_hundred_code_h() 
 		{
-			if (doIndexes) 
+			if (configuration.UseIndexes) 
 			{
 				try
 				{
@@ -542,7 +534,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_hundred_foreign() 
 		{
-			if (doIndexes) 
+			if (configuration.UseIndexes) 
 			{  
 				try
 				{
@@ -564,7 +556,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_hundred_key_bt() 
 		{
-			if (doIndexes && configuration.SupportsClusteredIndexes) 
+			if (configuration.UseIndexes && configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
@@ -584,7 +576,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_code_h() 
 		{
-			if (doIndexes && configuration.SupportsHashIndexes) 
+			if (configuration.UseIndexes && configuration.SupportsHashIndexes) 
 			{
 				try
 				{
@@ -604,7 +596,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_decim_bt() 
 		{
-			if (doIndexes) 
+			if (configuration.UseIndexes) 
 			{
 				try
 				{
@@ -624,7 +616,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_double_bt() 
 		{
-			if (doIndexes) 
+			if (configuration.UseIndexes) 
 			{
 				try
 				{
@@ -644,7 +636,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_float_bt() 
 		{
-			if (doIndexes) 
+			if (configuration.UseIndexes) 
 			{
 				try
 				{
@@ -664,7 +656,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_int_bt() 
 		{
-			if (doIndexes) 
+			if (configuration.UseIndexes) 
 			{
 				try
 				{
@@ -684,7 +676,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_key_bt() 
 		{
-			if (doIndexes && configuration.SupportsClusteredIndexes) 
+			if (configuration.UseIndexes && configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
@@ -704,7 +696,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_key_code_bt() 
 		{
-			if (doIndexes) 
+			if (configuration.UseIndexes) 
 			{
 				try
 				{
@@ -724,7 +716,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_name_h() 
 		{
-			if (doIndexes && configuration.SupportsHashIndexes) 
+			if (configuration.UseIndexes && configuration.SupportsHashIndexes) 
 			{
 				try
 				{
@@ -744,7 +736,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_signed_bt() 
 		{
-			if (doIndexes) 
+			if (configuration.UseIndexes) 
 			{
 				try
 				{
@@ -764,7 +756,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tiny_key_bt() 
 		{
-			if (doIndexes) 
+			if (configuration.UseIndexes) 
 			{
 				try
 				{
@@ -784,7 +776,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_uniques_code_h() 
 		{
-			if (doIndexes && configuration.SupportsHashIndexes) 
+			if (configuration.UseIndexes && configuration.SupportsHashIndexes) 
 			{
 				try
 				{
@@ -804,7 +796,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_uniques_key_bt() 
 		{
-			if (doIndexes && configuration.SupportsClusteredIndexes) 
+			if (configuration.UseIndexes && configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
@@ -824,7 +816,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_code_h() 
 		{
-			if (doIndexes && configuration.SupportsHashIndexes) 
+			if (configuration.UseIndexes && configuration.SupportsHashIndexes) 
 			{
 				try
 				{
@@ -844,7 +836,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_decim_bt() 
 		{
-			if (doIndexes) 
+			if (configuration.UseIndexes) 
 			{
 				try
 				{
@@ -864,7 +856,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_double_bt() 
 		{
-			if (doIndexes) 
+			if (configuration.UseIndexes) 
 			{
 				try
 				{
@@ -883,7 +875,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_int_bt() 
 		{
-			if (doIndexes) 
+			if (configuration.UseIndexes) 
 			{
 				try
 				{
@@ -903,7 +895,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_key_bt() 
 		{
-			if (doIndexes && configuration.SupportsClusteredIndexes) 
+			if (configuration.UseIndexes && configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
@@ -946,7 +938,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void drop_updates_keys() 
 		{
-			if (doIndexes) 
+			if (configuration.UseIndexes) 
 			{
 				try
 				{
@@ -1444,7 +1436,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void upd_append_duplicate() 
 		{
-			if (doIndexes) 
+			if (configuration.UseIndexes) 
 			{
 				try
 				{
