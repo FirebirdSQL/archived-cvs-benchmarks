@@ -45,8 +45,6 @@ namespace AS3AP.BenchMark
 		private string		backendName		= String.Empty;
 
 		private bool		runCreate		= true;
-		private bool		runSingleUser	= true;
-		private bool		runMultiUser	= false;
 
 		private int			iters			= 0;
 		private int			timeToRun		= 15;
@@ -87,8 +85,6 @@ namespace AS3AP.BenchMark
 		private void getConfiguration()
 		{
 			runCreate		= Boolean.Parse(ConfigurationSettings.AppSettings["RunCreate"]);
-			runSingleUser	= Boolean.Parse(ConfigurationSettings.AppSettings["RunSingleUser"]);
-			runMultiUser	= Boolean.Parse(ConfigurationSettings.AppSettings["RunMultiUser"]);
 
 			backendName		= ConfigurationSettings.AppSettings["Backend"];
 
@@ -144,6 +140,7 @@ namespace AS3AP.BenchMark
 						case "SQL87":
 						case "SQL92":
 						{
+							Console.WriteLine("Running tests using {0} syntax", testType[j]);
 							testSuite = TestSuiteFactory.GetTestSuite(testSuiteType, backendName);
 							log.Simple("\r\n\"Running tests using {0} syntax\r\n", testType[j]);
 						}
