@@ -61,7 +61,7 @@ public class JdbcDatabaseManager extends BenchmarkDatabaseManager {
             throws SQLException {
         DriverConnectionPoolDataSource pool = new DriverConnectionPoolDataSource();
 
-        pool.setMaxConnections(getConfig().getMaxConnections());
+        pool.setMaxPoolSize(getConfig().getMaxConnections());
 
         pool.setDriverClassName(getConfig().getDriverClassName());
         pool.setJdbcUrl(getConfig().getJdbcUrl());

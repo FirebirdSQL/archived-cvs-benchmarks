@@ -64,7 +64,7 @@ public class FirebirdDatabaseManager extends BenchmarkDatabaseManager {
             throws SQLException {
         FBConnectionPoolDataSource pool = new FBConnectionPoolDataSource();
 
-        pool.setMaxConnections(getConfig().getMaxConnections());
+        pool.setMaxPoolSize(getConfig().getMaxConnections());
 
         pool.setDatabase(getConfig().getCustomProperty("firebird.databasePath"));
         pool.setUserName(getConfig().getUserName());
