@@ -31,12 +31,15 @@ public class ActiveBenchmarkSuite extends ActiveTestSuite {
     private volatile int fActiveTestDeathCount;
     
     public void run(TestResult result) {
+        int counter = 0;
         for (Enumeration e= tests(); e.hasMoreElements(); ) {
               if (result.shouldStop() )
                   break;
             Test test= (Test)e.nextElement();
             runTest(test, result);
+            counter++;
         }
+        System.out.println("Started " + counter + " threads.");
     }
 
     public synchronized void waitSuiteCompletion() {
