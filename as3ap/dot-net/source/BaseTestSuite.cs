@@ -1049,7 +1049,7 @@ namespace AS3AP.BenchMark
 			try
 			{
 				this.testResult = this.ExecuteNonQuery(
-					"delete from updates where col_key = -5000");
+					"delete from updates where col_key = -5000 or col_key = 5005");
 			}
 			catch (Exception)
 			{
@@ -1164,13 +1164,13 @@ namespace AS3AP.BenchMark
 			{
 				int count = this.ExecuteNonQuery(
 					"insert into updates select * from saveupdates");
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
