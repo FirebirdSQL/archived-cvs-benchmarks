@@ -49,10 +49,10 @@ namespace AS3AP.BenchMark
 			{			
 				beginTransaction();
 				cursorOpen( 
-					"select uniques.col_signed, uniques.col_name,"					+
-						"hundred.col_signed, hundred.col_name"						+
-					"from uniques"													+
-						"join hundred ON uniques.col_address = hundred.col_address"	+
+					"select uniques.col_signed, uniques.col_name, "					+
+						"hundred.col_signed, hundred.col_name "						+
+					"from uniques "													+
+						"join hundred ON uniques.col_address = hundred.col_address "+
 					"where uniques.col_address = 'SILICON VALLEY'");
 				
 				while (cursorFetch()) 
@@ -89,10 +89,10 @@ namespace AS3AP.BenchMark
 			{
 				beginTransaction();
 				cursorOpen(
-					"select uniques.col_signed, uniques.col_name,"			+
-						"hundred.col_signed, hundred.col_name"				+
-					"from uniques"											+
-						"join hundred ON uniques.col_key = hundred.col_key"	+
+					"select uniques.col_signed, uniques.col_name, "			+
+						"hundred.col_signed, hundred.col_name "				+
+					"from uniques "											+
+						"join hundred ON uniques.col_key = hundred.col_key "+
 					"where uniques.col_key = 1000");
 				
 				while (cursorFetch()) 
@@ -129,10 +129,10 @@ namespace AS3AP.BenchMark
 			{
 				beginTransaction();
 				cursorOpen( 
-					"select uniques.col_signed, uniques.col_name,"				+
-						"hundred.col_signed, hundred.col_name"					+
-					"from uniques"												+
-						"join hundred on uniques.col_code = hundred.col_code"	+
+					"select uniques.col_signed, uniques.col_name, "				+
+						"hundred.col_signed, hundred.col_name "					+
+					"from uniques "												+
+						"join hundred on uniques.col_code = hundred.col_code "	+
 					"where uniques.col_code = 'BENCHMARKS'");
 				
 				while (cursorFetch()) 
@@ -169,12 +169,12 @@ namespace AS3AP.BenchMark
 			{
 				beginTransaction();
 				cursorOpen(
-					"select uniques.col_signed, uniques.col_date,"			+
-						"hundred.col_signed, hundred.col_date,"				+
-						"tenpct.col_signed, tenpct.col_date"				+
-					"from uniques"											+
-						"join hundred on uniques.col_key = hundred.col_key"	+
-						"join tenpct on uniques.col_key = tenpct.col_key"	+
+					"select uniques.col_signed, uniques.col_date, "			+
+						"hundred.col_signed, hundred.col_date, "			+
+						"tenpct.col_signed, tenpct.col_date "				+
+					"from uniques "											+
+						"join hundred on uniques.col_key = hundred.col_key "+
+						"join tenpct on uniques.col_key = tenpct.col_key "	+
 					"where uniques.col_key = 1000");
 				
 				while (cursorFetch()) 
@@ -211,12 +211,12 @@ namespace AS3AP.BenchMark
 			{
 				beginTransaction();
 				cursorOpen( 
-					"select uniques.col_signed, uniques.col_date,"				+
-						"hundred.col_signed, hundred.col_date,"					+
-						"tenpct.col_signed, tenpct.col_date"					+
-					"from uniques"												+
-						"join hundred on uniques.col_code = hundred.col_code"	+
-						"join tenpct on uniques.col_code = tenpct.col_code"		+
+					"select uniques.col_signed, uniques.col_date, "				+
+						"hundred.col_signed, hundred.col_date, "				+
+						"tenpct.col_signed, tenpct.col_date "					+
+					"from uniques "												+
+						"join hundred on uniques.col_code = hundred.col_code "	+
+						"join tenpct on uniques.col_code = tenpct.col_code "	+
 					"where uniques.col_code = 'BENCHMARKS'");
 				
 				while (cursorFetch()) 
@@ -253,12 +253,12 @@ namespace AS3AP.BenchMark
 			{
 				beginTransaction();
 				cursorOpen(
-					"select uniques.col_date, hundred.col_date,"			+
-						"tenpct.col_date, updates.col_date"					+
-					"from uniques"											+
-						"join hundred on uniques.col_key = hundred.col_key"	+
-						"join tenpct on uniques.col_key = tenpct.col_key"	+
-						"join updates on uniques.col_key = updates.col_key"	+
+					"select uniques.col_date, hundred.col_date, "			+
+						"tenpct.col_date, updates.col_date "				+
+					"from uniques "											+
+						"join hundred on uniques.col_key = hundred.col_key "+
+						"join tenpct on uniques.col_key = tenpct.col_key "	+
+						"join updates on uniques.col_key = updates.col_key "+
 					"where uniques.col_key = 1000");
 				
 				while (cursorFetch()) 
@@ -295,12 +295,12 @@ namespace AS3AP.BenchMark
 			{
 				beginTransaction();
 				cursorOpen( 
-					"select uniques.col_date, hundred.col_date,"				+
-						"tenpct.col_date, updates.col_date"						+
-					"from uniques"												+
-						"join hundred on uniques.col_code = hundred.col_code"	+
-						"join tenpct on uniques.col_code = tenpct.col_code"		+
-						"join updates on uniques.col_code = updates.col_code"	+
+					"select uniques.col_date, hundred.col_date, "				+
+						"tenpct.col_date, updates.col_date "					+
+					"from uniques "												+
+						"join hundred on uniques.col_code = hundred.col_code "	+
+						"join tenpct on uniques.col_code = tenpct.col_code "	+
+						"join updates on uniques.col_code = updates.col_code "	+
 						"where uniques.col_code = 'BENCHMARKS'");
 				
 				while (cursorFetch()) 
