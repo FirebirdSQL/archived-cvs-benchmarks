@@ -787,11 +787,11 @@ namespace AS3AP.BenchMark
 					"select count(col_key) "									+
 					"from tenpct "												+
 					"where col_name = 'THE+ASAP+BENCHMARKS+' "					+
-					"and col_int <= 100000000 "									+
-					"and col_signed between 1 and 99999999 "					+
-					"and not (col_float between -450000000 and 450000000) "		+
-					"and col_double > 600000000 "								+
-					"and col_decim < -600000000");
+						"and col_int <= 100000000 "									+
+						"and col_signed between 1 and 99999999 "					+
+						"and not (col_float between -450000000 and 450000000) "		+
+						"and col_double > 600000000 "								+
+						"and col_decim < -600000000");
 			}
 			catch(Exception)
 			{
@@ -808,13 +808,13 @@ namespace AS3AP.BenchMark
 			try
 			{
 				this.testResult = this.ExecuteScalar(
-					"select * "						+
-					"from updates "					+
-					"where updates.col_key in "		+
-					"(select updates.col_key "		+
-					"from updates, hundred "		+
-					"where hundred.col_key = updates.col_key " +
-					"and updates.decim > 980000000))");
+					"select avg(updates.col_decim) " +
+					"from updates " +
+					"where updates.col_key in " +
+						"(select updates.col_key " +
+						"from updates, hundred " +
+						"where hundred.col_key = updates.col_key " +
+							"and updates.col_decim > 980000000)");
 			}
 			catch (Exception)
 			{
@@ -828,15 +828,15 @@ namespace AS3AP.BenchMark
 			try
 			{
 				int count = this.ExecuteNonQuery(
-					"create view reportview("								+
-					"col_key,col_signed,col_date,col_decim, "				+
-					"col_name,col_code,col_int) as "						+
-					"select updates.col_key, updates.col_signed, "			+
-					"updates.col_date, updates.col_decim, "					+
-					"hundred.col_name, hundred.col_code, "					+
-					"hundred.col_int "										+
-					"from updates, hundred "								+
-					"where updates.col_key = hundred.col_key");
+					"create view reportview("						+
+						"col_key,col_signed,col_date,col_decim, "	+
+						"col_name,col_code,col_int) as "			+
+					"select updates.col_key, updates.col_signed, "	+
+						"updates.col_date, updates.col_decim, "		+
+						"hundred.col_name, hundred.col_code, "		+
+						"hundred.col_int "							+
+						"from updates, hundred "					+
+						"where updates.col_key = hundred.col_key");
 			}
 			catch(Exception)
 			{				
