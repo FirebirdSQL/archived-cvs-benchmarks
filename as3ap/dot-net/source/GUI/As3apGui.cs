@@ -66,6 +66,7 @@ namespace AS3AP.BenchMark
 		private System.Windows.Forms.ColumnHeader colTime;
 		private System.Windows.Forms.ColumnHeader colFailed;
 		private System.Windows.Forms.ListView lstTestResults;
+		private System.Windows.Forms.Label lblProgressMessage;
 		private System.Windows.Forms.TabControl tabControl;
 
 		public As3apGui() 
@@ -126,16 +127,17 @@ namespace AS3AP.BenchMark
 			this.txtBTreeIndex = new System.Windows.Forms.TextBox();
 			this.lblBtreeIndex = new System.Windows.Forms.Label();
 			this.tabRun = new System.Windows.Forms.TabPage();
-			this.cmdRun = new System.Windows.Forms.Button();
-			this.tabConfig = new System.Windows.Forms.TabPage();
-			this.cmdSave = new System.Windows.Forms.Button();
-			this.cmdLoad = new System.Windows.Forms.Button();
-			this.tabBenchmark = new System.Windows.Forms.TabControl();
 			this.lstTestResults = new System.Windows.Forms.ListView();
 			this.colName = new System.Windows.Forms.ColumnHeader();
 			this.colResult = new System.Windows.Forms.ColumnHeader();
 			this.colTime = new System.Windows.Forms.ColumnHeader();
 			this.colFailed = new System.Windows.Forms.ColumnHeader();
+			this.cmdRun = new System.Windows.Forms.Button();
+			this.tabConfig = new System.Windows.Forms.TabPage();
+			this.cmdSave = new System.Windows.Forms.Button();
+			this.cmdLoad = new System.Windows.Forms.Button();
+			this.tabBenchmark = new System.Windows.Forms.TabControl();
+			this.lblProgressMessage = new System.Windows.Forms.Label();
 			this.tabControl.SuspendLayout();
 			this.tabGeneral.SuspendLayout();
 			this.tabProvider.SuspendLayout();
@@ -571,6 +573,7 @@ namespace AS3AP.BenchMark
 			// tabRun
 			// 
 			this.tabRun.Controls.AddRange(new System.Windows.Forms.Control[] {
+																				 this.lblProgressMessage,
 																				 this.lstTestResults,
 																				 this.cmdRun});
 			this.tabRun.Location = new System.Drawing.Point(4, 22);
@@ -579,10 +582,47 @@ namespace AS3AP.BenchMark
 			this.tabRun.TabIndex = 1;
 			this.tabRun.Text = "Run benchmark";
 			// 
+			// lstTestResults
+			// 
+			this.lstTestResults.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+																							 this.colName,
+																							 this.colResult,
+																							 this.colTime,
+																							 this.colFailed});
+			this.lstTestResults.FullRowSelect = true;
+			this.lstTestResults.GridLines = true;
+			this.lstTestResults.Location = new System.Drawing.Point(8, 33);
+			this.lstTestResults.MultiSelect = false;
+			this.lstTestResults.Name = "lstTestResults";
+			this.lstTestResults.Size = new System.Drawing.Size(456, 224);
+			this.lstTestResults.TabIndex = 1;
+			this.lstTestResults.View = System.Windows.Forms.View.Details;
+			// 
+			// colName
+			// 
+			this.colName.Text = "Name";
+			this.colName.Width = 150;
+			// 
+			// colResult
+			// 
+			this.colResult.Text = "Result";
+			this.colResult.Width = 100;
+			// 
+			// colTime
+			// 
+			this.colTime.Text = "Time";
+			this.colTime.Width = 100;
+			// 
+			// colFailed
+			// 
+			this.colFailed.Text = "Failed";
+			this.colFailed.Width = 100;
+			// 
 			// cmdRun
 			// 
-			this.cmdRun.Location = new System.Drawing.Point(8, 8);
+			this.cmdRun.Location = new System.Drawing.Point(8, 6);
 			this.cmdRun.Name = "cmdRun";
+			this.cmdRun.Size = new System.Drawing.Size(75, 24);
 			this.cmdRun.TabIndex = 0;
 			this.cmdRun.Text = "&Run";
 			this.cmdRun.Click += new System.EventHandler(this.cmdRun_Click);
@@ -628,40 +668,14 @@ namespace AS3AP.BenchMark
 			this.tabBenchmark.Size = new System.Drawing.Size(480, 320);
 			this.tabBenchmark.TabIndex = 0;
 			// 
-			// lstTestResults
+			// lblProgressMessage
 			// 
-			this.lstTestResults.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-																							 this.colName,
-																							 this.colResult,
-																							 this.colTime,
-																							 this.colFailed});
-			this.lstTestResults.FullRowSelect = true;
-			this.lstTestResults.GridLines = true;
-			this.lstTestResults.Location = new System.Drawing.Point(8, 40);
-			this.lstTestResults.Name = "lstTestResults";
-			this.lstTestResults.Size = new System.Drawing.Size(456, 248);
-			this.lstTestResults.TabIndex = 1;
-			this.lstTestResults.View = System.Windows.Forms.View.Details;
-			// 
-			// colName
-			// 
-			this.colName.Text = "Name";
-			this.colName.Width = 150;
-			// 
-			// colResult
-			// 
-			this.colResult.Text = "Result";
-			this.colResult.Width = 100;
-			// 
-			// colTime
-			// 
-			this.colTime.Text = "Time";
-			this.colTime.Width = 100;
-			// 
-			// colFailed
-			// 
-			this.colFailed.Text = "Failed";
-			this.colFailed.Width = 100;
+			this.lblProgressMessage.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.lblProgressMessage.Location = new System.Drawing.Point(8, 264);
+			this.lblProgressMessage.Name = "lblProgressMessage";
+			this.lblProgressMessage.Size = new System.Drawing.Size(456, 24);
+			this.lblProgressMessage.TabIndex = 2;
+			this.lblProgressMessage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			// 
 			// As3apGui
 			// 
@@ -804,27 +818,35 @@ namespace AS3AP.BenchMark
 		private void cmdRun_Click(object sender, System.EventArgs e)
 		{
 			AS3AP as3ap = new AS3AP(configuration);
+
+			#warning "Run the test in a separate Threads"
 			
-			as3ap.TestResult	+= new TestResultEventHandler(OnTestResult);
+			as3ap.TestResult		+= new TestResultEventHandler(OnTestResult);
+			as3ap.ProgressMessage	+= new ProgressMessageEventHandler(OnProgressMessage);
 
 			as3ap.Run();
-
-			MessageBox.Show(this, "Finished", "AS3AP BenchMark");
 		}
 
 		private void OnTestResult(object Sender, TestResultEventArgs e)
 		{
-			lstTestResults.Invalidate(true);
+			lstTestResults.BeginUpdate();
 
 			ListViewItem item = new ListViewItem(e.TestName.Trim());
+			item.Selected = true;
 
 			item.SubItems.Add(e.TestResult.ToString());
 			item.SubItems.Add(e.TestTime.ToString());
-			item.SubItems.Add(e.TestFailed.ToString());
-
+			item.SubItems.Add(e.TestFailed.ToString());			
+			
 			lstTestResults.Items.Add(item);
 
-			lstTestResults.Invalidate(false);
+			lstTestResults.EndUpdate();			
+		}
+
+		private void OnProgressMessage(object Sender, ProgressMessageEventArgs e)
+		{
+			lblProgressMessage.Text = e.Message;
+			lblProgressMessage.Refresh();
 		}
 
 		#endregion
