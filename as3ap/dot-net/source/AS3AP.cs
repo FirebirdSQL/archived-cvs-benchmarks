@@ -113,6 +113,10 @@ namespace AS3AP.BenchMark
 				Console.WriteLine("Creating tables and loading data {0}.", DateTime.Now);
 				timeIt("createDataBase");
 			}			
+			else
+			{
+				setup_database();
+			}
 
 			currentTest = "Counting tuples";
 			testSuite.Backend.DatabaseConnect();
