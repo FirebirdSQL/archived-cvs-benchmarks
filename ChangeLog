@@ -1,35 +1,89 @@
-2003-03-02  carlosga_fb
-	* as3ap/dot-net/backends/source/FirebirdSql.cs:
-		Added better logging support
+2003-03-30  carlosga_fb
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/Backend.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
+	* as3ap/dot-net/source/ITestSuite.cs:
+		Removed datageneration process this will be placed in othe
+		place for allow generated data to be saved in text files.
 
-2003-02-24  carlosga_fb
-	* as3ap/dot-net/backends/source/FirebirdSql.cs:
-		Fixed error with logger use that don't allow the multiuser
-		tests to run
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/Backend.cs:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
+		Added changes for data creation process
 
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/Backend.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
+	* as3ap/dot-net/source/ITestSuite.cs:
+	* as3ap/dot-net/source/Main.cs:
+	* as3ap/dot-net/source/Sql87TestSuite.cs:
+	* as3ap/dot-net/source/Sql92TestSuite.cs:
+	* as3ap/dot-net/source/TestSuiteFactory.cs:
+		Added changes for allow better external benchmark configuration
+
+	* as3ap/dot-net/CHANGELOG.txt:
 	* as3ap/dot-net/CHANGELOG.txt:
 		Updated CHANGELOG.TXT
 
-2003-02-21  carlosga_fb
-	* as3ap/dot-net/backends/source/FirebirdSql.cs:
-		More changes for try to improve performance of the data
-		creation process
+	* as3ap/dot-net/source/AS3AP.BenchMark.exe.config:
+		Removed file
+
+2003-03-29  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDDL.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDatabaseManager.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkFixture.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkInsertSQL.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkListener.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkSuite.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/OutputTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/TestRunner.java:
+		initial revision
+
+2003-03-28  carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated CHANGELOG.TXT
+
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/Sql87TestSuite.cs:
+	* as3ap/dot-net/source/Sql92TestSuite.cs:
+		 Added some bugfixes and changes for allow the Neutral backend
+		to work with SQL Server.
+
+2003-03-04  carlosga_fb
+	* as3ap/dot-net/source/Sql87TestSuite.cs:
+	* as3ap/dot-net/source/Sql92TestSuite.cs:
+		Minor change for display exception in screen in agg_simple_report
+
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/ITestSuite.cs:
+	* as3ap/dot-net/source/Sql87TestSuite.cs:
+	* as3ap/dot-net/source/Sql92TestSuite.cs:
+		Added changes for returning the result of a test as an object
+		instead of an Int32
+
+2003-03-03  carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated CHANGELOG.TXT
+
+2003-02-24  carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated CHANGELOG.TXT
 
 2003-02-20  carlosga_fb
 	* as3ap/dot-net/CHANGELOG.txt:
 		Updated CHANGELOG.TXT
-
-	* as3ap/dot-net/backends/source/FirebirdSql.cs:
-		Added modifications to data creation process.
 
 	* as3ap/dot-net/source/AS3AP.cs:
 		Minor change
 
 2003-02-18  carlosga_fb
 	* as3ap/dot-net/as3ap.BenchMark.build:
-	* as3ap/dot-net/backends/source/FirebirdSql.cs:
-	* as3ap/dot-net/backends/source/IBackend.cs:
-	* as3ap/dot-net/backends/source/Neutral.cs:
 	* as3ap/dot-net/makefile:
 	* as3ap/dot-net/source/AS3AP.cs:
 	* as3ap/dot-net/source/BaseTestSuite.cs:
@@ -40,17 +94,11 @@
 		Add logger assembly
 
 2003-02-14  carlosga_fb
-	* as3ap/dot-net/backends/source/Neutral.cs:
-		Added Neutral backend class ( needs testing )
-
 	* as3ap/dot-net/makefile:
 		Updated linux makefile
 
 	* as3ap/dot-net/CHANGELOG.txt:
 		Updated CHANGELOG.TXT
-
-	* as3ap/dot-net/backends/source/FirebirdSql.cs:
-		Minor changes
 
 	* as3ap/dot-net/as3ap.BenchMark.build:
 	* as3ap/dot-net/makefile:
@@ -59,9 +107,6 @@
 2003-02-13  carlosga_fb
 	* as3ap/dot-net/CHANGELOG.txt:
 		Updated CHANGELOG.TXT
-
-	* as3ap/dot-net/backends/source/FirebirdSql.cs:
-		Give better error messages
 
 2003-02-12  carlosga_fb
 	* as3ap/dot-net/source/AS3AP.cs:
@@ -105,26 +150,28 @@
 	* as3ap/dot-net/source/AS3AP.cs:
 		Fixed with tuplecount
 
-	* as3ap/dot-net/backends/source/FirebirdSql.cs:
-	* as3ap/dot-net/backends/source/IBackend.cs:
-		* Added the ability to select ( via config file ) the data creation method.
-		
-		- Fixed error in data creation method, table hundred needs to have a record
-		
-		with an address of value 'SILICON VALLEY' for join_2 test.
-
 2003-02-11  carlosga_fb
-	* as3ap/dot-net/CHANGELOG.txt:
-		Updated CHANGLOG.TXT
-
-	* as3ap/dot-net/backends/source/FirebirdSql.cs:
-	* as3ap/dot-net/backends/source/IBackend.cs:
 	* as3ap/dot-net/source/AS3AP.cs:
 	* as3ap/dot-net/source/BaseTestSuite.cs:
 	* as3ap/dot-net/source/ITestSuite.cs:
 	* as3ap/dot-net/source/Sql87TestSuite.cs:
 	* as3ap/dot-net/source/Sql92TestSuite.cs:
 		Added changes for make use of IsolationLevelAttribute
+
+	* as3ap/dot-net/source/IsolationAttribute.cs:
+		Added new class IsolationLevelAttribute
+
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated CHANGLOG.TXT
+
+	* as3ap/dot-net/source/AS3AP.cs:
+		Fixed header
+
+	* as3ap/dot-net/source/AS3AP.BenchMark.exe.config:
+		Updated config file
+
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated CHANGELOG.TXT
 
 	* as3ap/dot-net/source/BaseTestSuite.cs:
 	* as3ap/dot-net/source/ITestSuite.cs:
@@ -139,27 +186,8 @@
 		Added changes for allow specification of SQL syntax
 		( SQL87 or SQL92 ) in the RunSequence
 
-	* as3ap/dot-net/backends/source/FirebirdSql.cs:
-	* as3ap/dot-net/backends/source/IBackend.cs:
-		Reorganization of backends project source code
-
-	* as3ap/dot-net/source/IsolationAttribute.cs:
-		Added new class IsolationLevelAttribute
-
-	* as3ap/dot-net/source/AS3AP.cs:
-		Fixed header
-
 	* as3ap/dot-net/LICENSE.TXT:
 		Removed file
-
-	* as3ap/dot-net/backends/LICENSE.TXT:
-		Add GPL license to this project, that is ported from OSDB
-
-	* as3ap/dot-net/source/AS3AP.BenchMark.exe.config:
-		Updated config file
-
-	* as3ap/dot-net/CHANGELOG.txt:
-		Updated CHANGELOG.TXT
 
 	* as3ap/dot-net/source/AS3AP.cs:
 		- Rewrited files and back to LGPL license
@@ -242,7 +270,6 @@
 	* as3ap/dot-net/LICENSE.TXT:
 	* as3ap/dot-net/README.TXT:
 	* as3ap/dot-net/as3ap.BenchMark.build:
-	* as3ap/dot-net/backends/source/AssemblyInfo.cs:
 	* as3ap/dot-net/data/as3ap.fdb:
 	* as3ap/dot-net/doc/The Benchmark Handbook - Chapter5.pdf:
 	* as3ap/dot-net/makefile:
