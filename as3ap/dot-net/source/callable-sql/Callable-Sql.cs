@@ -91,7 +91,7 @@ namespace AS3AP.BenchMark
 			{
 				returnValue = backend.CreateData(dataSize);
 			}
-			catch(Exception ex)
+			catch(Exception)
 			{
 				testFailed = true;
 			}
@@ -425,7 +425,6 @@ namespace AS3AP.BenchMark
 			{  
 				try
 				{
-					/* Pointless without index on updates.key */
 					backend.CreateIndexForeign("hundred"				, 
 												"fk_hundred_updates"	, 
 												"col_signed"			, 
@@ -436,7 +435,6 @@ namespace AS3AP.BenchMark
 				{
 					testFailed = true;
 				}
-
 			}
 
 			return 0;
