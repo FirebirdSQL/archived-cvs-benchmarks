@@ -14,6 +14,8 @@ AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 		- Changes in the constructor, now we get an BenchMark configuration object 
 		instead of a configuration file name.
 
+		- Added progress message event handler.
+
 
 2003-03-30 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
