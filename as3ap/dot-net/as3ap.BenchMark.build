@@ -120,7 +120,6 @@
                 <absolute file="System.XML.dll" />
                 <absolute file="System.Windows.Forms.dll" />
                 <absolute file="System.Runtime.Serialization.Formatters.Soap" />
-                <includes name="${build.dir}/Logger.dll" />
                 <includes name="${build.dir}/Common.Data.Helper.dll" />
             </references>
         </csc>

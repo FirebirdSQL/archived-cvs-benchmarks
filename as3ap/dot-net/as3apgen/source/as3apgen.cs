@@ -16,9 +16,7 @@
 // individuals.  Contributors to this file are either listed here or
 // can be obtained from a CVS history command.
 //
-// (c) 2003-2004. All rights reserved.
-//
-// For more information please see http://www.firebirdsql.org
+// Portions of this file are based on OSDB project ( sourceforge.net/projects/osdb )
 //
 
 using System;

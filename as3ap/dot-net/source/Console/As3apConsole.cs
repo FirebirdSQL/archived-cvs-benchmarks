@@ -1,25 +1,20 @@
 //
 // AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark
 //			for Relational Database Systems.
-//
-// Author: Carlos Guzmán Álvarez <carlosga@telefonica.net>
+// Copyright (C) 2003-2004  Carlos Guzman Alvarez
 //
 // Distributable under LGPL license.
-// You may obtain a copy of the License at http://www.gnu.org/copyleft/lgpl.html
+// You may obtain a copy of the License at http://www.gnu.org/copyleft/lesser.html
 //
-// This program is distributed in the hope that it will be useful,
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+// 
+// This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// LGPL License for more details.
-//
-// This file was created by members of the Firebird development team.
-// All individual contributions remain the Copyright (C) of those
-// individuals.  Contributors to this file are either listed here or
-// can be obtained from a CVS history command.
-//
-// (c) 2003. All rights reserved.
-//
-// For more information please see http://www.firebirdsql.org
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
 //
 
 using System;
@@ -34,9 +29,9 @@ namespace AS3AP.BenchMark
 	{
 		#region Fields
 
-		private BenchMarkConfiguration		configuration = new BenchMarkConfiguration();
+		private BenchMarkConfiguration		configuration;
 		private Thread						runThread;
-		private bool						isRunning = false;
+		private bool						isRunning;
 		private AS3AP						as3ap;
 		private TestResultEventHandler		testResultHandler;
 		private ProgressMessageEventHandler	progressMessageHandler;
@@ -47,6 +42,7 @@ namespace AS3AP.BenchMark
 
 		private As3apConsole()
 		{
+			this.configuration = new BenchMarkConfiguration();
 		}
 
 		#endregion
