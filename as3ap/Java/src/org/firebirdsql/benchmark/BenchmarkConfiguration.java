@@ -54,6 +54,8 @@ public class BenchmarkConfiguration {
     public static final String BACKGROUND_TEST_DURATION = "bgDuration";
     public static final String MEASURMENT_TEST_DURARION = "perfDuration";
     
+    public static final String RECREATE_TABLE_AS_CLEANUP = "recreateTable";
+    
     private static final Properties RES = new Properties();
     static {
         
@@ -116,19 +118,31 @@ public class BenchmarkConfiguration {
     }
     
     private int getIntProperty(String key, int defaultValue) {
-        String duration = RES.getProperty(BACKGROUND_TEST_DURATION);
+        String strValue = RES.getProperty(BACKGROUND_TEST_DURATION);
         
-        if (duration == null)
+        if (strValue == null)
             return defaultValue;
             
         try {
-            int value = Integer.parseInt(duration);
+            int value = Integer.parseInt(strValue);
             
             return value * 1000;
         } catch(NumberFormatException ex) {
             return defaultValue;
         }
 
+    }
+    
+    private boolean getBooleanProperty(String key, boolean defaultValue) {
+        String strValue = RES.getProperty(key);
+        
+        if ("true".equals(strValue))
+            return true;
+        else
+        if ("false".equals(strValue))
+            return false;
+        else
+            return defaultValue;
     }
     
     public int getBackgroundTestDuration() {
@@ -146,5 +160,9 @@ public class BenchmarkConfiguration {
     public String getTpbMapping() {
         return RES.getProperty(TPB_MAPPING_PROPERTY, 
             "isc_tpb_mapping.properties");
+    }
+    
+    public boolean isRecreateTableAsCleanup() {
+        return getBooleanProperty(RECREATE_TABLE_AS_CLEANUP, false);
     }
 }
