@@ -62,24 +62,30 @@ public class BenchmarkTest extends BenchmarkDDL {
     /**
      * This class can fetch complete result set to the client. 
      */
-    protected static class Fetcher {
+    public static class Fetcher {
 
         private int colNum;
 
-        protected Fetcher(String[] columns) {
+        public Fetcher(String[] columns) {
             this.colNum = columns.length;
         }
         
-        protected Fetcher(int colNum) {
+        public Fetcher(int colNum) {
             this.colNum = colNum;
         }
 
-        protected void fetchResultSet(ResultSet rs) throws SQLException {
+        public int fetchResultSet(ResultSet rs) throws SQLException {
+            int counter = 0;
+            
             while(rs.next()) {
                 for (int i = 0; i < colNum; i++) { 
                     Object obj = rs.getObject(i + 1);
                 }
+                
+                counter++;
             }
+            
+            return counter;
         }
     }
 }

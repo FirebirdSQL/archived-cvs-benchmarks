@@ -18,38 +18,63 @@
  */
 package org.firebirdsql.benchmark;
 
-import junit.extensions.ActiveTestSuite;
+import junit.framework.TestCase;
+import junit.framework.TestResult;
 import junit.framework.TestSuite;
 
-
-import com.mousepushers.junit.ControllableTestThread;
-import com.mousepushers.junit.MultithreadedTestCase;
 
 /**
  * This class represents multi-user test suite from the AS3AP benchmark.
  * 
  * @author <a href="mailto:rrokytskyy@users.sourceforge.net">Roman Rokytskyy</a>
  */
-public class MultiUserSuite extends MultithreadedTestCase {
+public class MultiUserSuite extends BenchmarkSuite {
     
     public static final int KEY_RANGE = 1000 * 1000 * 1000;
 
-    public MultiUserSuite(String name) {
-        super(name);
-    }
-    
     protected int getUserCount() {
         return 10;
     }
     
-    protected TestSuite getOLTPTests(String name) {
-        ActiveBenchmarkSuite suite = new ActiveBenchmarkSuite();
-        
-        for(int i = 0; i < getUserCount(); i++) {
-            suite.addTest(new MultiUserTest("testOltpUpdate", KEY_RANGE));
+    /** 
+     * Fill this test suite.
+     */
+    public void fillSuite() {
+        // TODO Auto-generated method stub
+
+    }
+    
+    private class Suite extends TestCase {
+        public Suite(String name) {
+            super(name);
         }
         
-        return suite;
+        public void testMultiUser() throws Exception {
+            
+            TestResult testResult = new TestResult();
+            
+            ActiveBenchmarkSuite bgIrTests = new ActiveBenchmarkSuite(0, getUserCount());
+            bgIrTests.addTest(new MultiUserTest("testIrSelect", KEY_RANGE));
+            
+            bgIrTests.run(testResult);
+            
+            Thread.sleep(1 * 60 * 1000);
+            
+            ActiveBenchmarkSuite perfIrTest = new ActiveBenchmarkSuite();
+            perfIrTest.setDuration(1 * 60 * 1000);
+            perfIrTest.addTest(new MultiUserTest("testIrSelect", KEY_RANGE));
+            
+            perfIrTest.run(testResult);
+            perfIrTest.waitSuiteCompletion();
+            
+            Thread victim = (Thread)bgIrTests.getThreads().get(0);
+            victim.interrupt();
+            
+            victim.join();
+            
+            TestSuite crossSectionTests = getCrossSectionSuite();
+            crossSectionTests.run(testResult);
+        }
     }
     
     private TestSuite getCrossSectionSuite() {
@@ -68,5 +93,4 @@ public class MultiUserSuite extends MultithreadedTestCase {
         
         return suite;
     }
-    
 }

@@ -107,6 +107,7 @@ public class MultiUserTest extends BenchmarkTest {
         });
         
         f.fetchResultSet(rs);
+        
         rs.close();
     }
     

@@ -18,9 +18,13 @@
  */
 package org.firebirdsql.benchmark;
 
-import junit.extensions.ActiveTestSuite;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import junit.framework.Test;
 import junit.framework.TestResult;
+import junit.framework.TestSuite;
 
 /**
  * This class extends {@link ActiveTestSuite} test suite by allowing to specify
@@ -29,15 +33,17 @@ import junit.framework.TestResult;
  * 
  * @author <a href="mailto:rrokytskyy@users.sourceforge.net">Roman Rokytskyy</a>
  */
-public class ActiveBenchmarkSuite extends ActiveTestSuite {
+public class ActiveBenchmarkSuite extends TestSuite {
 
-    private long duration;
+    private long duration = 0;
+    private int threadCount = 1;
     
+    private ArrayList threads = new ArrayList();
     /**
      * Create default instance of this class.
      */
     public ActiveBenchmarkSuite(){
-        super();
+        this(0, 1);
     }
 
     /**
@@ -45,10 +51,11 @@ public class ActiveBenchmarkSuite extends ActiveTestSuite {
      * 
      * @param duration duration of the test execution.
      */    
-    public ActiveBenchmarkSuite(long duration) {
-        this();
+    public ActiveBenchmarkSuite(long duration, int threadCount) {
+        super();
         
         this.duration = duration;
+        this.threadCount = threadCount;
     }
     
     /**
@@ -59,7 +66,7 @@ public class ActiveBenchmarkSuite extends ActiveTestSuite {
      * @param duration duration of this test suite, cannot be negative.
      * 
      * @throws IllegalArgumentException if duration is negative. 0 means that
-     * each test case will be run only once.
+     * each test case will be run forever.
      */
     public void setDuration(long duration) {
         
@@ -70,34 +77,109 @@ public class ActiveBenchmarkSuite extends ActiveTestSuite {
     }
     
     /**
+     * Get duration of this test suite.
+     * 
+     * @return duration of this test suite, 0 if test suite is executed only 
+     * once.
+     */
+    public long getDuration() {
+        return duration;
+    }
+    
+    /**
+     * Set number of threads to run.
+     * @param threadCount
+     */
+    public void setThreadCount(int threadCount) {
+        this.threadCount = threadCount;
+    }
+    
+    /**
      * Run test. This method is called for each test case in a suite and runs
      * it once or repeatedly within the specified duration.
      */
     public void runTest(final Test test, final TestResult result) {
-        Runnable runnable = new Runnable() {
+        
+        // define a method local class that will run the test 
+        class TestRunner implements Runnable {
             
             // copy duration, so that it cannot be changed later
             private long duration = ActiveBenchmarkSuite.this.duration;
             
             public void run() {
                 try {
-                    // ensure that with 0 duration test will be run only once
-                    if (duration == 0)
+                    
+                    long start = System.currentTimeMillis();
+                    boolean runFlag = true;
+                    
+                    // ensure that at least the test is executed once
+                    do {
                         test.run(result);
-                    else {
-                        long start = System.currentTimeMillis();
-                        do {
-                            test.run(result);
-                        } while (System.currentTimeMillis() - start <= duration);
-                    }
+                        
+                        long elapsedTime = System.currentTimeMillis() - start;
+                        runFlag = duration == 0 || elapsedTime <= duration;
+                    } while (runFlag && !Thread.interrupted());
+                    
                 } finally {
-                    ActiveBenchmarkSuite.this.runFinished(test);
+                    ActiveBenchmarkSuite.this.runFinished(Thread.currentThread());
                 }
             }
         };
         
-        Thread t = new Thread(runnable, test.toString());
-        t.start();
+        for(int i = 0; i < threadCount; i++) {
+            Thread t = new Thread(new TestRunner(), test.toString() + "-" + i);
+            threads.add(t);
+        }
+        
+        Iterator iter = threads.iterator();
+		while (iter.hasNext()) {
+			Thread element = (Thread) iter.next();
+			element.start();
+		}
     }
     
+    /**
+     * Wait untill all threads are finished.
+     */
+    public synchronized void waitSuiteCompletion() {
+        while(threads.size() > 0) {
+            try {
+                wait();
+            } catch(InterruptedException ex) {
+                // ignore
+            }
+        }
+    }
+    
+    /**
+     * Interrupt all currently running threads and wait until they finish.
+     */
+    public synchronized void stop() {
+        Iterator iter = threads.iterator();
+		while (iter.hasNext()) {
+			Thread element = (Thread) iter.next();
+			element.interrupt();
+		}
+        
+        waitSuiteCompletion();
+    }
+
+    /**
+     * Get all running threads. This method gives access to the list of currently
+     * running threads.
+     * 
+     * @return list with all currently running threads.
+     */
+    public List getThreads() {
+        return new ArrayList(threads);
+    }
+
+	/**
+     * Remove finished thread and notify all about changed state.
+	 */
+	private synchronized void runFinished(Thread thread) {
+		threads.remove(thread);
+        notifyAll();
+	}
+
 }
