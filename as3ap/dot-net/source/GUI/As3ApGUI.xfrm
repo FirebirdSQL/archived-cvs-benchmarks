@@ -1,0 +1,284 @@
+<Components version="1.0">
+  <System.Windows.Forms.Form>
+    <Name value="frmGUI" />
+    <GridSize value="{Width=8, Height=8}" />
+    <DrawGrid value="True" />
+    <SnapToGrid value="True" />
+    <Size value="{Width=504, Height=376}" />
+    <DockPadding value="" />
+    <Text value="AS3AP Benchmark" />
+    <Menu value="System.Windows.Forms.MainMenu, Items.Count: 0, GetForm: &lt;Sin formulario&gt;" />
+    <Controls>
+      <System.Windows.Forms.TabControl>
+        <Name value="tabBenchmark" />
+        <TabIndex value="0" />
+        <Size value="{Width=480, Height=320}" />
+        <Location value="{X=8,Y=16}" />
+        <TabPages>
+          <System.Windows.Forms.TabPage>
+            <Name value="tabConfig" />
+            <DockPadding value="" />
+            <Text value="Configuration" />
+            <Size value="{Width=472, Height=294}" />
+            <Location value="{X=4,Y=22}" />
+            <Controls>
+              <System.Windows.Forms.TabControl>
+                <Name value="tabControl" />
+                <TabIndex value="12" />
+                <Size value="{Width=456, Height=248}" />
+                <Location value="{X=8,Y=40}" />
+                <TabPages>
+                  <System.Windows.Forms.TabPage>
+                    <Name value="tabGeneral" />
+                    <DockPadding value="" />
+                    <Text value="General" />
+                    <Size value="{Width=448, Height=222}" />
+                    <Location value="{X=4,Y=22}" />
+                    <Controls>
+                      <System.Windows.Forms.Button>
+                        <Name value="cmdGetDataPath" />
+                        <Location value="{X=280,Y=96}" />
+                        <Size value="{Width=24, Height=24}" />
+                        <Text value="..." />
+                        <TabIndex value="14" />
+                      </System.Windows.Forms.Button>
+                      <System.Windows.Forms.TextBox>
+                        <Name value="txtDataFilesPath" />
+                        <TabIndex value="13" />
+                        <Location value="{X=176,Y=120}" />
+                        <Size value="{Width=264, Height=56}" />
+                        <Multiline value="True" />
+                        <Text value="" />
+                      </System.Windows.Forms.TextBox>
+                      <System.Windows.Forms.Label>
+                        <Name value="label2" />
+                        <Text value="Data files path" />
+                        <TabIndex value="12" />
+                        <Size value="{Width=100, Height=16}" />
+                        <Location value="{X=176,Y=104}" />
+                      </System.Windows.Forms.Label>
+                      <System.Windows.Forms.CheckBox>
+                        <Name value="chkHashIndexes" />
+                        <Location value="{X=16,Y=160}" />
+                        <Size value="{Width=160, Height=16}" />
+                        <Text value="Supports hash indexes" />
+                        <TabIndex value="11" />
+                      </System.Windows.Forms.CheckBox>
+                      <System.Windows.Forms.CheckBox>
+                        <Name value="chkClusterIndexes" />
+                        <Location value="{X=16,Y=136}" />
+                        <Size value="{Width=160, Height=16}" />
+                        <Text value="Supports clustered indexes" />
+                        <TabIndex value="10" />
+                      </System.Windows.Forms.CheckBox>
+                      <System.Windows.Forms.CheckBox>
+                        <Name value="chkCreateIndexes" />
+                        <Location value="{X=8,Y=104}" />
+                        <Size value="{Width=104, Height=16}" />
+                        <Text value="Create indexes" />
+                        <TabIndex value="9" />
+                      </System.Windows.Forms.CheckBox>
+                      <System.Windows.Forms.TextBox>
+                        <Name value="txtRunSequence" />
+                        <TabIndex value="8" />
+                        <Location value="{X=176,Y=32}" />
+                        <Size value="{Width=264, Height=56}" />
+                        <Multiline value="True" />
+                        <Text value="" />
+                      </System.Windows.Forms.TextBox>
+                      <System.Windows.Forms.Label>
+                        <Name value="lblRunSequence" />
+                        <Text value="Run sequence" />
+                        <TabIndex value="7" />
+                        <Size value="{Width=100, Height=16}" />
+                        <Location value="{X=176,Y=16}" />
+                      </System.Windows.Forms.Label>
+                      <System.Windows.Forms.CheckBox>
+                        <Name value="checkBox" />
+                        <Location value="{X=8,Y=16}" />
+                        <Size value="{Width=144, Height=24}" />
+                        <Text value="Create database tables" />
+                        <TabIndex value="6" />
+                      </System.Windows.Forms.CheckBox>
+                      <System.Windows.Forms.TextBox>
+                        <Name value="txtUserNumber" />
+                        <TabIndex value="4" />
+                        <Location value="{X=8,Y=68}" />
+                        <Text value="" />
+                      </System.Windows.Forms.TextBox>
+                      <System.Windows.Forms.Label>
+                        <Name value="lblUSerNumber" />
+                        <Text value="User number" />
+                        <TabIndex value="3" />
+                        <Size value="{Width=80, Height=16}" />
+                        <Location value="{X=8,Y=48}" />
+                      </System.Windows.Forms.Label>
+                    </Controls>
+                  </System.Windows.Forms.TabPage>
+                  <System.Windows.Forms.TabPage>
+                    <Name value="tabProvider" />
+                    <DockPadding value="" />
+                    <Text value="ADO.NET Provider" />
+                    <Size value="{Width=448, Height=222}" />
+                    <Location value="{X=4,Y=22}" />
+                    <Controls>
+                      <System.Windows.Forms.TextBox>
+                        <Name value="txtAssemblyName" />
+                        <TabIndex value="12" />
+                        <Location value="{X=120,Y=8}" />
+                        <Size value="{Width=320, Height=20}" />
+                        <Text value="" />
+                      </System.Windows.Forms.TextBox>
+                      <System.Windows.Forms.Label>
+                        <Name value="label" />
+                        <Text value="Assembly name" />
+                        <TabIndex value="11" />
+                        <Size value="{Width=96, Height=16}" />
+                        <Location value="{X=8,Y=8}" />
+                      </System.Windows.Forms.Label>
+                      <System.Windows.Forms.TextBox>
+                        <Name value="txtAdapterClass" />
+                        <TabIndex value="10" />
+                        <Location value="{X=120,Y=104}" />
+                        <Size value="{Width=320, Height=20}" />
+                        <Text value="" />
+                      </System.Windows.Forms.TextBox>
+                      <System.Windows.Forms.Label>
+                        <Name value="lblParameterClass" />
+                        <Text value="Parameter class" />
+                        <TabIndex value="9" />
+                        <Size value="{Width=100, Height=16}" />
+                        <Location value="{X=8,Y=104}" />
+                      </System.Windows.Forms.Label>
+                      <System.Windows.Forms.TextBox>
+                        <Name value="textBox3" />
+                        <TabIndex value="8" />
+                        <Location value="{X=120,Y=80}" />
+                        <Size value="{Width=320, Height=20}" />
+                        <Text value="" />
+                      </System.Windows.Forms.TextBox>
+                      <System.Windows.Forms.Label>
+                        <Name value="lblAdapterClass" />
+                        <Text value="Adapter class" />
+                        <TabIndex value="7" />
+                        <Size value="{Width=96, Height=16}" />
+                        <Location value="{X=8,Y=80}" />
+                      </System.Windows.Forms.Label>
+                      <System.Windows.Forms.TextBox>
+                        <Name value="txtCommandClass" />
+                        <TabIndex value="6" />
+                        <Location value="{X=120,Y=56}" />
+                        <Size value="{Width=320, Height=20}" />
+                        <Text value="" />
+                      </System.Windows.Forms.TextBox>
+                      <System.Windows.Forms.Label>
+                        <Name value="lblCommandClass" />
+                        <Text value="Command class" />
+                        <TabIndex value="5" />
+                        <Size value="{Width=96, Height=16}" />
+                        <Location value="{X=8,Y=56}" />
+                      </System.Windows.Forms.Label>
+                      <System.Windows.Forms.TextBox>
+                        <Name value="txtConnectionClass" />
+                        <TabIndex value="4" />
+                        <Location value="{X=120,Y=32}" />
+                        <Size value="{Width=320, Height=20}" />
+                        <Text value="" />
+                      </System.Windows.Forms.TextBox>
+                      <System.Windows.Forms.Label>
+                        <Name value="lblConnectionClass" />
+                        <Text value="Connection class" />
+                        <TabIndex value="3" />
+                        <Size value="{Width=96, Height=16}" />
+                        <Location value="{X=8,Y=32}" />
+                      </System.Windows.Forms.Label>
+                      <System.Windows.Forms.Label>
+                        <Name value="lblConnectionString" />
+                        <Text value="ConnectionString" />
+                        <TabIndex value="2" />
+                        <Size value="{Width=100, Height=16}" />
+                        <Location value="{X=8,Y=128}" />
+                      </System.Windows.Forms.Label>
+                      <System.Windows.Forms.TextBox>
+                        <Name value="txtConnectionString" />
+                        <TabIndex value="1" />
+                        <Location value="{X=8,Y=144}" />
+                        <Size value="{Width=432, Height=72}" />
+                        <Multiline value="True" />
+                        <Text value="txtConnectionString" />
+                        <Lines>
+                          <System.String value="txtConnectionString" />
+                        </Lines>
+                      </System.Windows.Forms.TextBox>
+                    </Controls>
+                  </System.Windows.Forms.TabPage>
+                </TabPages>
+              </System.Windows.Forms.TabControl>
+              <System.Windows.Forms.Button>
+                <Name value="cmdSave" />
+                <Location value="{X=64,Y=8}" />
+                <Size value="{Width=56, Height=23}" />
+                <Text value="Save" />
+                <TabIndex value="1" />
+              </System.Windows.Forms.Button>
+              <System.Windows.Forms.Button>
+                <Name value="cmdLoad" />
+                <Location value="{X=8,Y=8}" />
+                <Size value="{Width=56, Height=23}" />
+                <Text value="Load" />
+                <TabIndex value="0" />
+              </System.Windows.Forms.Button>
+            </Controls>
+          </System.Windows.Forms.TabPage>
+          <System.Windows.Forms.TabPage>
+            <Name value="tabRun" />
+            <DockPadding value="" />
+            <Text value="Run benchmark" />
+            <Size value="{Width=472, Height=294}" />
+            <Location value="{X=4,Y=22}" />
+            <Controls>
+              <System.Windows.Forms.ListView>
+                <Name value="lstTestResults" />
+                <TabIndex value="1" />
+                <Location value="{X=8,Y=40}" />
+                <Size value="{Width=456, Height=248}" />
+                <Columns>
+                  <System.Windows.Forms.ColumnHeader>
+                    <Name value="colTestName" />
+                    <Text value="Test name" />
+                  </System.Windows.Forms.ColumnHeader>
+                  <System.Windows.Forms.ColumnHeader>
+                    <Name value="colTestResult" />
+                    <Text value="Test Result" />
+                  </System.Windows.Forms.ColumnHeader>
+                  <System.Windows.Forms.ColumnHeader>
+                    <Name value="colTestTime" />
+                    <Text value="Test time" />
+                  </System.Windows.Forms.ColumnHeader>
+                </Columns>
+              </System.Windows.Forms.ListView>
+              <System.Windows.Forms.Button>
+                <Name value="cmdRun" />
+                <Location value="{X=8,Y=8}" />
+                <Text value="&amp;Run" />
+                <TabIndex value="0" />
+              </System.Windows.Forms.Button>
+            </Controls>
+          </System.Windows.Forms.TabPage>
+        </TabPages>
+      </System.Windows.Forms.TabControl>
+    </Controls>
+  </System.Windows.Forms.Form>
+  <System.Windows.Forms.ColumnHeader>
+    <Name value="colTestTime" />
+    <Text value="Test time" />
+  </System.Windows.Forms.ColumnHeader>
+  <System.Windows.Forms.ColumnHeader>
+    <Name value="colTestName" />
+    <Text value="Test name" />
+  </System.Windows.Forms.ColumnHeader>
+  <System.Windows.Forms.ColumnHeader>
+    <Name value="colTestResult" />
+    <Text value="Test Result" />
+  </System.Windows.Forms.ColumnHeader>
+</Components>
