@@ -51,10 +51,10 @@ namespace AS3AP.BenchMark
 		private int			userNumber		= 0;
 		private long		dataSize		= 0;
 
+		private int			tupleCount		= 0;
+
 		private string		runSequence		= String.Empty;
-
 		private string		testSuiteType	= "SQL87";
-
 		private string		dataCreationMethod = "LOAD";
 
 		#endregion
@@ -120,16 +120,17 @@ namespace AS3AP.BenchMark
 
 			currentTest = "Counting tuples";
 			testSuite.Backend.DatabaseConnect();
-			if ((testSuite.TupleCount = testSuite.CountRows("updates")) == 0)
+			if ((tupleCount = testSuite.CountRows("updates")) == 0)
 			{
 				log.Simple("empty database -- empty results");
 				return;
 			}		
+			testSuite.TupleCount = tupleCount;
 			dbSize = (4 * testSuite.TupleCount * 100)/1000000;
 			
 			log.Simple("\r\n\"Logical database size {0}MB\"\r\n", dbSize);
 
-			testSuite.Backend.DatabaseDisconnect();
+			testSuite.Backend.DatabaseDisconnect();			
 
 			string[] testSequence = runSequence.Split(';');
 
@@ -145,7 +146,10 @@ namespace AS3AP.BenchMark
 						case "SQL92":
 						{
 							Console.WriteLine("Running tests using {0} syntax", testType[j]);
+							
 							testSuite = TestSuiteFactory.GetTestSuite(testSuiteType, backendName);
+							testSuite.TupleCount = tupleCount;
+
 							log.Simple("\r\n\"Running tests using {0} syntax\r\n", testType[j]);
 						}
 						break;
