@@ -89,6 +89,7 @@ namespace AS3AP.BenchMark
 		private void InitializeComponent() {
 			this.tabControl = new System.Windows.Forms.TabControl();
 			this.tabGeneral = new System.Windows.Forms.TabPage();
+			this.chkEnableErrorLog = new System.Windows.Forms.CheckBox();
 			this.chkEnableLog = new System.Windows.Forms.CheckBox();
 			this.cmdGetDataPath = new System.Windows.Forms.Button();
 			this.txtDataFilesPath = new System.Windows.Forms.TextBox();
@@ -147,7 +148,6 @@ namespace AS3AP.BenchMark
 			this.cmdSave = new System.Windows.Forms.Button();
 			this.cmdLoad = new System.Windows.Forms.Button();
 			this.tabBenchmark = new System.Windows.Forms.TabControl();
-			this.chkEnableErrorLog = new System.Windows.Forms.CheckBox();
 			this.tabControl.SuspendLayout();
 			this.tabGeneral.SuspendLayout();
 			this.tabProvider.SuspendLayout();
@@ -189,6 +189,14 @@ namespace AS3AP.BenchMark
 			this.tabGeneral.Size = new System.Drawing.Size(448, 222);
 			this.tabGeneral.TabIndex = 0;
 			this.tabGeneral.Text = "General";
+			// 
+			// chkEnableErrorLog
+			// 
+			this.chkEnableErrorLog.Location = new System.Drawing.Point(8, 68);
+			this.chkEnableErrorLog.Name = "chkEnableErrorLog";
+			this.chkEnableErrorLog.Size = new System.Drawing.Size(136, 16);
+			this.chkEnableErrorLog.TabIndex = 10;
+			this.chkEnableErrorLog.Text = "Enable error logging";
 			// 
 			// chkEnableLog
 			// 
@@ -708,14 +716,6 @@ namespace AS3AP.BenchMark
 			this.tabBenchmark.Size = new System.Drawing.Size(480, 320);
 			this.tabBenchmark.TabIndex = 0;
 			// 
-			// chkEnableErrorLog
-			// 
-			this.chkEnableErrorLog.Location = new System.Drawing.Point(8, 68);
-			this.chkEnableErrorLog.Name = "chkEnableErrorLog";
-			this.chkEnableErrorLog.Size = new System.Drawing.Size(136, 16);
-			this.chkEnableErrorLog.TabIndex = 10;
-			this.chkEnableErrorLog.Text = "Enable error logging";
-			// 
 			// As3apGui
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
@@ -727,6 +727,7 @@ namespace AS3AP.BenchMark
 			this.Name = "As3apGui";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "AS3AP Benchmark";
+			this.Closing += new System.ComponentModel.CancelEventHandler(this.As3apGui_Closing);
 			this.tabControl.ResumeLayout(false);
 			this.tabGeneral.ResumeLayout(false);
 			this.tabProvider.ResumeLayout(false);
@@ -811,6 +812,14 @@ namespace AS3AP.BenchMark
 
 		#region CONTROL_EVENTS
 
+		private void As3apGui_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			if (isRunning)
+			{
+				stopBenchMark();
+			}
+		}
+
 		private void cmdLoad_Click(object sender, System.EventArgs e)
 		{
 			OpenFileDialog	openDlg = new OpenFileDialog();
@@ -819,7 +828,9 @@ namespace AS3AP.BenchMark
 							"All files (*.*)|*.*" ;
 			
 			openDlg.ShowDialog();
-				
+			
+			this.Refresh();
+	
 			string fileName = openDlg.FileName;
 
 			if (fileName != null && fileName.Length > 0)
@@ -840,7 +851,9 @@ namespace AS3AP.BenchMark
 				"All files (*.*)|*.*" ;
 			
 			saveDlg.ShowDialog();
-				
+			
+			this.Refresh();
+            
 			string fileName = saveDlg.FileName;
 
 			if (fileName != null && fileName.Length > 0)
@@ -878,17 +891,7 @@ namespace AS3AP.BenchMark
 
 		private void cmdStop_Click(object sender, System.EventArgs e)
 		{
-			runThread.Abort();
-			runThread = null;
-
-			as3ap.Close();
-			as3ap = null;
-
-			isRunning = false;
-
-			lblProgressMessage.Text = "Stopped";
-
-			updateButtonState();
+			stopBenchMark();
 		}
 
 		#endregion
@@ -914,8 +917,7 @@ namespace AS3AP.BenchMark
 
 		private void OnProgressMessage(object Sender, ProgressMessageEventArgs e)
 		{
-			lblProgressMessage.Text = e.Message;
-			lblProgressMessage.Refresh();
+			showProgressMessage(e.Message);
 		}
 
 		#endregion
@@ -942,6 +944,23 @@ namespace AS3AP.BenchMark
 			updateButtonState();
 		}
 
+		private void stopBenchMark()
+		{
+			showProgressMessage("Stopping benchmark");
+			
+			runThread.Abort();
+			runThread = null;
+
+			as3ap.Dispose();
+			as3ap = null;
+
+			isRunning = false;
+
+			showProgressMessage("Stopped");
+			
+			updateButtonState();
+		}
+
 		private void updateButtonState()
 		{
 			// Update button state
@@ -949,6 +968,12 @@ namespace AS3AP.BenchMark
 			cmdStop.Enabled	= isRunning;
 
 			this.Refresh();
+		}
+
+		private void showProgressMessage(string message)
+		{
+			lblProgressMessage.Text = "Stopping benchmark";
+			lblProgressMessage.Refresh();
 		}
 
 		#endregion
