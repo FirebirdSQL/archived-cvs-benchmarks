@@ -259,6 +259,8 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch (Exception ex)
 			{
+				if (log != null) log.Error("CursorOpen failed {0}", ex.Message);
+
 				TransactionRollback();
 
 				if (cursor != null)
@@ -279,7 +281,18 @@ namespace AS3AP.BenchMark.Backends
 
 		public bool CursorFetch()
 		{
-			return cursor.Read();
+			bool fetched = false;
+
+			try
+			{
+				fetched = cursor.Read();
+			}
+			catch (Exception ex)
+			{
+				if (log != null) log.Error("CursorFetch failed {0}", ex.Message);
+			}
+
+			return fetched;
 		}
 		
 		public void CursorClose()
@@ -292,8 +305,10 @@ namespace AS3AP.BenchMark.Backends
 				}
 			}
 			catch(Exception ex)
-			{
-				TransactionRollback();
+			{				
+				if (log != null) log.Error("CursorClose failed {0}", ex.Message);
+
+				TransactionRollback();				
 				throw ex;
 			}
 			finally
@@ -360,6 +375,8 @@ namespace AS3AP.BenchMark.Backends
 			catch (Exception ex)
 			{
 				TransactionRollback();
+				
+				if (log != null) log.Error("ExecuteStatement failed {0}", ex.Message);
 				throw ex;
 			}
 			finally
@@ -380,7 +397,8 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch(Exception ex)
 			{
-				throw ex;
+				if (log != null) log.Error("BeginTransaction failed {0}", ex.Message);
+				throw ex;				
 			}
 		}
 
@@ -391,7 +409,8 @@ namespace AS3AP.BenchMark.Backends
 				transaction.Commit();				
 			}
 			catch (Exception ex)
-			{				
+			{			
+				if (log != null) log.Error("Commit failed {0}", ex.Message);
 				throw ex;
 			}
 			finally
@@ -408,7 +427,8 @@ namespace AS3AP.BenchMark.Backends
 				transaction = null;
 			}
 			catch (Exception ex)
-			{				
+			{			
+				if (log != null) log.Error("Rollback failed {0}", ex.Message);
 				throw ex;
 			}
 			finally
@@ -1056,8 +1076,9 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch (Exception ex)
 			{
-				TransactionRollback();
 				if (log != null) log.Error("load failed {0}", ex.Message);
+				TransactionRollback();				
+				throw ex;
 			}
 		}
 
