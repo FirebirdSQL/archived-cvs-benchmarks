@@ -2988,31 +2988,11 @@ namespace AS3AP.BenchMark
 
 		private void loadFile(string table)
 		{
-			beginTransaction();
-
 			StringBuilder	commandText = new StringBuilder();
 			StreamReader	stream		= null;
 			FbCommand		command		= null;
 			
 			commandText.AppendFormat("insert into {0} values (@col_key,@col_int,@col_signed,@col_float,@col_double,@col_decim,@col_date,@col_code,@col_name,@col_address)", table);
-
-			/* Crate command */
-			command = getCommand(commandText.ToString());
-			
-			/* Add parameters	*/
-			command.Parameters.Add("@col_key"	, FbDbType.Integer	, 4, "COL_KEY");
-			command.Parameters.Add("@col_int"	, FbDbType.Integer	, 4, "COL_INT");
-			command.Parameters.Add("@col_signed", FbDbType.Integer	, 4, "COL_SIGNED");
-			command.Parameters.Add("@col_float"	, FbDbType.Float	, 4, "COL_FLOAT");
-			command.Parameters.Add("@col_double", FbDbType.Double	, 8, "COL_DOUBLE");
-			command.Parameters.Add("@col_decim"	, FbDbType.Decimal	, 8, "COL_DECIM");
-			command.Parameters.Add("@col_date"	, FbDbType.Char		, 20, "COL_DATE");
-			command.Parameters.Add("@col_code"	, FbDbType.Char		, 10, "COL_CODE");
-			command.Parameters.Add("@col_name"	, FbDbType.Char		, 20, "COL_NAME");
-			command.Parameters.Add("@col_address", FbDbType.VarChar	, 80, "COL_ADDRESS");
-
-			/* Prepare command execution	*/
-			command.Prepare();
 
 			string path = Path.GetFullPath(configuration.DataPath);
 			if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
@@ -3034,8 +3014,36 @@ namespace AS3AP.BenchMark
 				FileAccess.Read								,
 				FileShare.None));
 
+			/* Crate command */
+			command = getCommand(commandText.ToString());
+			
+			/* Add parameters	*/
+			command.Parameters.Add("@col_key"	, FbDbType.Integer	, 4, "COL_KEY");
+			command.Parameters.Add("@col_int"	, FbDbType.Integer	, 4, "COL_INT");
+			command.Parameters.Add("@col_signed", FbDbType.Integer	, 4, "COL_SIGNED");
+			command.Parameters.Add("@col_float"	, FbDbType.Float	, 4, "COL_FLOAT");
+			command.Parameters.Add("@col_double", FbDbType.Double	, 8, "COL_DOUBLE");
+			command.Parameters.Add("@col_decim"	, FbDbType.Decimal	, 8, "COL_DECIM");
+			command.Parameters.Add("@col_date"	, FbDbType.Char		, 20, "COL_DATE");
+			command.Parameters.Add("@col_code"	, FbDbType.Char		, 10, "COL_CODE");
+			command.Parameters.Add("@col_name"	, FbDbType.Char		, 20, "COL_NAME");
+			command.Parameters.Add("@col_address", FbDbType.VarChar	, 80, "COL_ADDRESS");
+
+			/* Prepare command execution	*/
+			command.Prepare();
+
+			int		rowCount			= 0;
+			bool	transactionPending	= false;
+
 			while (stream.Peek() > -1)
 			{
+				if (rowCount == 0)
+				{
+					beginTransaction();
+					transactionPending	= true;
+					command.Transaction = this.transaction;
+				}
+
 				string[] elements = stream.ReadLine().Split(',');
 			
 				for (int i = 0; i < 10; i++)
@@ -3044,12 +3052,24 @@ namespace AS3AP.BenchMark
 				}
 	
 				command.ExecuteNonQuery();
+
+				rowCount++;
+
+				if (rowCount >= 1000)
+				{
+					commitTransaction();
+					transactionPending	= false;
+					rowCount			= 0;
+				}
+			}
+
+			if (transactionPending)
+			{
+				commitTransaction();
 			}
 
 			command.Dispose();
 			stream.Close();
-
-			commitTransaction();
 		}
 
 		private void loadTinyFile(string table)
