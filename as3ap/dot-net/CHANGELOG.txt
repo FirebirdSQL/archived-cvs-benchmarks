@@ -4,6 +4,8 @@ AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 
 2003-03-30 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
+	* Updated NAnt build file.
+
 	* Added changes for allow better external benchmark configuration ( non complete yet ).
 
 	* Removed datageneration process this will be placed in othe place for allow 
