@@ -29,7 +29,7 @@ using System.Data;
 
 namespace AS3AP.BenchMark
 {
-	public interface ITestSuite
+	public interface ITestSuite : IDisposable
 	{
 		#region PROPERTIES
 
@@ -65,8 +65,6 @@ namespace AS3AP.BenchMark
 		#endregion
 
 		#region METHODS
-
-		void Close();
 
 		void SetIsolationLevel(string methodName);
 

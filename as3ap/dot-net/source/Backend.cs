@@ -39,11 +39,12 @@ namespace AS3AP.BenchMark
 		Clustered,
 		Hash
 	}
-
-	#warning "Implement IDispossable"
-	public class Backend
+	
+	public class Backend : IDisposable
 	{		
 		#region FIELDS
+
+		private bool			disposed = false;
 
         private	Assembly		assembly;
 
@@ -84,6 +85,41 @@ namespace AS3AP.BenchMark
 			{
 				log = new Logger("AS3AP_ERRORS.LOG", Mode.OVERWRITE);
 			}
+		}
+
+		#endregion
+
+		#region IDISPOSABLE_METHODS
+
+		~Backend()
+		{
+			Dispose(false);
+		}
+
+		private void Dispose(bool disposing)
+		{
+			if (!disposed)			
+			{
+				if (disposing)
+				{
+					try
+					{
+						// release any managed resources
+						Close();
+					}
+					finally
+					{
+					}
+
+					// release any unmanaged resources
+				}
+			}			
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
 		}
 
 		#endregion

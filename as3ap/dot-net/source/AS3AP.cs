@@ -120,9 +120,7 @@ namespace AS3AP.BenchMark
 
 	#endregion
 
-	#warning "Implement IDispossable"
-
-	public class AS3AP
+	public class AS3AP : IDisposable
 	{	
 		#region EVENTS
 
@@ -134,6 +132,8 @@ namespace AS3AP.BenchMark
 		#region FIELDS
 
 		private BenchMarkConfiguration	configuration;
+
+		private bool		disposed		= false;
 
 		private	Logger		log;
 		private	long		ticksPerSecond	= TimeSpan.TicksPerSecond;		
@@ -170,13 +170,48 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region METHODS
+		#region IDISPOSABLE_METHODS
 
-		public void Close()
+		~AS3AP()
 		{
-			if (log != null) log.Close();
-			testSuite.Close();
+			Dispose(false);
 		}
+
+		private void Dispose(bool disposing)
+		{
+			if (!disposed)			
+			{
+				if (disposing)
+				{
+					try
+					{
+						// release any managed resources
+						if (log != null)
+						{
+							log.Close();
+							log = null;
+						}
+						testSuite.Dispose();
+						testSuite = null;
+					}
+					finally
+					{
+					}
+
+					// release any unmanaged resources
+				}
+			}			
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		#endregion
+
+		#region METHODS
 
 		public void Run()
 		{

@@ -30,8 +30,6 @@ using System.Reflection;
 
 namespace AS3AP.BenchMark
 {
-	#warning "Implement IDispossable"
-
 	public abstract class BaseTestSuite : ITestSuite
 	{
 		#region FIELDS
@@ -51,6 +49,7 @@ namespace AS3AP.BenchMark
 		private BenchMarkConfiguration configuration;
 
 		private Backend		backend;
+		private bool		disposed	= false;
 		private bool		testFailed	= false;
 		private object		testResult	= 0;
 		private int			tupleCount	= 0;
@@ -111,6 +110,44 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
+		#region IDISPOSABLE_METHODS
+
+		~BaseTestSuite()
+		{
+			Dispose(false);
+		}
+
+		private void Dispose(bool disposing)
+		{
+			if (!disposed)			
+			{
+				if (disposing)
+				{
+					try
+					{
+						// release any managed resources
+						backend.Dispose();
+						backend = null;
+
+						configuration = null;
+					}
+					finally
+					{
+					}
+
+					// release any unmanaged resources
+				}
+			}			
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		#endregion
+
 		#region ABSTRACT_METHODS
 
 		public abstract void agg_simple_report();
@@ -132,11 +169,6 @@ namespace AS3AP.BenchMark
 		#endregion
 
 		#region MISC_METHODS
-
-		public void Close()
-		{
-			backend.Close();
-		}
 
 		public void setup_database()
 		{
