@@ -49,6 +49,8 @@ public class BenchmarkListener implements TestListener {
         testTimes.remove(test);
         
         errors.put(test, throwable);
+        
+        throwable.printStackTrace();
     }
 
     public synchronized void addFailure(Test test, AssertionFailedError assertionFailedError) {
@@ -56,6 +58,8 @@ public class BenchmarkListener implements TestListener {
         testTimes.remove(test);
         
         failures.put(test, assertionFailedError);
+        
+        assertionFailedError.printStackTrace();
     }
 
     private String getTestName(Test test) {
