@@ -6,13 +6,13 @@
 //
 // Author: Carlos Guzmán Álvarez <carlosga@telefonica.net>
 //
-// Distributable under LGPL license.
-// You may obtain a copy of the License at http://www.gnu.org/copyleft/lgpl.html
+// Distributable under GPL license.
+// You may obtain a copy of the License at http://www.gnu.org/copyleft/gpl.html
 //
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// LGPL License for more details.
+// GPL License for more details.
 //
 // This file was created by members of the Firebird development team.
 // All individual contributions remain the Copyright (C) of those
@@ -254,7 +254,6 @@ namespace AS3AP.BenchMark
 				backend.CursorFetch();
 
 				tupleReturned = backend.Cursor.GetInt32(0);
-					// Convert.ToInt32(backend.Cursor.GetValue(0));
 			}
 			catch (Exception)
 			{
