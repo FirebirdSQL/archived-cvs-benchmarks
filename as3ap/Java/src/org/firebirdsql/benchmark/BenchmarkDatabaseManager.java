@@ -118,4 +118,40 @@ public abstract class BenchmarkDatabaseManager {
             }
         }
     }
+    
+    /**
+     * Drop table in the database. This method checks the database metadata,
+     * and if table exists, it tries to execute <code>"DROP TABLE " + tableName</code>
+     * SQL statement.
+     * 
+     * @param tableName name of the table to drop.
+     * 
+     * @throws SQLException if table cannot be dropped.
+     */
+    public void dropTable(String tableName) throws SQLException {
+        Connection connection = getConnection();
+        
+        try {
+            connection.setAutoCommit(true);
+            
+            DatabaseMetaData metaData = connection.getMetaData();
+            
+            ResultSet rs = metaData.getTables(null, null, tableName, null);
+            
+            if (!rs.next())
+                return;
+            
+            Statement stmt = connection.createStatement();
+            try {
+                stmt.execute("DROP TABLE " + tableName);
+            } finally {
+                stmt.close();
+            }
+            
+            // TODO
+            
+        } finally {
+            releaseConnection(connection);
+        }
+    }
 }

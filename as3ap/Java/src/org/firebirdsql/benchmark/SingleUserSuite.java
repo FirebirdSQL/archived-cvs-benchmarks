@@ -36,7 +36,6 @@ public final class SingleUserSuite extends BenchmarkSuite {
         return false;
     }
 
-
     /**
      * Fill the suite. Depending on the result of {@link #isCreateDatabase()}
      * method, database filling test is added or not.
@@ -116,6 +115,7 @@ public final class SingleUserSuite extends BenchmarkSuite {
         suite.addTest(createAggregateTest("testCreateView"));
         suite.addTest(createAggregateTest("testSubtotalReport"));
         suite.addTest(createAggregateTest("testTotalReport"));
+        suite.addTest(createAggregateTest("testDropView"));
         suite.addTest(createJoinTest("testJoin2Clustered"));
         suite.addTest(createJoinTest("testJoin2"));
         suite.addTest(createSelectTest("testVariableSelectivity"));

@@ -164,7 +164,7 @@ public class UpdateTest extends BenchmarkTest {
     
     public void testBulkAppend() throws Exception {
         executeUpdate(""
-            + "INSERT INTO " + UPDATES_TABLE
+            + "INSERT INTO " + UPDATES_TABLE + " "
             + "SELECT * FROM " + SAVE_UPDATES_TABLE
         );
     }

@@ -221,7 +221,7 @@ public class BenchmarkConfiguration {
     }
     
     public String getFixtureClassName() {
-        return getProperty(FIXTURE_CLASS_NAME, BenchmarkFixture.class.getName());
+        return getProperty(FIXTURE_CLASS_NAME, JdbcFixture.class.getName());
     }
     
     public String getCustomProperty(String property) {

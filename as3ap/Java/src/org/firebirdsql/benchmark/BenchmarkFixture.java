@@ -139,6 +139,21 @@ public abstract class BenchmarkFixture {
      * @throws SQLException if something went wrong.
      */
     public void createDatabase() throws SQLException {
+        
+        manager.dropTable(BenchmarkDDL.SEL_100_RND_TABLE);
+        manager.dropTable(BenchmarkDDL.SEL_100_SEQ_TABLE);
+        manager.dropTable(BenchmarkDDL.SAVE_UPDATES_TABLE);
+        
+        manager.dropTable(BenchmarkDDL.HUNDRED_TABLE_OUTPUT);
+        manager.dropTable(BenchmarkDDL.UPDATES_TABLE_OUTPUT);
+        manager.dropTable(BenchmarkDDL.TINY_TABLE_OUTPUT);
+        
+        manager.dropTable(BenchmarkDDL.TINY_TABLE);
+        manager.dropTable(BenchmarkDDL.UNIQUES_TABLE);
+        manager.dropTable(BenchmarkDDL.TEN_PCT_TABLE);
+        manager.dropTable(BenchmarkDDL.HUNDRED_TABLE);
+        manager.dropTable(BenchmarkDDL.UPDATES_TABLE);
+        
         manager.executeDDL(BenchmarkDDL.CREATE_UPDATES_TABLE);
         manager.executeDDL(BenchmarkDDL.CREATE_HUNDRED_TABLE);
         manager.executeDDL(BenchmarkDDL.CREATE_HUNDRED_FOREIGN_KEY);
@@ -155,7 +170,7 @@ public abstract class BenchmarkFixture {
         manager.executeDDL(BenchmarkDDL.CREATE_SEL_100_SEQ_TABLE);
         manager.executeDDL(BenchmarkDDL.CREATE_SEL_100_RND_TABLE);
     }
-
+    
     /**
      * Recreate updates table. This method is used to restore updates relation,
      * and drop/create sequence works better than deleting a content from the

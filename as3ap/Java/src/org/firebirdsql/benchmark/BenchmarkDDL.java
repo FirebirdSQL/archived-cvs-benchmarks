@@ -27,7 +27,7 @@ import junit.framework.TestCase;
  */
 
 public abstract class BenchmarkDDL extends TestCase {
-    
+    /*
     public static final String UNIQUES_TABLE = "\"uniques\"";
     public static final String HUNDRED_TABLE = "\"hundred\"";
     public static final String TEN_PCT_TABLE = "\"tenpct\"";
@@ -45,6 +45,24 @@ public abstract class BenchmarkDDL extends TestCase {
     public static final String TEN_PCT_TABLE_OUTPUT = "\"tenpct_output\"";
     public static final String UPDATES_TABLE_OUTPUT = "\"updates_output\"";
     public static final String TINY_TABLE_OUTPUT = "\"tiny_output\"";
+    */
+    public static final String UNIQUES_TABLE = "uniques";
+    public static final String HUNDRED_TABLE = "hundred";
+    public static final String TEN_PCT_TABLE = "tenpct";
+    public static final String UPDATES_TABLE = "updates";
+    public static final String TINY_TABLE = "tiny";
+    
+    public static final String HUNDRED_FOREIGN_KEY = "fk_hundred";
+    
+    public static final String SAVE_UPDATES_TABLE = "saveupdates";
+    public static final String SEL_100_SEQ_TABLE = "sel100seq";
+    public static final String SEL_100_RND_TABLE = "sel100rnd";
+    
+    public static final String UNIQUES_TABLE_OUTPUT = "uniques_output";
+    public static final String HUNDRED_TABLE_OUTPUT = "hundred_output";
+    public static final String TEN_PCT_TABLE_OUTPUT = "tenpct_output";
+    public static final String UPDATES_TABLE_OUTPUT = "updates_output";
+    public static final String TINY_TABLE_OUTPUT = "tiny_output";    
 
     public static final String KEY_COL = "\"key\"";
     public static final String INT_COL = "\"int\"";
@@ -178,6 +196,38 @@ public abstract class BenchmarkDDL extends TestCase {
         
     public static final String DROP_SEL_100_RND_TABLE = ""
         + "DROP TABLE " + SEL_100_RND_TABLE
+        ;
+    
+    public static final String DROP_HUNDRED_OUTPUT = ""
+        + "DROP TABLE " + HUNDRED_TABLE_OUTPUT
+        ;
+    
+    public static final String DROP_HUNDRED_TABLE = ""
+        + "DROP TABLE " + HUNDRED_TABLE
+        ;
+    
+    public static final String DROP_SAVE_UPDATES_TABLE = ""
+        + "DROP TABLE " + SAVE_UPDATES_TABLE
+        ;
+    
+    public static final String DROP_TEN_PCT_TABLE = ""
+        + "DROP TABLE " + TEN_PCT_TABLE
+        ;
+    
+    public static final String DROP_TINY_OUTPUT_TABLE = ""
+        + "DROP TABLE " + TINY_TABLE_OUTPUT 
+        ;
+    
+    public static final String DROP_TINY_TABLE = ""
+        + "DROP TABLE " + TINY_TABLE
+        ;
+    
+    public static final String DROP_UNIQUES_TABLE = ""
+        + "DROP TABLE " + UNIQUES_TABLE
+        ;
+    
+    public static final String DROP_UPDATES_OUTPUT_TABLE = ""
+        + "DROP TABLE " + UPDATES_TABLE_OUTPUT
         ;
         
     public BenchmarkDDL(String string) {
