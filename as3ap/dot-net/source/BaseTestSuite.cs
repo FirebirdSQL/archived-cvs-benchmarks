@@ -2,7 +2,7 @@
 // AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark
 //			for Relational Database Systems.
 //
-// Author: Carlos Guzmn lvarez <carlosga@telefonica.net>
+// Author: Carlos Guzman Alvarez <carlosga@telefonica.net>
 //
 // Distributable under LGPL license.
 // You may obtain a copy of the License at http://www.gnu.org/copyleft/lgpl.html
@@ -48,7 +48,7 @@ namespace AS3AP.BenchMark
 
 	#endregion
 
-	#region DELEGATES
+	#region Delegates
 
 	public delegate void ResultEventHandler(object sender, TestResultEventArgs e);
 	public delegate void ProgressEventHandler(object sender, ProgressMessageEventArgs e);
@@ -57,14 +57,14 @@ namespace AS3AP.BenchMark
 
 	public abstract class BaseTestSuite : ITestSuite
 	{
-		#region EVENTS
+		#region Events
 
-		public event 	ResultEventHandler		Result;
-		public event 	ProgressEventHandler	Progress;
+		public event ResultEventHandler		Result;
+		public event ProgressEventHandler	Progress;
 
 		#endregion
 
-		#region FIELDS
+		#region Fields
 
 		private Thread[] userProcess;
 
@@ -102,104 +102,115 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region PROPERTIES
+		#region Properties
 
 		public Logger Log
 		{
-			get { return log; }
-			set { log = value; }
+			get { return this.log; }
+			set { this.log = value; }
 		}
 
 		public BenchMarkConfiguration Configuration
 		{
-			get { return configuration; }
-			set { configuration = value; }
+			get { return this.configuration; }
+			set { this.configuration = value; }
 		}
 
 		public int TupleCount
 		{
-			get { return tupleCount; }
-			set { tupleCount = value;}
+			get { return this.tupleCount; }
+			set { this.tupleCount = value;}
 		}
 
 		public string TestSuiteName
 		{
-			get { return testSuiteName; }
+			get { return this.testSuiteName; }
 		}
 
 		#endregion
 
-		#region CONSTRUCTORS
+		#region Constructors
 
 		public BaseTestSuite(BenchMarkConfiguration configuration)
 		{
 			this.configuration	= configuration;
 
 			// Set specific table structure
-			baseTableStructure = baseTableStructure.Replace("@INTEGER", configuration.IntegerTypeName);
-			baseTableStructure = baseTableStructure.Replace("@FLOAT", configuration.FloatTypeName);
-			baseTableStructure = baseTableStructure.Replace("@DOUBLE", configuration.DoubleTypeName);
-			baseTableStructure = baseTableStructure.Replace("@DECIMAL", configuration.DecimalTypeName);
-			baseTableStructure = baseTableStructure.Replace("@CHAR", configuration.CharTypeName);
-			baseTableStructure = baseTableStructure.Replace("@VARCHAR", configuration.VarcharTypeName);
+			this.baseTableStructure = baseTableStructure.Replace(
+				"@INTEGER", configuration.IntegerTypeName);
+			this.baseTableStructure = baseTableStructure.Replace(
+				"@FLOAT", configuration.FloatTypeName);
+			this.baseTableStructure = baseTableStructure.Replace(
+				"@DOUBLE", configuration.DoubleTypeName);
+			this.baseTableStructure = baseTableStructure.Replace(
+				"@DECIMAL", configuration.DecimalTypeName);
+			this.baseTableStructure = baseTableStructure.Replace(
+				"@CHAR", configuration.CharTypeName);
+			this.baseTableStructure = baseTableStructure.Replace(
+				"@VARCHAR", configuration.VarcharTypeName);
 
 			// Create the helper object
-			dataHelper = DataHelperFactory.GetHelper(configuration.HelperType);
+			this.dataHelper = DataHelperFactory.GetHelper(configuration.HelperType);
 		}
 
 		#endregion
 
-		#region IDISPOSABLE_METHODS
+		#region Finalizer
 
 		~BaseTestSuite()
 		{
-			Dispose(false);
+			this.Dispose(false);
 		}
+
+		#endregion
+
+		#region IDisposable Methods
 
 		private void Dispose(bool disposing)
 		{
-			if (!disposed)			
+			if (!this.disposed)			
 			{
 				if (disposing)
 				{
 					try
 					{
 						// release any managed resources					
-						if (cursor != null)
+						if (this.cursor != null)
 						{
-							cursor.Close();
-							cursor = null;
+							this.cursor.Close();
+							this.cursor = null;
 						}
 			
-						if (cmdCursor != null)
+						if (this.cmdCursor != null)
 						{
-							cmdCursor.Dispose();
-							cmdCursor = null;
+							this.cmdCursor.Dispose();
+							this.cmdCursor = null;
 						}
 			
-						if (transaction != null)
+						if (this.transaction != null)
 						{
-							rollbackTransaction();
-							transaction = null;
+							this.rollbackTransaction();
+							this.transaction = null;
 						}
 						
-						if (connection != null)
+						if (this.connection != null)
 						{
-							connection.Close();
-							connection = null;
+							this.connection.Close();
+							this.connection = null;
 						}
-						if (log != null)
+						if (this.log != null)
 						{
-							if (userProcess != null)
+							if (this.userProcess != null)
 							{
-								foreach(Thread process in userProcess)
+								foreach (Thread process in this.userProcess)
 								{
 									process.Abort();
+									process.Join();
 								}
 							}							
 						}
 
-						configuration = null;
+						this.configuration = null;
 					}
 					finally
 					{
@@ -212,15 +223,13 @@ namespace AS3AP.BenchMark
 
 		public void Dispose()
 		{
-			Dispose(true);
+			this.Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 
 		#endregion
 
-		#region ABSTRACT_METHODS
-
-		// public abstract void agg_simple_report();
+		#region Abstract Methods
 
 		public abstract void join_2();
 		
@@ -238,34 +247,34 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region MISC_METHODS
+		#region Misc Methods
 
 		public void setup_database()
 		{
 			try
 			{
-				DatabaseConnect();
+				this.DatabaseConnect();
 
-				beginTransaction();
+				this.beginTransaction();
 
 				// Remove reportview
-				executeStatement("drop view reportview");
+				this.executeStatement("drop view reportview");
 
 				// Remove saveupdates table
-				executeStatement("drop table saveupdates");
+				this.executeStatement("drop table saveupdates");
 
-				commitTransaction();
+				this.commitTransaction();
 
 				// Create indexes for updates table				
-				create_idx_updates_double_bt();
-				create_idx_updates_decim_bt();
+				this.create_idx_updates_double_bt();
+				this.create_idx_updates_decim_bt();
 			}
 			catch (Exception)
 			{
 			}
 			finally
 			{
-				DatabaseDisconnect();
+				this.DatabaseDisconnect();
 			}
 		}
 
@@ -278,27 +287,27 @@ namespace AS3AP.BenchMark
 			
 			try
 			{
-				beginTransaction();
-				cursorOpen(commandText.ToString());
-				if (cursorFetch())
+				this.beginTransaction();
+				this.cursorOpen(commandText.ToString());
+				if (this.cursorFetch())
 				{
-					count = cursor.GetInt32(0);					
+					count = this.cursor.GetInt32(0);					
 				}
 			}
 			catch(Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
@@ -327,15 +336,15 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region SINGLE_USER_TESTS_METHODS
+		#region Single User Tests
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void agg_create_view() 
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement("create view "								+
+				this.beginTransaction();
+				this.executeStatement("create view "								+
 					"reportview(col_key,col_signed,col_date,col_decim, "	+
 					"col_name,col_code,col_int) as "						+
 					"select updates.col_key, updates.col_signed, "			+
@@ -344,14 +353,14 @@ namespace AS3AP.BenchMark
 					"hundred.col_int "										+
 					"from updates, hundred "								+
 					"where updates.col_key = hundred.col_key");
-				commitTransaction();
+				this.commitTransaction();
 			}
 			catch(Exception)
 			{				
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0; 
+			this.testResult = 0; 
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -361,32 +370,32 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen(
+				this.beginTransaction();
+				this.cursorOpen(
 					"select min(col_key) from hundred group by col_name");			
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{
 					count++;
 				}
 			}
 			catch(Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
-			testResult = count; 
+			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -394,8 +403,8 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				cursorOpen(
+				this.beginTransaction();
+				this.cursorOpen(
 					"select * "						+
 					"from updates "					+
 					"where updates.col_key in "		+
@@ -403,24 +412,24 @@ namespace AS3AP.BenchMark
 					"from updates, hundred "		+
 					"where hundred.col_key = updates.col_key)");
 				
-				cursorFetch();
+				this.cursorFetch();
 
-				testResult = cursor.GetValue(0);
+				this.testResult = cursor.GetValue(0);
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 		}
@@ -430,8 +439,8 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				cursorOpen(
+				this.beginTransaction();
+				this.cursorOpen(
 					"select count(col_key) "									+
 					"from tenpct "												+
 					"where col_name = 'THE+ASAP+BENCHMARKS+' "					+
@@ -441,24 +450,24 @@ namespace AS3AP.BenchMark
 					"and col_double > 600000000 "								+
 					"and col_decim < -600000000");
 
-				cursorFetch();
+				this.cursorFetch();
 
-				testResult = cursor.GetValue(0);
+				this.testResult = cursor.GetValue(0);
 			}
 			catch(Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 		}
@@ -468,33 +477,31 @@ namespace AS3AP.BenchMark
 		{	
 			try
 			{
-				beginTransaction();
-				cursorOpen("select min(col_key) from uniques");
+				this.beginTransaction();
+				this.cursorOpen("select min(col_key) from uniques");
 				
-				cursorFetch();
+				this.cursorFetch();
 				
-				testResult = cursor.GetValue(0);
+				this.testResult = cursor.GetValue(0);
 			}
 			catch (Exception)
 			{
-				testFailed = true;
-				testResult = -1;
+				this.testFailed = true;
+				this.testResult = -1;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 		}
-
-
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void agg_subtotal_report() 
@@ -503,8 +510,8 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen(
+				this.beginTransaction();
+				this.cursorOpen(
 					"select avg(col_signed), min(col_signed), max(col_signed), "	+
 					"max(col_date), min(col_date), "								+
 					"count(distinct col_name), count(col_name), "					+
@@ -513,29 +520,29 @@ namespace AS3AP.BenchMark
 					"where col_decim >980000000 "									+
 					"group by col_code, col_int");
 				
-				while (cursorFetch())
+				while (this.cursorFetch())
 				{  
 					count++;
 				}
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -543,8 +550,8 @@ namespace AS3AP.BenchMark
 		{			
 			try
 			{
-				beginTransaction();
-				cursorOpen(
+				this.beginTransaction();
+				this.cursorOpen(
 					"select avg(col_signed), min(col_signed), max(col_signed), "	+
 					"max(col_date), min(col_date), "						+
 					"count(distinct col_name), count(col_name), "			+
@@ -552,31 +559,31 @@ namespace AS3AP.BenchMark
 					"from reportview "												+
 					"where col_decim >980000000");
 
-				if (cursorFetch())
+				if (this.cursorFetch())
 				{
-					testResult = cursor.GetValue(0);
+					this.testResult = cursor.GetValue(0);
 				}
 				else
 				{
-					cursorClose();					
-					rollbackTransaction();
+					this.cursorClose();					
+					this.rollbackTransaction();
 
-					testFailed = true;
-					testResult = -1;
+					this.testFailed = true;
+					this.testResult = -1;
 				}
 			}
 			catch (Exception)
 			{
-				rollbackTransaction();
-				testFailed = true;
-				testResult = -1;
+				this.rollbackTransaction();
+				this.testFailed = true;
+				this.testResult = -1;
 			}
 			finally
 			{
-				cursorClose();
-				if (!testFailed)
+				this.cursorClose();
+				if (!this.testFailed)
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 		}
@@ -586,16 +593,16 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement("insert into updates select * from saveupdates");
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement("insert into updates select * from saveupdates");
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -603,16 +610,16 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement("delete from updates where col_key < 0");
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement("delete from updates where col_key < 0");
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -620,18 +627,18 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement("update updates "	+
+				this.beginTransaction();
+				this.executeStatement("update updates "	+
 					"set col_key = col_key - 100000 "		+
 					"where col_key between 5000 and 5999");
-				commitTransaction();
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -639,421 +646,467 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				createTable("saveupdates", baseTableStructure, null);
+				this.createTable("saveupdates", baseTableStructure, null);
 
-				beginTransaction();
-				executeStatement("insert into saveupdates select * "	+
+				this.beginTransaction();
+				this.executeStatement("insert into saveupdates select * "	+
 							"from updates where col_key between 5000 and 5999");
-				commitTransaction();
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_hundred_code_h() 
 		{
-			if (configuration.UseIndexes) 
+			if (this.configuration.UseIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Btree		,
-										"hundred_code_h"	, 
-										"hundred"			, 
-										"col_code");
+					this.createIndex(
+						IndexType.Btree		,
+						"hundred_code_h"	, 
+						"hundred"			, 
+						"col_code");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_hundred_foreign() 
 		{
-			if (configuration.UseIndexes) 
+			if (this.configuration.UseIndexes) 
 			{  
 				try
 				{
-					createForeignKey("hundred", 
-											"fk_hundred_updates"	, 
-											"col_signed"			, 
-											"updates"				, 
-											"col_key");
+					this.createForeignKey(
+						"hundred"				, 
+						"fk_hundred_updates"	, 
+						"col_signed"			, 
+						"updates"				, 
+						"col_key");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_hundred_key_bt() 
 		{
-			if (configuration.UseIndexes && configuration.SupportsClusteredIndexes) 
+			if (this.configuration.UseIndexes && 
+				this.configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Clustered,"hundred_key_bt"	, 
-												"hundred"		, 
-												"col_key");
+					this.createIndex(
+						IndexType.Clustered	,
+						"hundred_key_bt"	, 
+						"hundred"			, 
+						"col_key");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_code_h() 
 		{
-			if (configuration.UseIndexes && configuration.SupportsHashIndexes) 
+			if (this.configuration.UseIndexes && 
+				this.configuration.SupportsHashIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Hash,"tenpct_code_h"	, 
-											"tenpct"		, 
-											"col_code");
+					this.createIndex(
+						IndexType.Hash	,
+						"tenpct_code_h"	, 
+						"tenpct"		, 
+						"col_code");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_decim_bt() 
 		{
-			if (configuration.UseIndexes) 
+			if (this.configuration.UseIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Btree,"tenpct_decim_bt"	, 
-												"tenpct"		, 
-												"col_decim");
+					this.createIndex(
+						IndexType.Btree		,
+						"tenpct_decim_bt"	, 
+						"tenpct"			, 
+						"col_decim");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_double_bt() 
 		{
-			if (configuration.UseIndexes) 
+			if (this.configuration.UseIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Btree,"tenpct_double_bt"	, 
-												"tenpct"		, 
-												"col_double");
+					this.createIndex(
+						IndexType.Btree		,
+						"tenpct_double_bt"	, 
+						"tenpct"			, 
+						"col_double");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0; 
+			this.testResult = 0; 
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_float_bt() 
 		{
-			if (configuration.UseIndexes) 
+			if (this.configuration.UseIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Btree,"tenpct_float_bt"	, 
-												"tenpct"		, 
-												"col_float");
+					this.createIndex(
+						IndexType.Btree		,
+						"tenpct_float_bt"	, 
+						"tenpct"			, 
+						"col_float");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_int_bt() 
 		{
-			if (configuration.UseIndexes) 
+			if (this.configuration.UseIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Btree,"tenpct_int_bt"	, 
-												"tenpct"		, 
-												"col_int");
+					this.createIndex(
+						IndexType.Btree	,
+						"tenpct_int_bt"	, 
+						"tenpct"		, 
+						"col_int");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_key_bt() 
 		{
-			if (configuration.UseIndexes && configuration.SupportsClusteredIndexes) 
+			if (this.configuration.UseIndexes && 
+				this.configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Clustered,"tenpct_key_bt"	, 
-												"tenpct"		, 
-												"col_key");
+					this.createIndex(
+						IndexType.Clustered	,
+						"tenpct_key_bt"		, 
+						"tenpct"			, 
+						"col_key");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_key_code_bt() 
 		{
-			if (configuration.UseIndexes) 
+			if (this.configuration.UseIndexes)
 			{
 				try
 				{
-					createIndex(IndexType.Btree,"tenpct_key_code_bt"	,
-												"tenpct"			,
-												"col_key, col_code");
+					this.createIndex(
+						IndexType.Btree			,
+						"tenpct_key_code_bt"	,
+						"tenpct"				,
+						"col_key, col_code");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_name_h() 
 		{
-			if (configuration.UseIndexes && configuration.SupportsHashIndexes) 
+			if (this.configuration.UseIndexes && 
+				this.configuration.SupportsHashIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Hash,"tenpct_name_h"	, 
-											"tenpct"	,
-											"col_name");
+					this.createIndex(
+						IndexType.Hash	,
+						"tenpct_name_h"	, 
+						"tenpct"		,
+						"col_name");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			} 
 			
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_signed_bt() 
 		{
-			if (configuration.UseIndexes) 
+			if (this.configuration.UseIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Btree,"tenpct_signed_bt"	, 
-												"tenpct"		,
-												"col_signed");
+					this.createIndex(
+						IndexType.Btree		,
+						"tenpct_signed_bt"	, 
+						"tenpct"			,
+						"col_signed");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			} 
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tiny_key_bt() 
 		{
-			if (configuration.UseIndexes) 
+			if (this.configuration.UseIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Btree,"tiny_key_bt"	, 
-												"tiny"		, 
-												"col_key");
+					this.createIndex(
+						IndexType.Btree	,
+						"tiny_key_bt"	, 
+						"tiny"			, 
+						"col_key");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_uniques_code_h() 
 		{
-			if (configuration.UseIndexes && configuration.SupportsHashIndexes) 
+			if (this.configuration.UseIndexes && 
+				this.configuration.SupportsHashIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Hash,"uniques_code_h"	, 
-											"uniques"			, 
-											"col_code");
+					this.createIndex(
+						IndexType.Hash		,
+						"uniques_code_h"	, 
+						"uniques"			, 
+						"col_code");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		} 
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_uniques_key_bt() 
 		{
-			if (configuration.UseIndexes && configuration.SupportsClusteredIndexes) 
+			if (this.configuration.UseIndexes && 
+				this.configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Clustered,"uniques_key_bt"	, 
-												"uniques"		, 
-												"col_key");
+					this.createIndex(
+						IndexType.Clustered	,
+						"uniques_key_bt"	, 
+						"uniques"			, 
+						"col_key");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		} 
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_code_h() 
 		{
-			if (configuration.UseIndexes && configuration.SupportsHashIndexes) 
+			if (this.configuration.UseIndexes && 
+				this.configuration.SupportsHashIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Hash,"updates_code_h"	, 
-											"updates"			, 
-											"col_code");
+					this.createIndex(
+						IndexType.Hash		,
+						"updates_code_h"	, 
+						"updates"			, 
+						"col_code");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_decim_bt() 
 		{
-			if (configuration.UseIndexes) 
+			if (this.configuration.UseIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Btree,"updates_decim_bt"	, 
-												"updates"		,
-												"col_decim");
+					this.createIndex(
+						IndexType.Btree		,
+						"updates_decim_bt"	, 
+						"updates"			,
+						"col_decim");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_double_bt() 
 		{
-			if (configuration.UseIndexes) 
+			if (this.configuration.UseIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Btree,"updates_double_bt"	, 
-												"updates"			,
-												"col_double");
+					this.createIndex(
+						IndexType.Btree		,
+						"updates_double_bt"	, 
+						"updates"			,
+						"col_double");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			} 
-			testResult = 0;
+			this.testResult = 0;
 		} 
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_int_bt() 
 		{
-			if (configuration.UseIndexes) 
+			if (this.configuration.UseIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Btree,"updates_int_bt"	, 
-												"updates"		, 
-												"col_int");
+					this.createIndex(
+						IndexType.Btree	,
+						"updates_int_bt", 
+						"updates"		, 
+						"col_int");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		} 
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_key_bt() 
 		{
-			if (configuration.UseIndexes && configuration.SupportsClusteredIndexes) 
+			if (this.configuration.UseIndexes && 
+				this.configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
-					createIndex(IndexType.Clustered,"updates_key_bt"	, 
-												"updates"		, 
-												"col_key");
+					this.createIndex(
+						IndexType.Clustered	,
+						"updates_key_bt"	, 
+						"updates"			, 
+						"col_key");
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -1061,22 +1114,22 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				createTable("uniques", baseTableStructure, "col_key");
-				createTable("hundred", baseTableStructure, "col_key");
-				createTable("updates", baseTableStructure, "col_key");
-				createTable("tenpct" , baseTableStructure, "col_key,col_code");
+				this.createTable("uniques", this.baseTableStructure, "col_key");
+				this.createTable("hundred", this.baseTableStructure, "col_key");
+				this.createTable("updates", this.baseTableStructure, "col_key");
+				this.createTable("tenpct" , this.baseTableStructure, "col_key,col_code");
 
-				createTable( 
+				this.createTable( 
 					"tiny"					,
-					"col_key " + configuration.IntegerTypeName + " not null",
+					"col_key " + this.configuration.IntegerTypeName + " not null",
 					"col_key");
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -1086,23 +1139,23 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					beginTransaction();
-					executeStatement("drop index updates_int_bt");
-					executeStatement("drop index updates_double_bt");
-					executeStatement("drop index updates_decim_bt");
-					if (configuration.SupportsHashIndexes)
+					this.beginTransaction();
+					this.executeStatement("drop index updates_int_bt");
+					this.executeStatement("drop index updates_double_bt");
+					this.executeStatement("drop index updates_decim_bt");
+					if (this.configuration.SupportsHashIndexes)
 					{
-						executeStatement("drop index updates_code_h");
+						this.executeStatement("drop index updates_code_h");
 					}
-					commitTransaction();
+					this.commitTransaction();
 				}
 				catch (Exception)
 				{
-					testFailed = true;
+					this.testFailed = true;
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -1110,25 +1163,26 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				createTable("integrity_temp", baseTableStructure, null);
+				this.createTable("integrity_temp", this.baseTableStructure, null);
 
-				beginTransaction();
-				executeStatement("insert into integrity_temp select * from hundred where col_int = 0");
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement(
+					"insert into integrity_temp select * from hundred where col_int = 0");
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
 			try
 			{
-				beginTransaction();
-				executeStatement("update hundred set col_signed = '-500000000' where col_int = 0");
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement("update hundred set col_signed = '-500000000' where col_int = 0");
+				this.commitTransaction();
 
-				testFailed = true;				
-				testResult = 0;	
+				this.testFailed = true;				
+				this.testResult = 0;	
 			}
 			catch (Exception)
 			{
@@ -1136,38 +1190,38 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				executeStatement("delete from hundred where col_int = 0");
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement("delete from hundred where col_int = 0");
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
 			try
 			{
-				beginTransaction();
-				executeStatement("insert into hundred select * from integrity_temp");
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement("insert into hundred select * from integrity_temp");
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
 			try
 			{
-				beginTransaction();
-				executeStatement("drop table integrity_temp");
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement("drop table integrity_temp");
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1177,33 +1231,33 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen(
+				this.beginTransaction();
+				this.cursorOpen(
 					"select distinct col_address, col_signed from hundred");
 			
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{
 					count++;
 				}				
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1213,32 +1267,32 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen("select distinct col_signed from tenpct");
+				this.beginTransaction();
+				this.cursorOpen("select distinct col_signed from tenpct");
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{
 					count++;
 				}				
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1248,35 +1302,35 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen(
+				this.beginTransaction();
+				this.cursorOpen(
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
 					"from updates where col_key = 1000");
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{
 					count++;
 				}			
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
-			testResult = count; 
+			this.testResult = count; 
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1286,35 +1340,35 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen( 
+				this.beginTransaction();
+				this.cursorOpen( 
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
 					"from updates where col_code = 'BENCHMARKS'");
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{  
 					count++;
 				}
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1324,35 +1378,35 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen(
+				this.beginTransaction();
+				this.cursorOpen(
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
 					"from updates where col_key <= 100");
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{
 					count++;
 				}
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1362,36 +1416,36 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen(
+				this.beginTransaction();
+				this.cursorOpen(
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
 					"from updates where col_int <= 100");
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{
 					count++;
 				}
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
 
-			testResult = count;
+			this.testResult = count;
 		}
 	
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1401,36 +1455,36 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen( 
+				this.beginTransaction();
+				this.cursorOpen( 
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "						+
 					"from tenpct "									+
 					"where col_name = 'THE+ASAP+BENCHMARKS+'");
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{  
 					count++;
 				}
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1438,7 +1492,6 @@ namespace AS3AP.BenchMark
 		{
 			StringBuilder	lineBuf = new StringBuilder();
 			int				count = 0;
-
 
 			try
 			{
@@ -1449,44 +1502,44 @@ namespace AS3AP.BenchMark
 					"where col_signed < {0}",						+
 					foo);
 
-				beginTransaction();
-				cursorOpen(lineBuf.ToString());
+				this.beginTransaction();
+				this.cursorOpen(lineBuf.ToString());
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{
 					count++;
 				}
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 
 		public void sel_variable_select_high() 
 		{
-			sel_variable_select(-250000000);
+			this.sel_variable_select(-250000000);
 		}
 
 
 		public void sel_variable_select_low() 
 		{
-			sel_variable_select(-500000000);
+			this.sel_variable_select(-500000000);
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1496,32 +1549,32 @@ namespace AS3AP.BenchMark
 
 			try
 			{			
-				beginTransaction();
-				cursorOpen("select * from uniques where col_int = 1");
+				this.beginTransaction();
+				this.cursorOpen("select * from uniques where col_int = 1");
 				
-				while (cursorFetch()) 
+				while (this.cursorFetch()) 
 				{  
 					count++;
 				}
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1531,22 +1584,22 @@ namespace AS3AP.BenchMark
 		
 			try
 			{
-				beginTransaction();
-				executeStatement("insert into updates "		+
+				this.beginTransaction();
+				this.executeStatement("insert into updates "		+
 					"values (1000000001, 50005, 50005, 50005.00, "	+
 					"50005.00, 50005.00, '1/1/1988', "				+
 					"'CONTROLLER', 'ALICE IN WONDERLAND', "			+
 					"'UNIVERSITY OF ILLINOIS AT CHICAGO')"); 				
-				commitTransaction();
+				this.commitTransaction();
 				
 				count++;
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = count; 
+			this.testResult = count; 
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1556,48 +1609,48 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				executeStatement("insert into updates "							+
+				this.beginTransaction();
+				this.executeStatement("insert into updates "							+
 					"values (5005, 5005, 50005, 50005.00, 50005.00, "	+
 					"50005.00, '1/1/1988', 'CONTROLLER', "				+
 					"'ALICE IN WONDERLAND', "							+
 					"'UNIVERSITY OF ILLINOIS AT CHICAGO')");
-				commitTransaction();
+				this.commitTransaction();
 
 				count++;
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void upd_append_duplicate() 
 		{
-			if (configuration.UseIndexes) 
+			if (this.configuration.UseIndexes) 
 			{
 				try
 				{
-					beginTransaction();
-					executeStatement( "insert into updates  "		+
+					this.beginTransaction();
+					this.executeStatement( "insert into updates  "		+
 						"values (6000, 0, 60000, 39997.90, "				+
 						"50005.00, 50005.00, "								+
 						"'11/10/1985', 'CONTROLLER', "						+
 						"'ALICE IN WONDERLAND', "							+
 						"'UNIVERSITY OF ILLINOIS AT CHICAGO')"); 
-					commitTransaction();
+					this.commitTransaction();
 
-					testFailed = true;
+					this.testFailed = true;
 				}
 				catch (Exception)
 				{
 				}
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1605,16 +1658,16 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement("delete from updates where col_key = -1000"); 
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement("delete from updates where col_key = -1000"); 
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0; 
+			this.testResult = 0; 
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1622,16 +1675,16 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement("delete from updates where (col_key='5005') or (col_key='-5000')");
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement("delete from updates where (col_key='5005') or (col_key='-5000')");
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1639,18 +1692,18 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement("update updates "	+
+				this.beginTransaction();
+				this.executeStatement("update updates "	+
 					"set col_code = 'SQL+GROUPS' "			+
 					"where col_key = 5005");
-				commitTransaction();
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1658,17 +1711,17 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement( "update updates "	+
+				this.beginTransaction();
+				this.executeStatement( "update updates "	+
 					"set col_key = -1000 where col_key = 1000000001");
-				commitTransaction();
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1676,16 +1729,16 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement("update updates set col_int = 50015 where col_key = 5005");
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement("update updates set col_int = 50015 where col_key = 5005");
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0; 
+			this.testResult = 0; 
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1693,16 +1746,16 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement("update updates set col_key = '-5000' where col_key = 5005");
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement("update updates set col_key = '-5000' where col_key = 5005");
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1710,21 +1763,21 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement("delete from updates where col_key = 6000 and col_int = 0");
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement("delete from updates where col_key = 6000 and col_int = 0");
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		#endregion
 
-		#region MULTIUSER_AND_CROSS_SECTION_TESTS_METHODS
+		#region Multi User and Cross Section Tests
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
 		public void o_mode_tiny()
@@ -1733,32 +1786,32 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen("select * from tiny");
+				this.beginTransaction();
+				this.cursorOpen("select * from tiny");
 			
-				while (cursorFetch())
+				while (this.cursorFetch())
 				{
 					count++;
 				}
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
@@ -1768,32 +1821,32 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen("select * from hundred where col_key<=1000");
+				this.beginTransaction();
+				this.cursorOpen("select * from hundred where col_key<=1000");
 			
-				while (cursorFetch())
+				while (this.cursorFetch())
 				{
 					count++;
 				}
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
@@ -1803,39 +1856,39 @@ namespace AS3AP.BenchMark
 			
 			try
 			{
-				beginTransaction();
-				cursorOpen(
+				this.beginTransaction();
+				this.cursorOpen(
 					"select count(*) from updates, sel100rand "		+
 					"where updates.col_int=sel100rand.col_int "		+
 					"and not updates.col_double=sel100rand.col_double");
 			
-				cursorFetch();
+				this.cursorFetch();
 
-				count = cursor.GetValue(0);
+				count = this.cursor.GetValue(0);
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{					
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
 			if (Convert.ToInt32(count) != 100) 
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -1843,16 +1896,16 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement("drop table sel100rand");
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement("drop table sel100rand");
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -1862,39 +1915,39 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				cursorOpen(
+				this.beginTransaction();
+				this.cursorOpen(
 					"select count(*) from updates, sel100seq "		+
 					"where updates.col_key=sel100seq.col_key "		+
 					"and not updates.col_double=sel100seq.col_double");
 			
-				cursorFetch();
+				this.cursorFetch();
 			
-				count = cursor.GetValue(0); 
+				count = this.cursor.GetValue(0); 
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
 			if (Convert.ToInt32(count) != 100) 
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -1902,16 +1955,16 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement("drop table sel100seq");
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement("drop table sel100seq");
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -1935,11 +1988,11 @@ namespace AS3AP.BenchMark
 					"select col_key, col_code, col_date, col_signed, col_name "	+
 					"from updates where col_key = {0}",	r);
 
-				beginTransaction();
-				cursorOpen(lineBuf.ToString());
-				if (!cursorFetch())
+				this.beginTransaction();
+				this.cursorOpen(lineBuf.ToString());
+				if (!this.cursorFetch())
 				{
-					testFailed = true;
+					this.testFailed = true;
 					count = 0;
 				}
 				else
@@ -1949,22 +2002,22 @@ namespace AS3AP.BenchMark
 			}	
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 			finally
 			{
-				cursorClose();
-				if (testFailed)
+				this.cursorClose();
+				if (this.testFailed)
 				{
-					rollbackTransaction();
+					this.rollbackTransaction();
 				}
 				else
 				{
-					commitTransaction();
+					this.commitTransaction();
 				}
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
@@ -1974,18 +2027,18 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				executeStatement("update updates "	+
+				this.beginTransaction();
+				this.executeStatement("update updates "	+
 					"set col_double=col_double+100000000 "	+
 					"where col_int between 1001 and 1100");
-				commitTransaction();
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = count;
+			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
@@ -1993,18 +2046,18 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();					
-				executeStatement("update updates "		+
+				this.beginTransaction();					
+				this.executeStatement("update updates "		+
 					"set col_double = col_double+100000000 "	+
 					"where col_key between 1001 and 1100");
-				rollbackTransaction();
+				this.rollbackTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -2026,16 +2079,16 @@ namespace AS3AP.BenchMark
 					"update updates set col_signed = col_signed + 1 " +
 					"where col_key = {0}", r);
 
-				beginTransaction();
-				executeStatement(lineBuf.ToString());
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement(lineBuf.ToString());
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
@@ -2045,17 +2098,17 @@ namespace AS3AP.BenchMark
 			{
 				createTable("sel100rand", baseTableStructure, null);
 
-				beginTransaction();
-				executeStatement("insert into sel100rand select * from updates "	+
+				this.beginTransaction();
+				this.executeStatement("insert into sel100rand select * from updates "	+
 					"where updates.col_int between 1001 and 1100");
-				commitTransaction();
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
@@ -2065,17 +2118,17 @@ namespace AS3AP.BenchMark
 			{
 				createTable("sel100seq", baseTableStructure, null);
 
-				beginTransaction();
-				executeStatement("insert into sel100seq select * from updates "	+
+				this.beginTransaction();
+				this.executeStatement("insert into sel100seq select * from updates "	+
 					"where updates.col_key between 1001 and 1100");
-				commitTransaction();
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
@@ -2083,18 +2136,18 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement("update updates "	+
+				this.beginTransaction();
+				this.executeStatement("update updates "	+
 					"set col_double=col_double-100000000 "	+
 					"where col_int between 1001 and 1100");
-				commitTransaction();
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0;
+			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
@@ -2102,54 +2155,54 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
-				executeStatement("update updates "	+
+				this.beginTransaction();
+				this.executeStatement("update updates "	+
 					"set col_double=col_double-100000000 "	+
 					"where col_key between 1001 and 1100");
-				commitTransaction();
+				this.commitTransaction();
 			}
 			catch (Exception)
 			{
-				testFailed = true;
+				this.testFailed = true;
 			}
 
-			testResult = 0; 
+			this.testResult = 0; 
 		}
 
 		#endregion
 
-		#region AS3AP_METHODS
+		#region AS3AP Methods
 
 		public void create_database() 
 		{
-			databaseCreate();
+			this.databaseCreate();
 
-			DatabaseConnect();
+			this.DatabaseConnect();
 
-			runTest("create_tables");
-			runTest("load_data");
-			runTest("create_idx_uniques_key_bt");
-			runTest("create_idx_updates_key_bt");
-			runTest("create_idx_hundred_key_bt");
-			runTest("create_idx_tenpct_key_bt");
-			runTest("create_idx_tenpct_key_code_bt");
-			runTest("create_idx_tiny_key_bt");
-			runTest("create_idx_tenpct_int_bt");
-			runTest("create_idx_tenpct_signed_bt");
-			runTest("create_idx_uniques_code_h");
-			runTest("create_idx_tenpct_double_bt");
-			runTest("create_idx_updates_decim_bt");
-			runTest("create_idx_tenpct_float_bt");
-			runTest("create_idx_updates_int_bt");
-			runTest("create_idx_tenpct_decim_bt");
-			runTest("create_idx_hundred_code_h");
-			runTest("create_idx_tenpct_name_h");
-			runTest("create_idx_updates_code_h");
-			runTest("create_idx_tenpct_code_h");
-			runTest("create_idx_updates_double_bt");
-			runTest("create_idx_hundred_foreign");
+			this.runTest("create_tables");
+			this.runTest("load_data");
+			this.runTest("create_idx_uniques_key_bt");
+			this.runTest("create_idx_updates_key_bt");
+			this.runTest("create_idx_hundred_key_bt");
+			this.runTest("create_idx_tenpct_key_bt");
+			this.runTest("create_idx_tenpct_key_code_bt");
+			this.runTest("create_idx_tiny_key_bt");
+			this.runTest("create_idx_tenpct_int_bt");
+			this.runTest("create_idx_tenpct_signed_bt");
+			this.runTest("create_idx_uniques_code_h");
+			this.runTest("create_idx_tenpct_double_bt");
+			this.runTest("create_idx_updates_decim_bt");
+			this.runTest("create_idx_tenpct_float_bt");
+			this.runTest("create_idx_updates_int_bt");
+			this.runTest("create_idx_tenpct_decim_bt");
+			this.runTest("create_idx_hundred_code_h");
+			this.runTest("create_idx_tenpct_name_h");
+			this.runTest("create_idx_updates_code_h");
+			this.runTest("create_idx_tenpct_code_h");
+			this.runTest("create_idx_updates_double_bt");
+			this.runTest("create_idx_hundred_foreign");
 			
-			DatabaseDisconnect();
+			this.DatabaseDisconnect();
 		}
 
 		public void single_user_tests() 
@@ -2157,63 +2210,63 @@ namespace AS3AP.BenchMark
 			long		clocks;
 			TimeSpan	elapsed;
 
-			DatabaseConnect();
+			this.DatabaseConnect();
 			
 			clocks = System.DateTime.Now.Ticks;
 
-			runTest("sel_1_cl");
-			runTest("join_3_cl");
-			runTest("sel_100_ncl");
-			runTest("table_scan");
-			runTest("agg_func");
-			runTest("agg_scal");
-			runTest("sel_100_cl");
-			runTest("join_3_ncl");
-			runTest("sel_10pct_ncl");
-			runTest("agg_simple_report");
-			runTest("agg_info_retrieval");
-			runTest("agg_create_view");
-			runTest("agg_subtotal_report");
-			runTest("agg_total_report");
-			runTest("join_2_cl");
-			runTest("join_2");
-			runTest("sel_variable_select_low");
-			runTest("sel_variable_select_high");
-			runTest("join_4_cl");
-			runTest("proj_100");
-			runTest("join_4_ncl");
-			runTest("proj_10pct");
-			runTest("sel_1_ncl");
-			runTest("join_2_ncl");
-			runTest("integrity_test");
-			runTest("drop_updates_keys");
-			runTest("bulk_save");
-			runTest("bulk_modify");
-			runTest("upd_append_duplicate");
-			runTest("upd_remove_duplicate");
-			runTest("upd_app_t_mid");
-			runTest("upd_mod_t_mid");
-			runTest("upd_del_t_mid");
-			runTest("upd_app_t_end");
-			runTest("upd_mod_t_end");
-			runTest("upd_del_t_end");
-			runTest("create_idx_updates_code_h");
-			runTest("upd_app_t_mid");
-			runTest("upd_mod_t_cod");
-			runTest("upd_del_t_mid");
-			runTest("create_idx_updates_int_bt");
-			runTest("upd_app_t_mid");
-			runTest("upd_mod_t_int");
-			runTest("upd_del_t_mid");
-			runTest("bulk_append");
-			runTest("bulk_delete");
+			this.runTest("sel_1_cl");
+			this.runTest("join_3_cl");
+			this.runTest("sel_100_ncl");
+			this.runTest("table_scan");
+			this.runTest("agg_func");
+			this.runTest("agg_scal");
+			this.runTest("sel_100_cl");
+			this.runTest("join_3_ncl");
+			this.runTest("sel_10pct_ncl");
+			this.runTest("agg_simple_report");
+			this.runTest("agg_info_retrieval");
+			this.runTest("agg_create_view");
+			this.runTest("agg_subtotal_report");
+			this.runTest("agg_total_report");
+			this.runTest("join_2_cl");
+			this.runTest("join_2");
+			this.runTest("sel_variable_select_low");
+			this.runTest("sel_variable_select_high");
+			this.runTest("join_4_cl");
+			this.runTest("proj_100");
+			this.runTest("join_4_ncl");
+			this.runTest("proj_10pct");
+			this.runTest("sel_1_ncl");
+			this.runTest("join_2_ncl");
+			this.runTest("integrity_test");
+			this.runTest("drop_updates_keys");
+			this.runTest("bulk_save");
+			this.runTest("bulk_modify");
+			this.runTest("upd_append_duplicate");
+			this.runTest("upd_remove_duplicate");
+			this.runTest("upd_app_t_mid");
+			this.runTest("upd_mod_t_mid");
+			this.runTest("upd_del_t_mid");
+			this.runTest("upd_app_t_end");
+			this.runTest("upd_mod_t_end");
+			this.runTest("upd_del_t_end");
+			this.runTest("create_idx_updates_code_h");
+			this.runTest("upd_app_t_mid");
+			this.runTest("upd_mod_t_cod");
+			this.runTest("upd_del_t_mid");
+			this.runTest("create_idx_updates_int_bt");
+			this.runTest("upd_app_t_mid");
+			this.runTest("upd_mod_t_int");
+			this.runTest("upd_del_t_mid");
+			this.runTest("bulk_append");
+			this.runTest("bulk_delete");
 
 			elapsed = new TimeSpan(DateTime.Now.Ticks - clocks);
 
 			if (log != null) log.Simple("\r\nSingle user test ( {0} )\r\n\r\n",
 								 elapsed.ToString());
 
-			DatabaseDisconnect();
+			this.DatabaseDisconnect();
 		}
 
 		public void multi_user_tests(int nInstances) 
@@ -2221,114 +2274,132 @@ namespace AS3AP.BenchMark
 			TimeSpan	fTime;
 			long		sTime;			
 
-			userProcess = new Thread[nInstances];
+			this.userProcess = new Thread[nInstances];
 			
-			if (log != null) log.Simple("\"Executing multi-user tests with {0} user task{1}\"\r\n\r\n",
-										   nInstances, ((nInstances != 1) ? "s" : ""));
+			if (this.log != null)
+			{
+				this.log.Simple(
+					"\"Executing multi-user tests with {0} user task{1}\"\r\n\r\n",
+					nInstances, ((nInstances != 1) ? "s" : ""));
+			}
 
 			/* Step 1 -- Backup updates relation, including indices, 
 			 * to tape or other device. This is done early on.
 			 */
 			
-			
-			
+						
 			/* Step 2 -- Run IR (Mix 1) test for 15 minutes.	*/
-			if (Progress != null)
+			if (this.Progress != null)
 			{
-				Progress(this, 
+				this.Progress(
+					this, 
 					new ProgressMessageEventArgs("Run IR (Mix 1) test for 15 minutes (" + DateTime.Now.ToString() + ")."));
 			}
 
-			iters		= 0;
-			timeToRun	= 15;
+			this.iters		= 0;
+			this.timeToRun	= 15;
 					
-			for (int i = 0; i < nInstances; i++) 
+			for (int i = 0; i < this.userProcess.Length; i++) 
 			{
-				userProcess[i]		= new Thread(new ThreadStart(ir_select));
-				userProcess[i].Name = "User " + i.ToString();
-				userProcess[i].Start();
+				this.userProcess[i]	= new Thread(new ThreadStart(this.ir_select));
+
+				this.userProcess[i].Name = "User " + i.ToString();
+				this.userProcess[i].Start();
+				this.userProcess[i].IsBackground = true;
 			}
 
 			/* Wait to the end of the threads	*/
-			for (int i = 0; i < nInstances; i++) 
+			for (int i = 0; i < this.userProcess.Length; i++) 
 			{
-				userProcess[i].Join();
+				this.userProcess[i].Join();
 			}
-									
-			
+
 			/* Step 3 -- Measure throughput in IR test for five minutes.	*/
-			if (Progress != null)
+			if (this.Progress != null)
 			{
-				Progress(this, 
+				this.Progress(
+					this, 
 					new ProgressMessageEventArgs("Run Measure throughput in IR test for five minutes (" + DateTime.Now.ToString() + ")."));
 			}
 			
-			iters		= 0;
-			sTime		= DateTime.Now.Ticks;
-			timeToRun	= 5;
+			sTime			= DateTime.Now.Ticks;
+			this.iters		= 0;			
+			this.timeToRun	= 5;
 						
-			for (int i = 0; i < nInstances; i++)
+			for (int i = 0; i < this.userProcess.Length; i++)
 			{
-				userProcess[i] = new Thread(new ThreadStart(ir_select));
-				userProcess[i].Name = "User " + i.ToString();
-				userProcess[i].Start();
+				this.userProcess[i] = new Thread(new ThreadStart(this.ir_select));
+
+				this.userProcess[i].Name = "User " + i.ToString();
+				this.userProcess[i].Start();
+				this.userProcess[i].IsBackground = true;
 			}
 						
 			/* Wait to the end of the threads	*/
-			for (int i = 0; i < nInstances; i++) 
+			for (int i = 0; i < this.userProcess.Length; i++) 
 			{
-				userProcess[i].Join();
+				this.userProcess[i].Join();
 			}
 
 			fTime = new TimeSpan(DateTime.Now.Ticks - sTime);
-			if (log != null) log.Simple("Mixed IR (tup/sec)\t{0}"			+
-										   "\treturned in {1} minutes"			,
-										   Math.Round((double)iters/fTime.TotalSeconds, 4)	, 
-										   fTime.ToString());
-
+			if (this.log != null)
+			{
+				this.log.Simple(
+					"Mixed IR (tup/sec)\t{0}"			+
+					"\treturned in {1} minutes"			,
+					Math.Round((double)iters/fTime.TotalSeconds, 4)	, 
+					fTime.ToString());
+			}
 			
 			/* Step 4 -- A Mixed Workload IR Test, where one user executes a cross
 			 * section of ten update and retrieval queries, and all the others 
 			 * execute the same IR query as in the second test.
 			 */
-			if (Progress != null)
+			if (this.Progress != null)
 			{
-				Progress(this, 
+				this.Progress(
+					this, 
 					new ProgressMessageEventArgs("Run Mixed Workload IR test (Mix 3) (" + DateTime.Now.ToString() + ")."));
 			}
 			
-			userProcess[0]		= new Thread(new ThreadStart(cross_section_tests));
-			userProcess[0].Name = "User " + 0.ToString();
-			userProcess[0].Start();			
-			timeToRun	= -1;	// Exec the only one time in each thread
-			for (int i = 1; i < nInstances; i++) 
+			this.userProcess[0]		= new Thread(new ThreadStart(this.cross_section_tests));
+
+			this.userProcess[0].Name = "User " + 0.ToString();
+			this.userProcess[0].Start();
+			this.userProcess[0].IsBackground = true;
+			
+			this.timeToRun	= -1;	// Exec the only one time in each thread
+			for (int i = 1; i < this.userProcess.Length; i++) 
 			{
-				userProcess[i] = new Thread(new ThreadStart(ir_select));
-				userProcess[i].Name = "User " + i.ToString();
-				userProcess[i].Start();
+				this.userProcess[i] = new Thread(new ThreadStart(this.ir_select));
+
+				this.userProcess[i].Name = "User " + i.ToString();
+				this.userProcess[i].Start();
+				this.userProcess[i].IsBackground = true;
 			}
 						
 			/* Wait to the end of the threads	*/
-			for (int i = 0; i < nInstances; i++) 
+			for (int i = 0; i < this.userProcess.Length; i++) 
 			{
-				userProcess[i].Join();
+				this.userProcess[i].Join();
 			}
 						
-			
 			/* Step 5 -- Run queries to check correctness of the sequential
 			 * and random bulk updates.
 			 */
-			if (Progress != null)
+			if (this.Progress != null)
 			{
-				Progress(this, 
+				Progress(
+					this, 
 					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
 			}
 			
-			DatabaseConnect();
-			runTest("mu_checkmod_100_seq");
-			runTest("mu_checkmod_100_rand");
-			DatabaseDisconnect();
+			this.DatabaseConnect();
 
+			this.runTest("mu_checkmod_100_seq");
+			this.runTest("mu_checkmod_100_rand");
+
+			this.DatabaseDisconnect();
 			
 			/* Step 6 - Recover updates relation from backup tape (Step 1)
 			 * and log (from Steps 2, 3, 4, and 5).	
@@ -2339,194 +2410,240 @@ namespace AS3AP.BenchMark
 			 * checkmod_100_rand. Remove temporary tables: sel100seq and 
 			 * sel100rand.
 			 */
-			if (Progress != null)
+			if (this.Progress != null)
 			{
-				Progress(this, 
+				this.Progress(
+					this, 
 					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
 			}
 			
-			DatabaseConnect();
-			runTest("mu_checkmod_100_seq");
-			runTest("mu_checkmod_100_rand");
+			this.DatabaseConnect();
 
-			runTest("mu_drop_sel100_seq");
-			runTest("mu_drop_sel100_rand");
-			DatabaseDisconnect();
+			this.runTest("mu_checkmod_100_seq");
+			this.runTest("mu_checkmod_100_rand");
 
-			
+			this.runTest("mu_drop_sel100_seq");
+			this.runTest("mu_drop_sel100_rand");
+
+			this.DatabaseDisconnect();
+
 			/* Step 8 - Run OLTP test for 15 minutes.	*/
-			if (Progress != null)
+			if (this.Progress != null)
 			{
-				Progress(this, 
+				this.Progress(
+					this, 
 					new ProgressMessageEventArgs("Run OLTP test for 15 minutes (" + DateTime.Now.ToString() + ")."));
 			}
 			
-			timeToRun = 15;						
-			for (int i = 0; i < nInstances; i++) 
+			this.timeToRun = 15;						
+			for (int i = 0; i < this.userProcess.Length; i++) 
 			{
-				userProcess[i] = new Thread(new ThreadStart(oltp_update));
-				userProcess[i].Name = "User " + i.ToString();
-				userProcess[i].Start();
+				this.userProcess[i] = new Thread(new ThreadStart(oltp_update));
+
+				this.userProcess[i].Name = "User " + i.ToString();
+				this.userProcess[i].Start();
+				this.userProcess[i].IsBackground = true;
 			}
 
 			/* Wait to the end of the threads	*/
-			for (int i = 0; i < nInstances; i++) 
+			for (int i = 0; i < this.userProcess.Length; i++) 
 			{
-				userProcess[i].Join();
+				this.userProcess[i].Join();
 			}
 			
 			/* Step 9 -- Measure throughput in IR test for five minutes.	*/
-			if (Progress != null)
+			if (this.Progress != null)
 			{
-				Progress(this, 
+				this.Progress(
+					this, 
 					new ProgressMessageEventArgs("Run Measure throughput in IR test for five minutes (" + DateTime.Now.ToString() + ")."));
 			}
 
-			iters		= 0;
-			sTime		= DateTime.Now.Ticks;
-			timeToRun	= 5;						
-			for (int i = 0; i < nInstances; i++)
+			sTime			= DateTime.Now.Ticks;
+			this.iters		= 0;
+			this.timeToRun	= 5;
+			
+			for (int i = 0; i < this.userProcess.Length; i++)
 			{
-				userProcess[i] = new Thread(new ThreadStart(ir_select));
-				userProcess[i].Name = "User " + i.ToString();
-				userProcess[i].Start();
+				this.userProcess[i] = new Thread(new ThreadStart(this.ir_select));
+
+				this.userProcess[i].Name = "User " + i.ToString();
+				this.userProcess[i].Start();
+				this.userProcess[i].IsBackground = true;
 			}
 			
 			/* Wait to the end of the threads	*/
-			for (int i = 0; i < nInstances; i++) 
+			for (int i = 0; i < this.userProcess.Length; i++) 
 			{
-				userProcess[i].Join();
+				this.userProcess[i].Join();
 			}
 						
 			fTime = new TimeSpan(DateTime.Now.Ticks - sTime);
-			if (log != null) log.Simple("Mixed OLTP (tup/sec)\t{0}"			+
-										   "\treturned in {1} minutes\n"		,
-										   Math.Round((double)iters/fTime.TotalSeconds, 4)	, 
-										   fTime.ToString());
+			
+			if (this.log != null)
+			{
+				this.log.Simple(
+					"Mixed OLTP (tup/sec)\t{0}"			+
+					"\treturned in {1} minutes\n"		,
+					Math.Round((double)iters/fTime.TotalSeconds, 4)	, 
+					fTime.ToString());
+			}
 
 			/* Step 10 -- Replace one background OLTP script with the cross 
 			 * section script. This is the Mixed Workload OLTP test (Mix 4). 
 			 * This step is variable length.
 			 */
-			if (Progress != null)
+			if (this.Progress != null)
 			{
-				Progress(this, 
+				this.Progress(
+					this, 
 					new ProgressMessageEventArgs("Run Mixed Workload OLTP test (Mix 4) (" + DateTime.Now.ToString() + ")."));
 			}
 						
-			userProcess[0]		= new Thread(new ThreadStart(cross_section_tests));
-			userProcess[0].Name = "User " + 0.ToString();
-			userProcess[0].Start();
-			timeToRun	= -1;	// Exec the only one time in each thread
-			for (int i = 1; i < nInstances; i++)
+			this.userProcess[0] = new Thread(new ThreadStart(this.cross_section_tests));
+			
+			this.userProcess[0].Name = "User " + 0.ToString();
+			this.userProcess[0].Start();
+			this.userProcess[0].IsBackground = true;
+
+			this.timeToRun = -1;	// Exec the only one time in each thread
+
+			for (int i = 1; i < this.userProcess.Length; i++)
 			{
-				userProcess[i] = new Thread(new ThreadStart(oltp_update));
-				userProcess[i].Name = "User " + i.ToString();
-				userProcess[i].Start();
+				this.userProcess[i] = new Thread(new ThreadStart(this.oltp_update));
+
+				this.userProcess[i].Name = "User " + i.ToString();
+				this.userProcess[i].Start();
+				this.userProcess[i].IsBackground = true;
 			}			
 
 			/* Wait to the end of the threads	*/
-			for (int i = 0; i < nInstances; i++) 
+			for (int i = 0; i < this.userProcess.Length; i++) 
 			{
-				userProcess[i].Join();
+				this.userProcess[i].Join();
 			}
 									
 			/* Step 11 -- Perform correctness checks, checkmod_100_seq and 
 			 * checkmod_100_rand. Remove temporary tables: sel100seq and 
 			 * sel100rand.
 			 */
-			if (Progress != null)
+			if (this.Progress != null)
 			{
-				Progress(this, 
+				this.Progress(
+					this, 
 					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
 			}
 			
-			DatabaseConnect();
-			runTest("mu_checkmod_100_seq");			
-			runTest("mu_checkmod_100_rand");
+			this.DatabaseConnect();
+
+			this.runTest("mu_checkmod_100_seq");			
+			this.runTest("mu_checkmod_100_rand");
 			
-			runTest("mu_drop_sel100_seq");
-			runTest("mu_drop_sel100_rand");
-			DatabaseDisconnect();
+			this.runTest("mu_drop_sel100_seq");
+			this.runTest("mu_drop_sel100_rand");
+
+			this.DatabaseDisconnect();
 		}
 
 		private void cross_section_tests() 
 		{
-			long	startTime;
-			long	endTime;
+			try
+			{
+				long	startTime;
+				long	endTime;
 
-			DatabaseConnect();
+				this.DatabaseConnect();
 
-			startTime = DateTime.Now.Ticks;
+				startTime = DateTime.Now.Ticks;
 
-			runTest("o_mode_tiny");
-			runTest("o_mode_100k");
-			runTest("sel_1_ncl");
-			runTest("sel_1_ncl");
-			runTest("sel_1_ncl");
-			runTest("agg_simple_report");
-			runTest("mu_sel_100_seq");
-			runTest("mu_sel_100_rand");
-			runTest("mu_mod_100_seq");
-			runTest("mu_mod_100_rand");
-			runTest("mu_unmod_100_seq");
-			runTest("mu_unmod_100_rand");
+				this.runTest("o_mode_tiny");
+				this.runTest("o_mode_100k");
+				this.runTest("sel_1_ncl");
+				this.runTest("sel_1_ncl");
+				this.runTest("sel_1_ncl");
+				this.runTest("agg_simple_report");
+				this.runTest("mu_sel_100_seq");
+				this.runTest("mu_sel_100_rand");
+				this.runTest("mu_mod_100_seq");
+				this.runTest("mu_mod_100_rand");
+				this.runTest("mu_unmod_100_seq");
+				this.runTest("mu_unmod_100_rand");
 
-			endTime = DateTime.Now.Ticks;
-			TimeSpan elapsed = new TimeSpan(endTime - startTime);
+				endTime = DateTime.Now.Ticks;
+				TimeSpan elapsed = new TimeSpan(endTime - startTime);
 
-			DatabaseDisconnect();
+				this.DatabaseDisconnect();
 
-			if (log != null) log.Simple("CrossSectionTests \t( {1} )", elapsed.ToString());
+				if (this.log != null)
+				{
+					this.log.Simple("CrossSectionTests \t( {1} )", elapsed.ToString());
+				}
+			}
+			catch (ThreadAbortException)
+			{
+			}
 		}
 
 		private void ir_select()
-		{		
-			ITestSuite	testSuite = TestSuiteFactory.GetTestSuite(testSuiteName, configuration);
-
-			testSuite.DatabaseConnect();
-			
-			DateTime	endTime	= DateTime.Now;
-
-			if (timeToRun > 0)
+		{	
+			try
 			{
-				endTime = DateTime.Now.AddMinutes(timeToRun);
-				while (endTime >= DateTime.Now)
-				{					
-					testSuite.mu_ir_select();
-					iters++;
+				ITestSuite testSuite = TestSuiteFactory.GetTestSuite(testSuiteName, configuration);
+
+				testSuite.DatabaseConnect();
+			
+				DateTime endTime = DateTime.Now;
+
+				if (timeToRun > 0)
+				{
+					endTime = DateTime.Now.AddMinutes(timeToRun);
+					while (endTime >= DateTime.Now)
+					{					
+						testSuite.mu_ir_select();
+						iters++;
+					}
 				}
-			}
-			else
-			{
-				mu_ir_select();
-			}
+				else
+				{
+					this.mu_ir_select();
+				}
 			
-			testSuite.DatabaseDisconnect();
+				testSuite.DatabaseDisconnect();
+			}
+			catch (ThreadAbortException)
+			{
+			}
 		}
 		
 		private void oltp_update()
-		{			
-			ITestSuite	testSuite = TestSuiteFactory.GetTestSuite(testSuiteName, configuration);
-			
-			testSuite.DatabaseConnect();
-			
-			DateTime	endTime	= DateTime.Now;
-
-			if (timeToRun > 0)
+		{	
+			try
 			{
-				endTime = DateTime.Now.AddMinutes(timeToRun);
-				while (endTime >= DateTime.Now)
+				ITestSuite testSuite = TestSuiteFactory.GetTestSuite(
+					testSuiteName, configuration);
+			
+				testSuite.DatabaseConnect();
+			
+				DateTime endTime = DateTime.Now;
+
+				if (timeToRun > 0)
+				{
+					endTime = DateTime.Now.AddMinutes(timeToRun);
+					while (endTime >= DateTime.Now)
+					{
+						testSuite.mu_oltp_update();
+					}
+				}
+				else
 				{
 					testSuite.mu_oltp_update();
 				}
-			}
-			else
-			{
-				testSuite.mu_oltp_update();
-			}
 			
-			testSuite.DatabaseDisconnect();
+				testSuite.DatabaseDisconnect();
+			}
+			catch (ThreadAbortException)
+			{
+			}
 		}
 
 		private void runTest(string testName)
@@ -2535,16 +2652,18 @@ namespace AS3AP.BenchMark
 			MethodInfo	method	= null;
 			long		clocks	= 0;
 
-			testFailed	= false;
+			this.testFailed	= false;
 
 			type	= this.GetType();
-			method 	= type.GetMethod(testName, BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance);
+			method 	= type.GetMethod(
+				testName, 
+				BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance);
 			
 			// Set IsolationLevel for test execution
-			set_isolation_level(testName);
+			this.set_isolation_level(testName);
 
-			// Reset TestFailed property value
-			testFailed = false;
+			// Reset this.testFailed property value
+			this.testFailed = false;
 
 			clocks = DateTime.Now.Ticks;
 
@@ -2556,14 +2675,17 @@ namespace AS3AP.BenchMark
 
 			TimeSpan elapsed = new TimeSpan(clocks);				
 
-			if (Result != null)
+			if (this.Result != null)
 			{
-				Result(this, new TestResultEventArgs(testName, testResult, elapsed, testFailed));
+				this.Result(
+					this, 
+					new TestResultEventArgs(
+						testName, this.testResult, elapsed, this.testFailed));
 			}
 
 			StringBuilder logMessage = new StringBuilder();
 
-			if (testFailed)
+			if (this.testFailed)
 			{
 				if (log != null) log.Simple("-----> {0}\tfailed <-----", testName);
 			}
@@ -2573,10 +2695,13 @@ namespace AS3AP.BenchMark
 					"{0} ( {1} )\treturn value = {2} \t\t"	,
 					testName								,
 					elapsed.ToString(),
-					testResult);
+					this.testResult);
 			}
 
-			if (log != null) log.Simple(logMessage.ToString());
+			if (log != null)
+			{
+				log.Simple(logMessage.ToString());
+			}
 
 			elapsed = new TimeSpan(DateTime.Now.Ticks - clocks);
 		}
@@ -2595,11 +2720,11 @@ namespace AS3AP.BenchMark
 
 		#endregion
 		
-		#region DATABASE_METHODS
+		#region Database Creation Methods
 
 		private void createIndex(IndexType indextype, string indexName, string tableName, string fields)
 		{
-			string	createIndexStmt = String.Empty;
+			string createIndexStmt = String.Empty;
 			
 			switch (indextype)
 			{
@@ -2622,9 +2747,9 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				executeStatement(createIndexStmt);
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement(createIndexStmt);
+				this.commitTransaction();
 			}
 			catch(Exception ex)
 			{
@@ -2647,13 +2772,16 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				beginTransaction();
-				executeStatement(commandText.ToString());
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement(commandText.ToString());
+				this.commitTransaction();
 			}
 			catch(Exception ex)
 			{
-				if (log != null) log.Error("foreign key error {0}", ex.Message);
+				if (log != null)
+				{
+					log.Error("foreign key error {0}", ex.Message);
+				}
 				throw ex;
 			}
 		}
@@ -2675,13 +2803,16 @@ namespace AS3AP.BenchMark
 						"create table {0} ({1})", tableName, tableStructure);
 				}
 
-				beginTransaction();
-				executeStatement(commandText.ToString());
-				commitTransaction();
+				this.beginTransaction();
+				this.executeStatement(commandText.ToString());
+				this.commitTransaction();
 			}
 			catch (Exception ex)
 			{
-				if (log != null) log.Error("error create table {0}", ex.Message);
+				if (log != null)
+				{
+					log.Error("error create table {0}", ex.Message);
+				}
 				throw ex;
 			}
 		}
@@ -2690,23 +2821,26 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				cmdCursor	= getCommand(commandText);
-				cursor		= cmdCursor.ExecuteReader();
+				this.cmdCursor	= this.getCommand(commandText);
+				this.cursor		= this.cmdCursor.ExecuteReader();
 			}
 			catch (Exception ex)
 			{
-				if (log != null) log.Error("cursorOpen failed {0}", ex.Message);
-
-				if (cursor != null)
+				if (this.log != null) 
 				{
-					cursor.Close();
-					cursor = null;
+					log.Error("this.cursorOpen failed {0}", ex.Message);
 				}
 
-				if (cmdCursor != null)
+				if (this.cursor != null)
 				{
-					cmdCursor.Dispose();
-					cmdCursor = null;
+					this.cursor.Close();
+					this.cursor = null;
+				}
+
+				if (this.cmdCursor != null)
+				{
+					this.cmdCursor.Dispose();
+					this.cmdCursor = null;
 				}
 				
 				throw ex;
@@ -2719,11 +2853,14 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				fetched = cursor.Read();
+				fetched = this.cursor.Read();
 			}
 			catch (Exception ex)
 			{
-				if (log != null) log.Error("cursorFetch failed {0}", ex.Message);
+				if (log != null)
+				{
+					log.Error("this.cursorFetch failed {0}", ex.Message);
+				}
 			}
 
 			return fetched;
@@ -2733,29 +2870,32 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				if (cursor != null)
+				if (this.cursor != null)
 				{
-					cursor.Close();
+					this.cursor.Close();
 				}
 			}
 			catch(Exception ex)
 			{				
-				if (log != null) log.Error("cursorClose failed {0}", ex.Message);
+				if (log != null) 
+				{
+					log.Error("cursorClose failed {0}", ex.Message);
+				}
 
 				throw ex;
 			}
 			finally
 			{
-				if (cursor != null)
+				if (this.cursor != null)
 				{
-					cursor.Close();
-					cursor = null;
+					this.cursor.Close();
+					this.cursor = null;
 				}
 
-				if (cmdCursor != null)
+				if (this.cmdCursor != null)
 				{
-					cmdCursor.Dispose();
-					cmdCursor = null;
+					this.cmdCursor.Dispose();
+					this.cmdCursor = null;
 				}
 			}
 		}
@@ -2764,12 +2904,16 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				connection = dataHelper.CreateConnection(configuration.ConnectionString);
-				connection.Open();
+				this.connection = this.dataHelper.CreateConnection(
+					this.configuration.ConnectionString);
+				this.connection.Open();
 			}
 			catch (Exception ex)
 			{
-				if (log != null) log.Error("DatabaseConnect error {0}", ex.Message);
+				if (this.log != null) 
+				{
+					this.log.Error("DatabaseConnect error {0}", ex.Message);
+				}
 				throw ex;
 			}
 		}
@@ -2861,24 +3005,27 @@ namespace AS3AP.BenchMark
 			values.Add("SSL"				, ssl);
 			values.Add("Integrated Security", isecurity);
 
-			dataHelper.CreateDatabase(values);
+			this.dataHelper.CreateDatabase(values);
 		}
 
 		public void DatabaseDisconnect()
 		{
 			try
 			{
-				if (connection != null)
+				if (this.connection != null)
 				{
-					connection.Close();
+					this.connection.Close();
 					
-					connection	= null;
-					transaction = null;
+					this.connection	= null;
+					this.transaction = null;
 				}
 			}
 			catch (Exception ex)
 			{
-				if (log != null) log.Error("disconnect error {0}", ex.Message);
+				if (log != null)
+				{
+					log.Error("disconnect error {0}", ex.Message);
+				}
 				throw ex;
 			}
 		}
@@ -2889,12 +3036,12 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				command = getCommand(commandText);
+				command = this.getCommand(commandText);
 				command.ExecuteNonQuery();
 			}
 			catch (Exception ex)
 			{
-				rollbackTransaction();
+				this.rollbackTransaction();
 				
 				throw ex;
 			}
@@ -2912,11 +3059,14 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				transaction = connection.BeginTransaction(isolation);
+				this.transaction = connection.BeginTransaction(isolation);
 			}
 			catch(Exception ex)
 			{
-				if (log != null) log.Error("beginTransaction failed {0}", ex.Message);
+				if (log != null)
+				{
+					log.Error("this.beginTransaction failed {0}", ex.Message);
+				}
 				throw ex;
 			}
 		}
@@ -2925,11 +3075,14 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				transaction.Commit();
+				this.transaction.Commit();
 			}
 			catch (Exception ex)
 			{					
-				if (log != null) log.Error("Commit failed {0}", ex.Message);
+				if (this.log != null)
+				{
+					log.Error("Commit failed {0}", ex.Message);
+				}
 				throw ex;
 			}
 		}
@@ -2938,12 +3091,14 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				
-				transaction.Rollback();
+				this.transaction.Rollback();
 			}
 			catch (Exception ex)
 			{
-				if (log != null) log.Error("Rollback failed {0}", ex.Message);
+				if (log != null)
+				{
+					log.Error("Rollback failed {0}", ex.Message);
+				}
 				throw ex;
 			}
 		}
@@ -2954,11 +3109,12 @@ namespace AS3AP.BenchMark
 			{
 				DateTime start = DateTime.Now;
 
-				loadTinyFile("tiny");
+				this.loadTinyFile("tiny");
 
-				if (Result != null)
+				if (this.Result != null)
 				{
-					Result(this, 
+					this.Result(
+						this, 
 						new TestResultEventArgs(
 							"	tiny file loaded", 
 							0, 
@@ -2967,11 +3123,11 @@ namespace AS3AP.BenchMark
 
 				start = DateTime.Now;
 								
-				loadFile("uniques");
+				this.loadFile("uniques");
 
-				if (Result != null)
+				if (this.Result != null)
 				{
-					Result(this, 
+					this.Result(this, 
 						new TestResultEventArgs(
 						"	uniques file loaded", 
 						0, 
@@ -2980,11 +3136,12 @@ namespace AS3AP.BenchMark
 
 				start = DateTime.Now;
 				
-				loadFile("updates");
+				this.loadFile("updates");
 
-				if (Result != null)
+				if (this.Result != null)
 				{
-					Result(this, 
+					this.Result(
+						this, 
 						new TestResultEventArgs(
 						"	updates file loaded", 
 						0, 
@@ -2993,11 +3150,12 @@ namespace AS3AP.BenchMark
 
 				start = DateTime.Now;
 				
-				loadFile("hundred");
+				this.loadFile("hundred");
 
-				if (Result != null)
+				if (this.Result != null)
 				{
-					Result(this, 
+					this.Result(
+						this, 
 						new TestResultEventArgs(
 						"	hundred file loaded", 
 						0, 
@@ -3006,11 +3164,12 @@ namespace AS3AP.BenchMark
 
 				start = DateTime.Now;
 				
-				loadFile("tenpct");
+				this.loadFile("tenpct");
 
-				if (Result != null)
+				if (this.Result != null)
 				{
-					Result(this, 
+					this.Result(
+						this, 
 						new TestResultEventArgs(
 						"	tenpct file loaded", 
 						0, 
@@ -3019,9 +3178,12 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception ex)
 			{
-				if (log != null) log.Error("load failed {0}", ex.Message);
+				if (log != null) 
+				{
+					log.Error("load failed {0}", ex.Message);
+				}
 
-				rollbackTransaction();
+				this.rollbackTransaction();
 
 				throw ex;
 			}
@@ -3036,7 +3198,7 @@ namespace AS3AP.BenchMark
 			commandText.AppendFormat("insert into {0} values (@col_key,@col_int,@col_signed,@col_float,@col_double,@col_decim,@col_date,@col_code,@col_name,@col_address)", table);
 
 			/* Crate command */
-			command = getCommand(commandText.ToString());
+			command = this.getCommand(commandText.ToString());
 			
 			/* Add parameters	*/
 			command.Parameters.Add(dataHelper.CreateParameter("@col_key", DbType.Int32, 4, "col_key"));
@@ -3077,7 +3239,7 @@ namespace AS3AP.BenchMark
 			{
 				if (rowCount == 0)
 				{
-					beginTransaction();
+					this.beginTransaction();
 					transactionPending	= true;
 					command.Transaction = this.transaction;
 
@@ -3102,7 +3264,7 @@ namespace AS3AP.BenchMark
 
 				if (rowCount >= 1000)
 				{
-					commitTransaction();
+					this.commitTransaction();
 					transactionPending	= false;
 					rowCount			= 0;
 				}
@@ -3110,7 +3272,7 @@ namespace AS3AP.BenchMark
 
 			if (transactionPending)
 			{
-				commitTransaction();
+				this.commitTransaction();
 			}
 
 			command.Dispose();
@@ -3119,7 +3281,7 @@ namespace AS3AP.BenchMark
 
 		private void loadTinyFile(string table)
 		{
-			beginTransaction();
+			this.beginTransaction();
 
 			StringBuilder	commandText = new StringBuilder();
 			StreamReader	stream		= null;
@@ -3128,7 +3290,7 @@ namespace AS3AP.BenchMark
 			commandText.AppendFormat("insert into {0} values (@col_key)", table);
 
 			/* Crate command */
-			command = getCommand(commandText.ToString());
+			command = this.getCommand(commandText.ToString());
 
 			/* Add parameters	*/
 			IDbDataParameter p = dataHelper.CreateParameter("@col_key", DbType.Int32, 4, "col_key");
@@ -3169,7 +3331,7 @@ namespace AS3AP.BenchMark
 			command.Dispose();
 			stream.Close();
 
-			commitTransaction();
+			this.commitTransaction();
 		}
 
 		protected IDbCommand getCommand(string commandText)

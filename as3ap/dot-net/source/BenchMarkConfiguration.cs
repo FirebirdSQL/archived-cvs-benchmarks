@@ -36,7 +36,7 @@ namespace AS3AP.BenchMark
 	[Serializable]
 	public class BenchMarkConfiguration
 	{
-		#region FIELDS
+		#region Fields
 
 		private int		userNumber			= 0;
 		private string	runSequence			= "SQL87;singleuser;SQL92;singleuser";
@@ -69,7 +69,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region PROPERTIES
+		#region Properties
 
 		public int UserNumber
 		{
@@ -205,7 +205,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region SOAP_METHODS
+		#region SOPA Methods
 
 		public static BenchMarkConfiguration Load(string fileName)
 		{

@@ -4,6 +4,14 @@ AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 
 2004-01-13 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
+	* Updated source file Headers.
+
+	* source/GUI/BaseTestSuite.cs:
+
+		- Unified use of "this."
+
+		- Added changes for try to improve Thread Handling for multiuser tests.
+
 	* source/GUI/As3ApGui.cs:
 	
 		- Unified use of "this."

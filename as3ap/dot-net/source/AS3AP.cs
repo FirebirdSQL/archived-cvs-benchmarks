@@ -2,7 +2,7 @@
 // AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark
 //			for Relational Database Systems.
 //
-// Author: Carlos Guzmn lvarez <carlosga@telefonica.net>
+// Author: Carlos Guzman Alvarez <carlosga@telefonica.net>
 //
 // Distributable under LGPL license.
 // You may obtain a copy of the License at http://www.gnu.org/copyleft/lgpl.html
@@ -43,14 +43,14 @@ namespace AS3AP.BenchMark
 
 	public class AS3AP : IDisposable
 	{	
-		#region EVENTS
+		#region Events
 
 		public event TestResultEventHandler			TestResult;
 		public event ProgressMessageEventHandler	ProgressMessage;
 
 		#endregion
 
-		#region FIELDS
+		#region Fields
 
 		private BenchMarkConfiguration	configuration;
 		private bool					disposed		= false;
@@ -63,7 +63,7 @@ namespace AS3AP.BenchMark
 		
 		#endregion
 
-		#region CONSTRUCTORS
+		#region Constructors
 
 		public AS3AP(string logPath, BenchMarkConfiguration	configuration)
 		{
@@ -98,7 +98,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region IDISPOSABLE_METHODS
+		#region IDisposable Methods
 
 		~AS3AP()
 		{

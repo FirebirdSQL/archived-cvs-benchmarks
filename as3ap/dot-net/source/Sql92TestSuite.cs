@@ -2,7 +2,7 @@
 // AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark
 //			for Relational Database Systems.
 //
-// Author: Carlos Guzmn lvarez <carlosga@telefonica.net>
+// Author: Carlos Guzman Alvarez <carlosga@telefonica.net>
 //
 // Distributable under LGPL license.
 // You may obtain a copy of the License at http://www.gnu.org/copyleft/lgpl.html
@@ -29,7 +29,7 @@ namespace AS3AP.BenchMark
 {
 	public class Sql92TestSuite : BaseTestSuite
 	{
-		#region CONSTRUCTORS
+		#region Constructors
 
 		public Sql92TestSuite(BenchMarkConfiguration configuration) : base(configuration)
 		{
@@ -38,7 +38,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region METHODS
+		#region Methods
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_2() 

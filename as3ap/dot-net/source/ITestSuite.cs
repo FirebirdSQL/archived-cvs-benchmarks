@@ -4,7 +4,7 @@
 //
 // Ported from OSDB project at http://osdb.sourceforge.net
 //
-// Author: Carlos Guzmn lvarez <carlosga@telefonica.net>
+// Author: Carlos Guzman Alvarez <carlosga@telefonica.net>
 //
 // Distributable under LGPL license.
 // You may obtain a copy of the License at http://www.gnu.org/copyleft/lgpl.html
@@ -31,11 +31,11 @@ using CSharp.Logger;
 
 namespace AS3AP.BenchMark
 {
-	#region EVENT_ARGS
+	#region Event Args Classes
 
 	public class TestResultEventArgs : EventArgs
 	{
-		#region FIELDS
+		#region Fields
 
 		private string		testName	= String.Empty;
 		private object		testResult;
@@ -44,7 +44,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region PROPERTIES
+		#region Properties
 
 		public string TestName
 		{
@@ -72,7 +72,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region CONSTRUCTORS
+		#region Constructors
 
 		public TestResultEventArgs(string testName, object testResult, TimeSpan testTime, bool testFailed)
 		{
@@ -87,13 +87,13 @@ namespace AS3AP.BenchMark
 
 	public class ProgressMessageEventArgs : EventArgs
 	{
-		#region FIELDS
+		#region Fields
 
 		private string	message	= String.Empty;
 
 		#endregion
 
-		#region PROPERTIES
+		#region Properties
 
 		public string Message
 		{
@@ -103,7 +103,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region CONSTRUCTORS
+		#region Constructors
 
 		public ProgressMessageEventArgs(string message)
 		{
@@ -117,7 +117,7 @@ namespace AS3AP.BenchMark
 
 	public interface ITestSuite : IDisposable
 	{
-		#region PROPERTIES
+		#region Properties
 
 		BenchMarkConfiguration Configuration
 		{
@@ -144,14 +144,14 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region EVENTS
+		#region Events
 		
 		event ResultEventHandler	Result;
 		event ProgressEventHandler	Progress;
 		
 		#endregion
 
-		#region METHODS
+		#region Methods
 
 		void set_isolation_level(string methodName);
 
