@@ -83,11 +83,20 @@ namespace AS3AP.BenchMark
 
 		#region METHODS
 
-		public int load()
+		public int load(long dataSize)
 		{
-			backend.Load();
+			int returnValue = 0;
 
-			return 0;
+			try
+			{
+				returnValue = backend.CreateData(dataSize);
+			}
+			catch(Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+
+			return returnValue;
 		}
 
 		public int agg_create_view() 
@@ -120,6 +129,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen(
 						"select min(col_key) from hundred group by col_name");			
 				while (backend.CursorFetch()) 
@@ -134,6 +144,7 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
+				backend.TransactionCommit();
 				backend.CursorClose();
 			}
 
@@ -147,8 +158,9 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen(
-					"select count(col_key) "										+
+					"select count(col_key) "									+
 					"from tenpct "												+
 					"where col_name = 'THE+ASAP+BENCHMARKS+' "					+
 					"and col_int <= 100000000 "									+
@@ -160,7 +172,6 @@ namespace AS3AP.BenchMark
 				backend.CursorFetch();
 
 				tupleReturned = backend.Cursor.GetInt32(0);
-					// Convert.ToInt32(backend.Cursor.GetValue(0));
 			}
 			catch(Exception)
 			{
@@ -170,6 +181,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return tupleReturned;
@@ -182,12 +194,12 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen("select min(col_key) from uniques");
 				
 				backend.CursorFetch();
 				
 				tupleReturned = backend.Cursor.GetInt32(0);
-					// Convert.ToInt32(backend.Cursor.GetValue(0));
 			}
 			catch (Exception)
 			{
@@ -197,6 +209,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return tupleReturned; 
@@ -209,6 +222,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen(
 					"select avg(updates.col_decim) "						+
 						"from updates "										+
@@ -231,6 +245,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return tupleReturned; 
@@ -243,6 +258,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen(
 					"select avg(col_signed), min(col_signed), max(col_signed), "	+
 					"max(col_date), min(col_date), "						+
@@ -265,6 +281,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return count;
@@ -277,6 +294,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen(
 					"select avg(col_signed), min(col_signed), max(col_signed), "	+
 					"max(col_date), min(col_date), "						+
@@ -288,7 +306,6 @@ namespace AS3AP.BenchMark
 				backend.CursorFetch();
 
 				tupleReturned = backend.Cursor.GetInt32(0);
-					// Convert.ToInt32(backend.Cursor.GetValue(0));
 			}
 			catch (Exception)
 			{
@@ -298,6 +315,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return tupleReturned;
@@ -308,7 +326,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
+				backend.TransactionBegin();
 				backend.dml("insert into updates select * from saveupdates");
+				backend.TransactionCommit();
 			}
 			catch (Exception)
 			{
@@ -324,7 +344,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
+				backend.TransactionBegin();
 				backend.dml("delete from updates where col_key < 0");
+				backend.TransactionCommit();
 			}
 			catch (Exception)
 			{
@@ -340,9 +362,11 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
+				backend.TransactionBegin();
 				backend.dml("update updates "				+
 					"set col_key = col_key - 100000 "		+
 					"where col_key between 5000 and 5999");
+				backend.TransactionCommit();
 			}
 			catch (Exception)
 			{
@@ -359,8 +383,11 @@ namespace AS3AP.BenchMark
 			try
 			{
 				create_table_standard("saveupdates", null);
+
+				backend.TransactionBegin();
 				backend.dml("insert into saveupdates select * "	+
-						"from updates where col_key between 5000 and 5999");
+							"from updates where col_key between 5000 and 5999");
+				backend.TransactionCommit();
 			}
 			catch (Exception)
 			{
@@ -859,6 +886,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{			
+				backend.TransactionBegin();
 				backend.CursorOpen( 
 					"select uniques.col_signed, uniques.col_name, "		+
 					"hundred.col_signed, hundred.col_name "				+
@@ -878,6 +906,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return count;
@@ -890,6 +919,7 @@ namespace AS3AP.BenchMark
 			
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen(
 					"select uniques.col_signed, uniques.col_name, "	+
 					"hundred.col_signed, hundred.col_name "			+
@@ -909,6 +939,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return count;
@@ -920,7 +951,10 @@ namespace AS3AP.BenchMark
 			try
 			{
 				create_table_standard("integrity_temp", null);
+
+				backend.TransactionBegin();
 				backend.dml("insert into integrity_temp select * from hundred where col_int = 0");
+				backend.TransactionCommit();
 			}
 			catch (Exception)
 			{
@@ -930,7 +964,9 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.dml("update hundred set col_signed = '-500000000' where col_int = 0");
+				backend.TransactionCommit();
 
 				testFailed = true;				
 				return 0;	
@@ -941,7 +977,9 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.dml("delete from hundred where col_int = 0");
+				backend.TransactionCommit();
 			}
 			catch (Exception)
 			{
@@ -951,7 +989,9 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.dml("insert into hundred select * from integrity_temp");
+				backend.TransactionCommit();
 			}
 			catch (Exception)
 			{
@@ -979,6 +1019,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen( 
 					"select uniques.col_signed, uniques.col_name, "		+
 					"hundred.col_signed, hundred.col_name "		+
@@ -998,6 +1039,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return count;
@@ -1010,6 +1052,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen(
 					"select uniques.col_signed, uniques.col_date, "		+
 					"hundred.col_signed, hundred.col_date, "	+
@@ -1031,6 +1074,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return count;
@@ -1043,6 +1087,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen( 
 					"select uniques.col_signed, uniques.col_date, "		+
 					"hundred.col_signed, hundred.col_date, "	+
@@ -1064,6 +1109,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return count;
@@ -1076,9 +1122,10 @@ namespace AS3AP.BenchMark
 	
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen(
 					"select uniques.col_date, hundred.col_date, "	+
-					"tenpct.col_date, updates.col_date "	+
+					"tenpct.col_date, updates.col_date "			+
 					"from uniques, hundred, tenpct, updates "		+
 					"where uniques.col_key = hundred.col_key "		+
 					"and uniques.col_key = tenpct.col_key "			+
@@ -1097,6 +1144,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return count;
@@ -1109,6 +1157,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen( 
 					"select uniques.col_date, hundred.col_date, "		+
 					"tenpct.col_date, updates.col_date "	+
@@ -1130,6 +1179,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return count;
@@ -1146,6 +1196,7 @@ namespace AS3AP.BenchMark
 				{
 					backend.Isolation = isolationLevel;
 
+					backend.TransactionBegin();
 					backend.CursorOpen("select * from tiny");
 				
 					while (backend.CursorFetch())
@@ -1160,6 +1211,7 @@ namespace AS3AP.BenchMark
 				finally
 				{
 					backend.CursorClose();
+					backend.TransactionCommit();
 					backend.Isolation = IsolationLevel.ReadCommitted;
 				}
 			}
@@ -1178,6 +1230,7 @@ namespace AS3AP.BenchMark
 				{
 					backend.Isolation = isolationLevel;
 
+					backend.TransactionBegin();
 					backend.CursorOpen("select * from hundred where col_key<=1000");
 				
 					while (backend.CursorFetch())
@@ -1192,6 +1245,7 @@ namespace AS3AP.BenchMark
 				finally
 				{
 					backend.CursorClose();
+					backend.TransactionCommit();
 					backend.Isolation = IsolationLevel.ReadCommitted;
 				}
 			}
@@ -1208,6 +1262,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
+					backend.TransactionBegin();
 					backend.CursorOpen(
 						"select count(*) from updates, sel100rand "		+
 						"where updates.col_int=sel100rand.col_int "		+
@@ -1216,15 +1271,15 @@ namespace AS3AP.BenchMark
 					backend.CursorFetch();
 
 					count = backend.Cursor.GetInt32(0);
-						// Convert.ToInt32(backend.Cursor.GetValue(0));
 				}
 				catch (Exception)
 				{
 					testFailed = true;
 				}
 				finally
-				{
+				{					
 					backend.CursorClose();
+					backend.TransactionCommit();
 				}
 			}
 
@@ -1261,6 +1316,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
+					backend.TransactionBegin();
 					backend.CursorOpen(
 						"select count(*) from updates, sel100seq "		+
 						"where updates.col_key=sel100seq.col_key "		+
@@ -1269,7 +1325,6 @@ namespace AS3AP.BenchMark
 					backend.CursorFetch();
 				
 					count = backend.Cursor.GetInt32(0); 
-						// Convert.ToInt32(backend.Cursor.GetValue(0));
 				}
 				catch (Exception)
 				{
@@ -1278,6 +1333,7 @@ namespace AS3AP.BenchMark
 				finally
 				{
 					backend.CursorClose();
+					backend.TransactionCommit();
 				}
 			}
 
@@ -1330,6 +1386,7 @@ namespace AS3AP.BenchMark
 						"select col_key, col_code, col_date, col_signed, col_name "	+
 						"from updates where col_key = {0}",	r);
 
+					backend.TransactionBegin();
 					backend.CursorOpen(lineBuf.ToString());
 					if (!backend.CursorFetch())
 					{
@@ -1348,6 +1405,7 @@ namespace AS3AP.BenchMark
 				finally
 				{
 					backend.CursorClose();
+					backend.TransactionCommit();
 				}
 			}
 
@@ -1365,9 +1423,11 @@ namespace AS3AP.BenchMark
 				{
 					backend.Isolation = isolationLevel;
 
+					backend.TransactionBegin();
 					backend.dml("update updates "				+
 						"set col_double=col_double+100000000 "	+
 						"where col_int between 1001 and 1100");
+					backend.TransactionCommit();
 				}
 				catch (Exception)
 				{
@@ -1391,12 +1451,10 @@ namespace AS3AP.BenchMark
 				{
 					backend.Isolation = isolationLevel;
 
-					backend.AutoCommit = false;
-					
+					backend.TransactionBegin();					
 					backend.dml("update updates "					+
 						"set col_double = col_double+100000000 "	+
 						"where col_key between 1001 and 1100");
-
 					backend.TransactionRollback();
 				}
 				catch (Exception)
@@ -1405,7 +1463,6 @@ namespace AS3AP.BenchMark
 				}
 				finally
 				{
-					backend.AutoCommit = true;
 					backend.Isolation = IsolationLevel.ReadCommitted;
 				}
 			}
@@ -1434,7 +1491,9 @@ namespace AS3AP.BenchMark
 						"update updates set col_signed = col_signed + 1 " +
 						"where col_key = {0}", r);
 
+					backend.TransactionBegin();
 					backend.dml(lineBuf.ToString());
+					backend.TransactionCommit();
 				}
 				catch (Exception)
 				{
@@ -1456,8 +1515,10 @@ namespace AS3AP.BenchMark
 
 					create_table_standard("sel100rand", null);
 
+					backend.TransactionBegin();
 					backend.dml("insert into sel100rand select * from updates "	+
 						"where updates.col_int between 1001 and 1100");
+					backend.TransactionCommit();
 				}
 				catch (Exception)
 				{
@@ -1482,8 +1543,11 @@ namespace AS3AP.BenchMark
 					backend.Isolation = isolationLevel;
 
 					create_table_standard("sel100seq", null);
+
+					backend.TransactionBegin();
 					backend.dml("insert into sel100seq select * from updates "	+
 						"where updates.col_key between 1001 and 1100");
+					backend.TransactionCommit();
 				}
 				catch (Exception)
 				{
@@ -1507,9 +1571,11 @@ namespace AS3AP.BenchMark
 				{
 					backend.Isolation = isolationLevel;
 
+					backend.TransactionBegin();
 					backend.dml( "update updates "				+
 						"set col_double=col_double-100000000 "	+
 						"where col_int between 1001 and 1100");
+					backend.TransactionCommit();
 				}
 				catch (Exception)
 				{
@@ -1533,9 +1599,11 @@ namespace AS3AP.BenchMark
 				{
 					backend.Isolation = isolationLevel;
 
+					backend.TransactionBegin();
 					backend.dml("update updates "				+
 						"set col_double=col_double-100000000 "	+
 						"where col_key between 1001 and 1100");
+					backend.TransactionCommit();
 				}
 				catch (Exception)
 				{
@@ -1559,6 +1627,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
+					backend.TransactionBegin();
 					backend.CursorOpen(
 						"select distinct col_address, col_signed from hundred");
 				
@@ -1574,6 +1643,7 @@ namespace AS3AP.BenchMark
 				finally
 				{
 					backend.CursorClose();
+					backend.TransactionCommit();
 				}
 			}
 
@@ -1587,6 +1657,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen("select distinct col_signed from tenpct");
 				
 				while (backend.CursorFetch()) 
@@ -1601,6 +1672,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return count;
@@ -1613,6 +1685,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen(
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
@@ -1630,6 +1703,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return count; 
@@ -1644,6 +1718,7 @@ namespace AS3AP.BenchMark
 			{
 				backend.Isolation = isolationLevel;
 
+				backend.TransactionBegin();
 				backend.CursorOpen( 
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
@@ -1661,6 +1736,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 				backend.Isolation = IsolationLevel.ReadCommitted;
 			}
 
@@ -1674,6 +1750,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen(
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
@@ -1691,6 +1768,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return count;
@@ -1703,6 +1781,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen(
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
@@ -1720,6 +1799,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 
@@ -1731,9 +1811,9 @@ namespace AS3AP.BenchMark
 		{
 			int count = 0;
 
-
 			try
 			{
+				backend.TransactionBegin();
 				backend.CursorOpen( 
 						"select col_key, col_int, col_signed, col_code, "	+
 								"col_double, col_name "						+
@@ -1752,6 +1832,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return count;
@@ -1773,6 +1854,7 @@ namespace AS3AP.BenchMark
 							"where col_signed < {0}",						+
 						foo);
 
+				backend.TransactionBegin();
 				backend.CursorOpen(lineBuf.ToString());
 				
 				while (backend.CursorFetch()) 
@@ -1787,6 +1869,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return count;
@@ -1811,6 +1894,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{			
+				backend.TransactionBegin();
 				backend.CursorOpen("select * from uniques where col_int = 1");
 				
 				while (backend.CursorFetch()) 
@@ -1825,6 +1909,7 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				backend.CursorClose();
+				backend.TransactionCommit();
 			}
 
 			return count;
@@ -1837,11 +1922,13 @@ namespace AS3AP.BenchMark
 		
 			try
 			{
-				backend.dml("insert into updates "						+
+				backend.TransactionBegin();
+				backend.dml("insert into updates "					+
 					"values (1000000001, 50005, 50005, 50005.00, "	+
 					"50005.00, 50005.00, '1/1/1988', "				+
 					"'CONTROLLER', 'ALICE IN WONDERLAND', "			+
-					"'UNIVERSITY OF ILLINOIS AT CHICAGO')"); 
+					"'UNIVERSITY OF ILLINOIS AT CHICAGO')"); 				
+				backend.TransactionCommit();
 				
 				count++;
 			}
@@ -1861,11 +1948,13 @@ namespace AS3AP.BenchMark
 
 			try
 			{
+				backend.TransactionBegin();
 				backend.dml("insert into updates "							+
 					"values (5005, 5005, 50005, 50005.00, 50005.00, "	+
 					"50005.00, '1/1/1988', 'CONTROLLER', "				+
 					"'ALICE IN WONDERLAND', "							+
-					"'UNIVERSITY OF ILLINOIS AT CHICAGO')"); 
+					"'UNIVERSITY OF ILLINOIS AT CHICAGO')");
+				backend.TransactionCommit();
 
 				count++;
 			}
@@ -1886,12 +1975,14 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
+					backend.TransactionBegin();
 					backend.dml( "insert into updates  "				+
 						"values (6000, 0, 60000, 39997.90, "			+
 								"50005.00, 50005.00, "					+
 								"'11/10/1985', 'CONTROLLER', "			+
 								"'ALICE IN WONDERLAND', "				+
 								"'UNIVERSITY OF ILLINOIS AT CHICAGO')"); 
+					backend.TransactionCommit();
 
 					testFailed = true;
 				}
@@ -1908,7 +1999,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
+				backend.TransactionBegin();
 				backend.dml("delete from updates where col_key = -1000"); 
+				backend.TransactionCommit();
 			}
 			catch (Exception)
 			{
@@ -1922,8 +2015,10 @@ namespace AS3AP.BenchMark
 		public int upd_del_t_mid() 
 		{
 			try
-			{			
-				backend.dml( "delete from updates where (col_key='5005') or (col_key='-5000')");
+			{
+				backend.TransactionBegin();
+				backend.dml("delete from updates where (col_key='5005') or (col_key='-5000')");
+				backend.TransactionCommit();
 			}
 			catch (Exception)
 			{
@@ -1938,9 +2033,11 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
+				backend.TransactionBegin();
 				backend.dml("update updates "					+
 							"set col_code = 'SQL+GROUPS' "		+
 							"where col_key = 5005");
+				backend.TransactionCommit();
 			}
 			catch (Exception)
 			{
@@ -1955,8 +2052,10 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
+				backend.TransactionBegin();
 				backend.dml( "update updates "	+
 					"set col_key = -1000 where col_key = 1000000001");
+				backend.TransactionCommit();
 			}
 			catch (Exception)
 			{
@@ -1971,7 +2070,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
+				backend.TransactionBegin();
 				backend.dml("update updates set col_int = 50015 where col_key = 5005");
+				backend.TransactionCommit();
 			}
 			catch (Exception)
 			{
@@ -1986,7 +2087,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
+				backend.TransactionBegin();
 				backend.dml("update updates set col_key = '-5000' where col_key = 5005");
+				backend.TransactionCommit();
 			}
 			catch (Exception)
 			{
@@ -2001,7 +2104,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
+				backend.TransactionBegin();
 				backend.dml("delete from updates where col_key = 6000 and col_int = 0");
+				backend.TransactionCommit();
 			}
 			catch (Exception)
 			{

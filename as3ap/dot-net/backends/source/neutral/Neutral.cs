@@ -44,8 +44,7 @@ namespace AS3AP.BenchMark.Backends
 		private string			connectionClass;
 		private string			commandClass;
 		private string			parameterClass;
-				
-		private bool			autoCommit = true;
+						
 		private IsolationLevel	isolation  = IsolationLevel.ReadCommitted;
 		private Logger			log;
 		private string			dataPath;
@@ -67,12 +66,6 @@ namespace AS3AP.BenchMark.Backends
 		public IDataReader Cursor
 		{
 			get { return cursor; }
-		}
-
-		public bool AutoCommit 
-		{
-			get {return autoCommit;}
-			set {autoCommit = value;}
 		}
 
 		public IsolationLevel Isolation
@@ -349,13 +342,9 @@ namespace AS3AP.BenchMark.Backends
 				TransactionBegin();
 
 				command = GetCommand(stg);
-
 				command.ExecuteNonQuery();
 
-				if (autoCommit)
-				{
-					TransactionCommit();
-				}
+				TransactionCommit();
 			}
 			catch (Exception ex)
 			{
@@ -378,16 +367,8 @@ namespace AS3AP.BenchMark.Backends
 
 			try
 			{
-				TransactionBegin();
-
 				command = GetCommand(stg);
-
 				command.ExecuteNonQuery();
-
-				if (autoCommit)
-				{
-					TransactionCommit();
-				}
 			}
 			catch (Exception ex)
 			{
@@ -584,6 +565,11 @@ namespace AS3AP.BenchMark.Backends
 			param.SourceColumn	= sourceColumn;
 
 			return param;
+		}
+
+		public int CreateData(long dataSize)
+		{
+			return 0;
 		}
 
 		#endregion

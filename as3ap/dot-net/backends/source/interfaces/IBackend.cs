@@ -29,12 +29,6 @@ namespace AS3AP.BenchMark.Backends
 {
 	public interface IBackend
 	{
-		bool AutoCommit
-		{
-			get;
-			set;
-		}
-
 		IsolationLevel Isolation
 		{
 			get;
@@ -62,6 +56,7 @@ namespace AS3AP.BenchMark.Backends
 		void ddl(string stg);
 		void dml(string stg);
 		int  Load();
+		int CreateData(long dataSize);
 		void TransactionBegin();
 		void TransactionCommit();
 		void TransactionRollback();
