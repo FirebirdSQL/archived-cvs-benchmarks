@@ -34,17 +34,17 @@ namespace AS3AP.BenchMark
 	{
 		#region FIELDS
 
-		private const string baseTableStructure =
-			"col_key     int				not null, "	+
-			"col_int     int				not null, "	+
-			"col_signed  int				not null, "	+
-			"col_float   float				not null, "	+
-			"col_double  double precision	not null, "	+
-			"col_decim   numeric(18,2)		not null, "	+
-			"col_date    char(20)			not null, "	+
-			"col_code    char(10)			not null, "	+
-			"col_name    char(20)			not null, "	+
-			"col_address varchar(80)		not null";
+		private string baseTableStructure =
+			"col_key     @INTEGER			not null, "	+
+			"col_int     @INTEGER			not null, "	+
+			"col_signed  @INTEGER			not null, "	+
+			"col_float   @FLOAT				not null, "	+
+			"col_double  @DOUBLE			not null, "	+
+			"col_decim   @DECIMAL(18,2)		not null, "	+
+			"col_date    @CHAR(20)			not null, "	+
+			"col_code    @CHAR(10)			not null, "	+
+			"col_name    @CHAR(20)			not null, "	+
+			"col_address @VARCHAR(80)		not null";
 
 		private BenchMarkConfiguration configuration;
 
@@ -95,7 +95,16 @@ namespace AS3AP.BenchMark
 			this.configuration	= configuration;
 			this.backend		= new Backend(this.configuration);
 
+			// Load ADO .NET data provider Assembly
 			backend.LoadAssembly(configuration.ProviderAssembly);
+
+			// Set specific table structure
+			baseTableStructure = baseTableStructure.Replace("@INTEGER", configuration.IntegerTypeName);
+			baseTableStructure = baseTableStructure.Replace("@FLOAT", configuration.FloatTypeName);
+			baseTableStructure = baseTableStructure.Replace("@DOUBLE", configuration.DoubleTypeName);
+			baseTableStructure = baseTableStructure.Replace("@DECIMAL", configuration.DecimalTypeName);
+			baseTableStructure = baseTableStructure.Replace("@CHAR", configuration.CharTypeName);
+			baseTableStructure = baseTableStructure.Replace("@VARCHAR", configuration.VarcharTypeName);
 		}
 
 		#endregion
@@ -518,9 +527,10 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexBtree("hundred_code_h"	, 
-						"hundred"								, 
-						"col_code");
+					backend.CreateIndex(IndexType.Btree		,
+										"hundred_code_h"	, 
+										"hundred"			, 
+										"col_code");
 				}
 				catch (Exception)
 				{
@@ -560,7 +570,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexCluster("hundred_key_bt"	, 
+					backend.CreateIndex(IndexType.Clustered,"hundred_key_bt"	, 
 												"hundred"		, 
 												"col_key");
 				}
@@ -580,7 +590,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexHash("tenpct_code_h"	, 
+					backend.CreateIndex(IndexType.Hash,"tenpct_code_h"	, 
 											"tenpct"		, 
 											"col_code");
 				}
@@ -600,7 +610,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexBtree("tenpct_decim_bt"	, 
+					backend.CreateIndex(IndexType.Btree,"tenpct_decim_bt"	, 
 												"tenpct"		, 
 												"col_decim");
 				}
@@ -620,7 +630,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexBtree("tenpct_double_bt"	, 
+					backend.CreateIndex(IndexType.Btree,"tenpct_double_bt"	, 
 												"tenpct"		, 
 												"col_double");
 				}
@@ -640,7 +650,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexBtree("tenpct_float_bt"	, 
+					backend.CreateIndex(IndexType.Btree,"tenpct_float_bt"	, 
 												"tenpct"		, 
 												"col_float");
 				}
@@ -660,7 +670,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexBtree("tenpct_int_bt"	, 
+					backend.CreateIndex(IndexType.Btree,"tenpct_int_bt"	, 
 												"tenpct"		, 
 												"col_int");
 				}
@@ -680,7 +690,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexCluster("tenpct_key_bt"	, 
+					backend.CreateIndex(IndexType.Clustered,"tenpct_key_bt"	, 
 												"tenpct"		, 
 												"col_key");
 				}
@@ -700,7 +710,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexBtree("tenpct_key_code_bt"	,
+					backend.CreateIndex(IndexType.Btree,"tenpct_key_code_bt"	,
 												"tenpct"			,
 												"col_key, col_code");
 				}
@@ -720,7 +730,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexHash("tenpct_name_h"	, 
+					backend.CreateIndex(IndexType.Hash,"tenpct_name_h"	, 
 											"tenpct"	,
 											"col_name");
 				}
@@ -740,7 +750,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexBtree("tenpct_signed_bt"	, 
+					backend.CreateIndex(IndexType.Btree,"tenpct_signed_bt"	, 
 												"tenpct"		,
 												"col_signed");
 				}
@@ -760,7 +770,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexBtree("tiny_key_bt"	, 
+					backend.CreateIndex(IndexType.Btree,"tiny_key_bt"	, 
 												"tiny"		, 
 												"col_key");
 				}
@@ -780,7 +790,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexHash("uniques_code_h"	, 
+					backend.CreateIndex(IndexType.Hash,"uniques_code_h"	, 
 											"uniques"			, 
 											"col_code");
 				}
@@ -800,7 +810,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexCluster("uniques_key_bt"	, 
+					backend.CreateIndex(IndexType.Clustered,"uniques_key_bt"	, 
 												"uniques"		, 
 												"col_key");
 				}
@@ -820,7 +830,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexHash("updates_code_h"	, 
+					backend.CreateIndex(IndexType.Hash,"updates_code_h"	, 
 											"updates"			, 
 											"col_code");
 				}
@@ -840,7 +850,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexBtree("updates_decim_bt"	, 
+					backend.CreateIndex(IndexType.Btree,"updates_decim_bt"	, 
 												"updates"		,
 												"col_decim");
 				}
@@ -860,7 +870,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexBtree("updates_double_bt"	, 
+					backend.CreateIndex(IndexType.Btree,"updates_double_bt"	, 
 												"updates"			,
 												"col_double");
 				}
@@ -879,7 +889,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexBtree("updates_int_bt"	, 
+					backend.CreateIndex(IndexType.Btree,"updates_int_bt"	, 
 												"updates"		, 
 												"col_int");
 				}
@@ -899,7 +909,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndexCluster("updates_key_bt"	, 
+					backend.CreateIndex(IndexType.Clustered,"updates_key_bt"	, 
 												"updates"		, 
 												"col_key");
 				}
@@ -924,7 +934,7 @@ namespace AS3AP.BenchMark
 
 				backend.CreateTable( 
 					"tiny"					,
-					"col_key int not null",
+					"col_key " + configuration.IntegerTypeName + " not null",
 					"col_key");
 			}
 			catch (Exception)

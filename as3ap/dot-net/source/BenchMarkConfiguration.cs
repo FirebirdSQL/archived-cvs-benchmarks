@@ -52,6 +52,17 @@ namespace AS3AP.BenchMark
 		private string	dataAdapterClass	= "FirebirdSql.Data.Firebird.FbDataAdapter";
 		private string	parameterClass		= "FirebirdSql.Data.Firebird.FbParameter";
 		
+		private string	btreeIndexStmt		= "create index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
+		private string	clusteredIndexStmt	= "create index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
+		private string	hashIndexStmt		= "create index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
+	
+		private string	charTypeName		= "char";
+		private string	varcharTypeName		= "varchar";
+		private string	integerTypeName		= "int";
+		private string	decimalTypeName		= "decimal";
+		private string	floatTypeName		= "float";
+		private string	doubleTypeName		= "double precision";
+
 		#endregion
 
 		#region PROPERTIES
@@ -132,6 +143,60 @@ namespace AS3AP.BenchMark
 		{
 			get { return parameterClass; }
 			set { parameterClass = value; }
+		}
+
+		public string BtreeIndexStmt
+		{
+			get { return btreeIndexStmt; }
+			set { btreeIndexStmt = value; }
+		}
+		
+		public string ClusteredIndexStmt
+		{
+			get { return clusteredIndexStmt; }
+			set { clusteredIndexStmt = value; }
+		}
+
+		public string HashIndexStmt
+		{
+			get { return hashIndexStmt; }
+			set { hashIndexStmt = value; }
+		}
+
+		public string CharTypeName
+		{
+			get { return charTypeName; }
+			set { charTypeName = value; }
+		}
+
+		public string VarcharTypeName
+		{
+			get { return varcharTypeName; }
+			set { varcharTypeName = value; }
+		}
+
+		public string IntegerTypeName
+		{
+			get { return integerTypeName; }
+			set { integerTypeName = value; }
+		}
+
+		public string DecimalTypeName
+		{
+			get { return decimalTypeName; }
+			set { decimalTypeName = value; }
+		}
+
+		public string FloatTypeName
+		{
+			get { return floatTypeName; }
+			set { floatTypeName = value; }
+		}
+
+		public string DoubleTypeName
+		{
+			get { return doubleTypeName; }
+			set { doubleTypeName = value; }
 		}
 
 		#endregion

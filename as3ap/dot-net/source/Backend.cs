@@ -33,6 +33,13 @@ using CSharp.Logger;
 
 namespace AS3AP.BenchMark
 {
+	public enum IndexType
+	{
+		Btree,
+		Clustered,
+		Hash
+	}
+
 	public class Backend
 	{		
 		#region FIELDS
@@ -89,43 +96,39 @@ namespace AS3AP.BenchMark
 			assembly = Assembly.LoadWithPartialName(assemblyName);
 		}
 
-		public void CreateIndexBtree(string indexName, string tableName, string fields)
+		public void CreateIndex(IndexType indextype, string indexName, string tableName, string fields)
 		{
-			StringBuilder commandText = new StringBuilder();
+			string	createIndexStmt = String.Empty;
+			
+			switch (indextype)
+			{
+				case IndexType.Btree:
+					createIndexStmt = configuration.BtreeIndexStmt;
+					break;
+				
+				case IndexType.Clustered:
+					createIndexStmt = configuration.ClusteredIndexStmt;
+					break;
 
-			commandText.AppendFormat("create index {0} on {1} ({2})",
-				indexName, tableName, fields);
+				case IndexType.Hash:
+					createIndexStmt = configuration.HashIndexStmt;
+					break;
+			}
+
+			createIndexStmt	= createIndexStmt.Replace("@INDEX_NAME", indexName);
+			createIndexStmt	= createIndexStmt.Replace("@TABLE_NAME", tableName);
+			createIndexStmt	= createIndexStmt.Replace("@INDEX_FIELDS", fields);
 
 			try
 			{
 				TransactionBegin();
-				ExecuteStatement(commandText.ToString());
+				ExecuteStatement(createIndexStmt);
 				TransactionCommit();
 			}
 			catch(Exception ex)
 			{
 				if (log != null) log.Error("btree error {0}", ex.Message);
 				throw ex;				
-			}
-		}
-
-		public void CreateIndexCluster(string indexName, string tableName, string fields)
-		{
-			StringBuilder commandText = new StringBuilder();
-
-			commandText.AppendFormat("create unique index {0} on {1} ({2})",
-				indexName, tableName, fields);
-
-			try
-			{
-				TransactionBegin();
-				ExecuteStatement(commandText.ToString());
-				TransactionCommit();
-			}
-			catch(Exception ex)
-			{
-				if (log != null) log.Error("cluster error {0}", ex.Message);
-				throw ex;
 			}
 		}
 
@@ -150,26 +153,6 @@ namespace AS3AP.BenchMark
 			catch(Exception ex)
 			{
 				if (log != null) log.Error("foreign key error {0}", ex.Message);
-				throw ex;
-			}
-		}
-
-		public void CreateIndexHash(string indexName, string tableName, string fields)
-		{
-			StringBuilder commandText = new StringBuilder();
-
-			commandText.AppendFormat("create index {0} on {1} ({2})",
-				indexName, tableName, fields);
-
-			try
-			{
-				TransactionBegin();
-				ExecuteStatement(commandText.ToString());
-				TransactionCommit();
-			}
-			catch (Exception ex)
-			{
-				if (log != null) log.Error("btree error {0}", ex.Message);
 				throw ex;
 			}
 		}

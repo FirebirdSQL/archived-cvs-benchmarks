@@ -124,7 +124,14 @@ namespace AS3AP.BenchMark
 							".log";
 			
 			log				= new Logger(logName, Mode.OVERWRITE);		
-			configuration	= BenchMarkConfiguration.Load(configFileName);			
+			configuration	= BenchMarkConfiguration.Load(configFileName);
+
+			/*
+			configuration.ConnectionString = @"Database=D:\DESARROLLO\FIREBIRDPROJECT\BENCHMARKS\AS3AP\DOT-NET\BIN\DEBUG\AS3AP.FDB;User=SYSDBA;Password=fb_2559568632;Server=localhost;Port=3050;Dialect=3;Charset=NONE;Role=;Connection Lifetime=15;Pooling=true";
+			configuration.DataPath = @"..\..\data\data-4mb\";
+			configuration.Save("as3ap.config");
+			*/
+	
 			testSuite		= TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
 		}
 
@@ -275,14 +282,12 @@ namespace AS3AP.BenchMark
 			return 0;
 		}
 
-
 		private void setup_database()
 		{
 			testSuite.Backend.DatabaseConnect();
 			testSuite.setup_database();
 			testSuite.Backend.DatabaseDisconnect();
 		}
-
 
 		private void runSingleUserTests() 
 		{
@@ -337,7 +342,6 @@ namespace AS3AP.BenchMark
 
 			testSuite.Backend.DatabaseDisconnect();
 		}
-
 
 		private void runMultiUserTests(int nInstances) 
 		{	
@@ -524,7 +528,6 @@ namespace AS3AP.BenchMark
 			testSuite.Backend.DatabaseDisconnect();
 		}
 
-
 		private void crossSectionTests() 
 		{
 			long	startTime;
@@ -555,7 +558,6 @@ namespace AS3AP.BenchMark
 						Math.Round((double)startTime / ticksPerSecond, 4));
 		}
 
-
 		private void ir_select()
 		{
 			DateTime	endTime	= DateTime.Now;
@@ -581,7 +583,6 @@ namespace AS3AP.BenchMark
 
 			test.Backend.DatabaseDisconnect();
 		}
-
 		
 		private void oltp_update()
 		{
@@ -649,7 +650,6 @@ namespace AS3AP.BenchMark
 			methodName = formatMethodName(methodName);
 
 			TimeSpan testTime = new TimeSpan(clocks);				
-			// Math.Round((double)clocks/ticksPerSecond, 4);
 
 			if (TestResult != null)
 			{
@@ -668,7 +668,7 @@ namespace AS3AP.BenchMark
 				logMessage.AppendFormat(
 							"{0}\t{1} seconds\treturn value = {2} \t\t",
 							methodName + "()"							,
-							testTime,
+							testTime.TotalSeconds,
 							testSuite.TestResult);
 			}
 
@@ -678,6 +678,7 @@ namespace AS3AP.BenchMark
 		private string formatMethodName(string methodName)
 		{
 			int length = 40 - methodName.Length;
+
 			for (int i = 0; i < length; i++)
 			{
 				methodName = " " + methodName;
