@@ -27,25 +27,99 @@
 using System;
 using System.Data;
 
+using CSharp.Logger;
+
 namespace AS3AP.BenchMark
 {
+	#region EVENT_ARGS
+
+	public class TestResultEventArgs : EventArgs
+	{
+		#region FIELDS
+
+		private string		testName	= String.Empty;
+		private object		testResult;
+		private TimeSpan	testTime;
+		private bool		testFailed	= false;
+
+		#endregion
+
+		#region PROPERTIES
+
+		public string TestName
+		{
+			get { return testName; }
+			set { testName = value; }
+		}
+
+		public object TestResult
+		{
+			get { return testResult; }
+			set { testResult = value; }
+		}
+
+		public TimeSpan TestTime
+		{
+			get { return testTime; }
+			set { testTime = value; }
+		}
+
+		public bool TestFailed
+		{
+			get { return testFailed; }
+			set { testFailed = value; }
+		}
+
+		#endregion
+
+		#region CONSTRUCTORS
+
+		public TestResultEventArgs(string testName, object testResult, TimeSpan testTime, bool testFailed)
+		{
+			this.testName	= testName;
+			this.testResult = testResult;
+			this.testTime	= testTime;
+			this.testFailed	= testFailed;
+		}
+
+		#endregion
+	}
+
+	public class ProgressMessageEventArgs : EventArgs
+	{
+		#region FIELDS
+
+		private string	message	= String.Empty;
+
+		#endregion
+
+		#region PROPERTIES
+
+		public string Message
+		{
+			get { return message; }
+			set { message = value; }
+		}
+
+		#endregion
+
+		#region CONSTRUCTORS
+
+		public ProgressMessageEventArgs(string message)
+		{
+			this.message = message;
+		}
+
+		#endregion
+	}
+
+	#endregion
+
 	public interface ITestSuite : IDisposable
 	{
 		#region PROPERTIES
 
 		BenchMarkConfiguration Configuration
-		{
-			get;
-			set;
-		}
-
-		object TestResult
-		{
-			get;
-			set;
-		}
-
-		bool TestFailed
 		{
 			get;
 			set;
@@ -62,17 +136,35 @@ namespace AS3AP.BenchMark
 			set;
 		}
 
+		Logger Log
+		{
+			get;
+		}
+
+		#endregion
+
+		#region EVENTS
+		
+		event ResultEventHandler	Result;
+		event ProgressEventHandler	Progress;
+		
 		#endregion
 
 		#region METHODS
 
-		void SetIsolationLevel(string methodName);
+		void set_isolation_level(string methodName);
 
 		void setup_database();
 		
-		void LoadData();
+		void load_data();
 		
-		int CountRows(string table);
+		void create_database();
+
+		void single_user_tests();
+
+		void multi_user_tests(int nInstances);
+		
+		int count_rows(string table);
 
 		void agg_create_view();
 

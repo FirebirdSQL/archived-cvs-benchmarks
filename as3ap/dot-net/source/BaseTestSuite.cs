@@ -28,10 +28,26 @@ using System.Threading;
 using System.Text;
 using System.Reflection;
 
+using CSharp.Logger;
+
 namespace AS3AP.BenchMark
 {
+	#region DELEGATES
+
+	public delegate void ResultEventHandler(object sender, TestResultEventArgs e);
+	public delegate void ProgressEventHandler(object sender, ProgressMessageEventArgs e);
+
+	#endregion
+
 	public abstract class BaseTestSuite : ITestSuite
 	{
+		#region EVENTS
+
+		public event ResultEventHandler		Result;
+		public event ProgressEventHandler	Progress;
+
+		#endregion
+
 		#region FIELDS
 
 		private string baseTableStructure =
@@ -48,32 +64,29 @@ namespace AS3AP.BenchMark
 
 		private BenchMarkConfiguration configuration;
 
+		private	Logger		log;
 		private Backend		backend;
+		private int			iters		= 0;
+		private int			timeToRun	= 15;
 		private bool		disposed	= false;
-		private bool		testFailed	= false;
-		private object		testResult	= 0;
-		private int			tupleCount	= 0;
+		private int			tupleCount	= 0;		
+
+		protected bool		testFailed	= false;
+		protected object		testResult	= 0;
 
 		#endregion
 
 		#region PROPERTIES
 
+		public Logger Log
+		{
+			get { return log; }
+		}
+
 		public BenchMarkConfiguration Configuration
 		{
 			get { return configuration; }
 			set { configuration = value; }
-		}
-
-		public object TestResult
-		{
-			get { return testResult; }
-			set { testResult = value; }
-		}
-
-		public bool TestFailed
-		{
-			get { return testFailed; }
-			set { testFailed = value; }
 		}
 
 		public Backend Backend
@@ -95,6 +108,20 @@ namespace AS3AP.BenchMark
 		{
 			this.configuration	= configuration;
 			this.backend		= new Backend(this.configuration);
+
+			string logName = "as3ap_"					+
+				System.DateTime.Now.Year.ToString()		+
+				System.DateTime.Now.Month.ToString()	+
+				System.DateTime.Now.Day.ToString()		+
+				System.DateTime.Now.Hour.ToString()		+
+				System.DateTime.Now.Minute.ToString()	+
+				System.DateTime.Now.Second.ToString()	+
+				".log";
+			
+			if (configuration.EnableLogging)
+			{
+				this.log = new Logger(logName, Mode.OVERWRITE);		
+			}
 
 			// Load ADO .NET data provider Assembly
 			backend.LoadAssembly(configuration.ProviderAssembly);
@@ -125,7 +152,13 @@ namespace AS3AP.BenchMark
 				{
 					try
 					{
-						// release any managed resources
+						// release any managed resources					
+						if (log != null)
+						{
+							log.Close();
+							log = null;
+						}
+
 						backend.Dispose();
 						backend = null;
 
@@ -174,6 +207,8 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
+				backend.DatabaseConnect();
+
 				backend.TransactionBegin();
 
 				// Remove reportview
@@ -191,9 +226,13 @@ namespace AS3AP.BenchMark
 			catch (Exception)
 			{
 			}
+			finally
+			{
+				backend.DatabaseDisconnect();
+			}
 		}
 
-		public void LoadData()
+		public void load_data()
 		{
 			try
 			{
@@ -207,7 +246,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-		public int CountRows(string table)
+		public int count_rows(string table)
 		{
 			StringBuilder	commandText = new StringBuilder();
 			int				count = 0;
@@ -243,7 +282,7 @@ namespace AS3AP.BenchMark
 			return count;
 		}
 
-		public void SetIsolationLevel(string methodName)
+		public void set_isolation_level(string methodName)
 		{
 			IsolationLevel			isolationLevel = IsolationLevel.ReadCommitted;
 			IsolationLevelAttribute att;
@@ -2059,6 +2098,455 @@ namespace AS3AP.BenchMark
 			}
 
 			testResult = 0; 
+		}
+
+		#endregion
+
+		#region RUN_METHODS
+
+		public void create_database() 
+		{
+			backend.DatabaseCreate("AS3AP");
+
+			backend.DatabaseConnect();
+
+			runTest("create_tables");
+			runTest("load_data");
+			runTest("create_idx_uniques_key_bt");
+			runTest("create_idx_updates_key_bt");
+			runTest("create_idx_hundred_key_bt");
+			runTest("create_idx_tenpct_key_bt");
+			runTest("create_idx_tenpct_key_code_bt");
+			runTest("create_idx_tiny_key_bt");
+			runTest("create_idx_tenpct_int_bt");
+			runTest("create_idx_tenpct_signed_bt");
+			runTest("create_idx_uniques_code_h");
+			runTest("create_idx_tenpct_double_bt");
+			runTest("create_idx_updates_decim_bt");
+			runTest("create_idx_tenpct_float_bt");
+			runTest("create_idx_updates_int_bt");
+			runTest("create_idx_tenpct_decim_bt");
+			runTest("create_idx_hundred_code_h");
+			runTest("create_idx_tenpct_name_h");
+			runTest("create_idx_updates_code_h");
+			runTest("create_idx_tenpct_code_h");
+			runTest("create_idx_updates_double_bt");
+			runTest("create_idx_hundred_foreign");
+			
+			backend.DatabaseDisconnect();
+		}
+
+		public void single_user_tests() 
+		{
+			long		clocks;
+			TimeSpan	elapsed;
+
+			backend.DatabaseConnect();
+			
+			clocks = System.DateTime.Now.Ticks;
+
+			runTest("sel_1_cl");
+			runTest("join_3_cl");
+			runTest("sel_100_ncl");
+			runTest("table_scan");
+			runTest("agg_func");
+			runTest("agg_scal");
+			runTest("sel_100_cl");
+			runTest("join_3_ncl");
+			runTest("sel_10pct_ncl");
+			runTest("agg_simple_report");
+			runTest("agg_info_retrieval");
+			runTest("agg_create_view");
+			runTest("agg_subtotal_report");
+			runTest("agg_total_report");
+			runTest("join_2_cl");
+			runTest("join_2");
+			runTest("sel_variable_select_low");
+			runTest("sel_variable_select_high");
+			runTest("join_4_cl");
+			runTest("proj_100");
+			runTest("join_4_ncl");
+			runTest("proj_10pct");
+			runTest("sel_1_ncl");
+			runTest("join_2_ncl");
+			runTest("integrity_test");
+			runTest("drop_updates_keys");
+			runTest("bulk_save");
+			runTest("bulk_modify");
+			runTest("upd_append_duplicate");
+			runTest("upd_remove_duplicate");
+			runTest("upd_app_t_mid");
+			runTest("upd_mod_t_mid");
+			runTest("upd_del_t_mid");
+			runTest("upd_app_t_end");
+			runTest("upd_mod_t_end");
+			runTest("upd_del_t_end");
+			runTest("create_idx_updates_code_h");
+			runTest("upd_app_t_mid");
+			runTest("upd_mod_t_cod");
+			runTest("upd_del_t_mid");
+			runTest("create_idx_updates_int_bt");
+			runTest("upd_app_t_mid");
+			runTest("upd_mod_t_int");
+			runTest("upd_del_t_mid");
+			runTest("bulk_append");
+			runTest("bulk_delete");
+
+			elapsed = new TimeSpan(DateTime.Now.Ticks - clocks);
+
+			if (log != null) log.Simple("\r\nSingle user test ( {0} )\r\n\r\n",
+								 elapsed.ToString());
+
+			backend.DatabaseDisconnect();
+		}
+
+		public void multi_user_tests(int nInstances) 
+		{	
+			TimeSpan	fTime;
+			long		sTime;
+			Thread[]	process = new Thread[nInstances];
+			
+			if (log != null) log.Simple("\"Executing multi-user tests with {0} user task{1}\"\n",
+										   nInstances, ((nInstances != 1) ? "s" : ""));
+
+			/* Step 1 -- Backup updates relation, including indices, 
+			 * to tape or other device. This is done early on.
+			 */
+			
+			/* Step 2 -- Run IR (Mix 1) test for 15 minutes.	*/			
+			if (Progress != null)
+			{
+				Progress(this, 
+					new ProgressMessageEventArgs("Run IR (Mix 1) test for 15 minutes (" + DateTime.Now.ToString() + ")."));
+			}
+			iters		= 0;
+			timeToRun	= 15;
+			for (int i = 0; i < nInstances; i++) 
+			{
+				process[i]		= new Thread(new ThreadStart(ir_select));
+				process[i].Name = "User " + i.ToString();
+				process[i].Start();
+			}
+			
+			/* Wait to the end of the threads	*/
+			for (int i = 0; i < nInstances; i++) 
+			{
+				process[i].Join();
+			}
+						
+			/* Step 3 -- Measure throughput in IR test for five minutes.	*/
+			if (Progress != null)
+			{
+				Progress(this, 
+					new ProgressMessageEventArgs("Run Measure throughput in IR test for five minutes (" + DateTime.Now.ToString() + ")."));
+			}
+			iters		= 0;
+			sTime		= DateTime.Now.Ticks;
+			timeToRun	= 5;
+			for (int i = 0; i < nInstances; i++) 
+			{
+				process[i] = new Thread(new ThreadStart(ir_select));
+				process[i].Name = "User " + i.ToString();
+				process[i].Start();
+			}
+
+			/* Wait to the end of the threads	*/
+			for (int i = 0; i < nInstances; i++) 
+			{
+				process[i].Join();
+			}
+
+			fTime = new TimeSpan(DateTime.Now.Ticks - sTime);
+			if (log != null) log.Simple("Mixed IR (tup/sec)\t{0}"			+
+										   "\treturned in {1} minutes"			,
+										   Math.Round((double)iters/fTime.TotalSeconds, 4)	, 
+										   fTime.ToString());
+
+			/* Step 4 -- A Mixed Workload IR Test, where one user executes a cross 
+			 * section of ten update and retrieval queries, and all the others 
+			 * execute the same IR query as in the second test.
+			 */
+			if (Progress != null)
+			{
+				Progress(this, 
+					new ProgressMessageEventArgs("Run Mixed Workload IR test (Mix 3) (" + DateTime.Now.ToString() + ")."));
+			}
+			process[0]		= new Thread(new ThreadStart(cross_section_tests));
+			process[0].Name = "User " + 0.ToString();
+			process[0].Start();
+			/* Exec the only one time in each thread	*/
+			timeToRun	= -1;
+			for (int i = 1; i < nInstances; i++) 
+			{
+				process[i] = new Thread(new ThreadStart(ir_select));
+				process[i].Name = "User " + i.ToString();
+				process[i].Start();
+			}
+
+			/* Wait to the end of the threads	*/
+			for (int i = 0; i < nInstances; i++) 
+			{
+				process[i].Join();
+			}
+			
+			/* Step 5 -- Run queries to check correctness of the sequential 
+			 * and random bulk updates.
+			 */
+			if (Progress != null)
+			{
+				Progress(this, 
+					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
+			}
+			backend.DatabaseConnect();
+			runTest("mu_checkmod_100_seq");
+			runTest("mu_checkmod_100_rand");
+			backend.DatabaseDisconnect();
+
+			/* Step 6 - Recover updates relation from backup tape (Step 1) 
+			 * and log (from Steps 2, 3, 4, and 5).	
+			 */
+
+
+			/* Step 7 - Perform correctness checks, checkmod_100_seq and 
+			 * checkmod_100_rand. Remove temporary tables: sel100seq and 
+			 * sel100rand.
+			 */
+			if (Progress != null)
+			{
+				Progress(this, 
+					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
+			}
+			backend.DatabaseConnect();
+			runTest("mu_checkmod_100_seq");
+			runTest("mu_checkmod_100_rand");
+
+			runTest("mu_drop_sel100_seq");
+			runTest("mu_drop_sel100_rand");
+			backend.DatabaseDisconnect();
+
+			/* Step 8 - Run OLTP test for 15 minutes.	*/
+			if (Progress != null)
+			{
+				Progress(this, 
+					new ProgressMessageEventArgs("Run OLTP test for 15 minutes (" + DateTime.Now.ToString() + ")."));
+			}
+			timeToRun = 15;
+			for (int i = 0; i < nInstances; i++) 
+			{
+				process[i] = new Thread(new ThreadStart(oltp_update));
+				process[i].Name = "User " + i.ToString();
+				process[i].Start();
+			}
+
+			/* Wait to the end of the threads	*/
+			for (int i = 0; i < nInstances; i++) 
+			{
+				process[i].Join();
+			}
+
+			/* Step 9 -- Measure throughput in IR test for five minutes.	*/
+			if (Progress != null)
+			{
+				Progress(this, 
+					new ProgressMessageEventArgs("Run Measure throughput in IR test for five minutes (" + DateTime.Now.ToString() + ")."));
+			}
+			iters		= 0;
+			sTime		= DateTime.Now.Ticks;
+			timeToRun	= 5;
+			for (int i = 0; i < nInstances; i++) 
+			{
+				process[i] = new Thread(new ThreadStart(ir_select));
+				process[i].Name = "User " + i.ToString();
+				process[i].Start();
+			}
+
+			/* Wait to the end of the threads	*/
+			for (int i = 0; i < nInstances; i++) 
+			{
+				process[i].Join();
+			}
+
+			fTime = new TimeSpan(DateTime.Now.Ticks - sTime);
+			if (log != null) log.Simple("Mixed OLTP (tup/sec)\t{0}"			+
+										   "\treturned in {1} minutes\n"		,
+										   Math.Round((double)iters/fTime.TotalSeconds, 4)	, 
+										   fTime.ToString());
+
+			/* Step 10 -- Replace one background OLTP script with the cross 
+			 * section script. This is the Mixed Workload OLTP test (Mix 4). 
+			 * This step is variable length.
+			 */
+			if (Progress != null)
+			{
+				Progress(this, 
+					new ProgressMessageEventArgs("Run Mixed Workload OLTP test (Mix 4) (" + DateTime.Now.ToString() + ")."));
+			}
+			process[0]		= new Thread(new ThreadStart(cross_section_tests));
+			process[0].Name = "User " + 0.ToString();
+			process[0].Start();
+			/* Exec the only one time in each thread	*/
+			timeToRun	= -1;
+			for (int i = 1; i < nInstances; i++)
+			{
+				process[i] = new Thread(new ThreadStart(oltp_update));
+				process[i].Name = "User " + i.ToString();
+				process[i].Start();
+			}			
+
+			/* Wait to the end of the threads	*/
+			for (int i = 0; i < nInstances; i++) 
+			{
+				process[i].Join();
+			}
+
+			/* Step 11 -- Perform correctness checks, checkmod_100_seq and 
+			 * checkmod_100_rand. Remove temporary tables: sel100seq and 
+			 * sel100rand.
+			 */
+			if (Progress != null)
+			{
+				Progress(this, 
+					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
+			}
+			backend.DatabaseConnect();
+			runTest("mu_checkmod_100_seq");			
+			runTest("mu_checkmod_100_rand");
+			
+			runTest("mu_drop_sel100_seq");
+			runTest("mu_drop_sel100_rand");
+			backend.DatabaseDisconnect();
+		}
+
+		private void cross_section_tests() 
+		{
+			long	startTime;
+			long	endTime;
+
+			backend.DatabaseConnect();
+
+			startTime = DateTime.Now.Ticks;
+
+			runTest("o_mode_tiny");
+			runTest("o_mode_100k");
+			runTest("sel_1_ncl");
+			runTest("sel_1_ncl");
+			runTest("sel_1_ncl");
+			runTest("agg_simple_report");
+			runTest("mu_sel_100_seq");
+			runTest("mu_sel_100_rand");
+			runTest("mu_mod_100_seq");
+			runTest("mu_mod_100_rand");
+			runTest("mu_unmod_100_seq");
+			runTest("mu_unmod_100_rand");
+
+			endTime = DateTime.Now.Ticks;
+			TimeSpan elapsed = new TimeSpan(endTime - startTime);
+
+			backend.DatabaseDisconnect();
+
+			if (log != null) log.Simple("CrossSectionTests \t{1}", elapsed.ToString());
+		}
+
+		private void ir_select()
+		{
+			DateTime	endTime	= DateTime.Now;
+
+			if (timeToRun > 0)
+			{
+				endTime = DateTime.Now.AddMinutes(timeToRun);
+				while (endTime >= DateTime.Now)
+				{					
+					mu_ir_select();
+					iters++;
+				}
+			}
+			else
+			{
+				mu_ir_select();
+			}
+		}
+		
+		private void oltp_update()
+		{
+			DateTime	endTime	= DateTime.Now;
+
+			if (timeToRun > 0)
+			{
+				endTime = DateTime.Now.AddMinutes(timeToRun);
+				while (endTime >= DateTime.Now)
+				{
+					mu_oltp_update();
+				}
+			}
+			else
+			{
+				mu_oltp_update();
+			}
+		}
+
+		private void runTest(string testName)
+		{
+			MethodInfo	method		= null;
+			long		clocks;
+
+			testFailed	= false;
+
+			method = this.GetType().GetMethod(testName);
+			
+			// Set IsolationLevel for test execution
+			set_isolation_level(testName);
+
+			// Reset TestFailed property value
+			testFailed = false;
+
+			clocks = DateTime.Now.Ticks;
+
+			method.Invoke(this, null);
+
+			clocks	= DateTime.Now.Ticks - clocks;
+
+			testName = formatTestName(testName);
+
+			TimeSpan elapsed = new TimeSpan(clocks);				
+
+			if (Result != null)
+			{
+				Result(this, new TestResultEventArgs(testName, testResult, elapsed, testFailed));
+			}
+
+			StringBuilder logMessage = new StringBuilder();
+
+			if (testFailed)
+			{
+				if (log != null) log.Simple("-----> {0}\tfailed <-----", testName);
+			}
+			else
+			{
+				logMessage.AppendFormat(
+					"{0} ( {1} )\treturn value = {2} \t\t"	,
+					testName								,
+					elapsed.ToString(),
+					testResult);
+			}
+
+			if (log != null) log.Simple(logMessage.ToString());
+
+			elapsed = new TimeSpan(DateTime.Now.Ticks - clocks);
+
+			if (log != null) log.Simple("\r\nMulti user test ( {0} )\r\n\r\n",
+										   elapsed.ToString());
+		}
+
+		private string formatTestName(string methodName)
+		{
+			int length = 30 - methodName.Length;
+
+			for (int i = 0; i < length; i++)
+			{
+				methodName = " " + methodName;
+			}
+
+			return methodName;
 		}
 
 		#endregion

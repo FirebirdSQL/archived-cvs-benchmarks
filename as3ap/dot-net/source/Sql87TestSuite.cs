@@ -56,16 +56,16 @@ namespace AS3AP.BenchMark
 				
 				Backend.CursorFetch();
 
-				TestResult = Backend.Cursor.GetValue(0);
+				base.testResult = Backend.Cursor.GetValue(0);
 			}
 			catch (Exception)
 			{
-				TestFailed = true;
+				base.testFailed = true;
 			}
 			finally
 			{
 				Backend.CursorClose();
-				if (TestFailed)
+				if (base.testFailed)
 				{
 					Backend.TransactionRollback();
 				}
@@ -98,12 +98,12 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				TestFailed = true;
+				base.testFailed = true;
 			}
 			finally
 			{
 				Backend.CursorClose();
-				if (TestFailed)
+				if (base.testFailed)
 				{
 					Backend.TransactionRollback();
 				}
@@ -113,7 +113,7 @@ namespace AS3AP.BenchMark
 				}
 			}
 
-			TestResult = count;
+			base.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -138,12 +138,12 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				TestFailed = true;
+				base.testFailed = true;
 			}
 			finally
 			{
 				Backend.CursorClose();
-				if (TestFailed)
+				if (base.testFailed)
 				{
 					Backend.TransactionRollback();
 				}
@@ -153,7 +153,7 @@ namespace AS3AP.BenchMark
 				}
 			}
 
-			TestResult = count;
+			base.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -178,12 +178,12 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				TestFailed = true;
+				base.testFailed = true;
 			}
 			finally
 			{
 				Backend.CursorClose();
-				if (TestFailed)
+				if (base.testFailed)
 				{
 					Backend.TransactionRollback();
 				}
@@ -193,7 +193,7 @@ namespace AS3AP.BenchMark
 				}
 			}
 
-			TestResult = count;
+			base.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -220,12 +220,12 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				TestFailed = true;
+				base.testFailed = true;
 			}
 			finally
 			{
 				Backend.CursorClose();
-				if (TestFailed)
+				if (base.testFailed)
 				{
 					Backend.TransactionRollback();
 				}
@@ -235,7 +235,7 @@ namespace AS3AP.BenchMark
 				}
 			}
 
-			TestResult = count;
+			base.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -262,12 +262,12 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				TestFailed = true;
+				base.testFailed = true;
 			}
 			finally
 			{
 				Backend.CursorClose();
-				if (TestFailed)
+				if (base.testFailed)
 				{
 					Backend.TransactionRollback();
 				}
@@ -277,7 +277,7 @@ namespace AS3AP.BenchMark
 				}
 			}
 
-			TestResult = count;
+			base.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -304,12 +304,12 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				TestFailed = true;
+				base.testFailed = true;
 			}
 			finally
 			{
 				Backend.CursorClose();
-				if (TestFailed)
+				if (base.testFailed)
 				{
 					Backend.TransactionRollback();
 				}
@@ -319,7 +319,7 @@ namespace AS3AP.BenchMark
 				}
 			}
 
-			TestResult = count;
+			base.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -346,12 +346,12 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				TestFailed = true;
+				base.testFailed = true;
 			}
 			finally
 			{
 				Backend.CursorClose();
-				if (TestFailed)
+				if (base.testFailed)
 				{
 					Backend.TransactionRollback();
 				}
@@ -361,7 +361,7 @@ namespace AS3AP.BenchMark
 				}
 			}
 
-			TestResult = count;
+			base.testResult = count;
 		}
 
 		#endregion
