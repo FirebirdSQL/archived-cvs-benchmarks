@@ -231,7 +231,6 @@ namespace AS3AP.BenchMark.Backends
 			}
 		}
 
-
 		public void CursorOpen(string stg)
 		{
 			try
@@ -259,12 +258,10 @@ namespace AS3AP.BenchMark.Backends
 			}
 		}
 
-
 		public bool CursorFetch()
 		{
 			return cursor.Read();
 		}
-
 		
 		public void CursorClose()
 		{
@@ -331,7 +328,6 @@ namespace AS3AP.BenchMark.Backends
 				throw ex;
 			}
 		}
-
 
 		public void ExecuteStatement(string statement)
 		{
@@ -487,7 +483,6 @@ namespace AS3AP.BenchMark.Backends
 			command.Dispose();
 			stream.Close();
 		}
-
 
 		private void loadTinyFile(string table)
 		{
