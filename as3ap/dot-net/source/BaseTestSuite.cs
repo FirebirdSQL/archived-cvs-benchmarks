@@ -95,9 +95,6 @@ namespace AS3AP.BenchMark
 
 		private		IsolationLevel	isolation  = IsolationLevel.ReadCommitted;
 		private		IDbConnection	connection;
-		private		IDbTransaction	transaction;
-		protected	IDataReader		cursor;
-		private		IDbCommand		cmdCursor;
 		private		DataHelper		dataHelper;
 
 		#endregion
@@ -174,25 +171,6 @@ namespace AS3AP.BenchMark
 				{
 					try
 					{
-						// release any managed resources					
-						if (this.cursor != null)
-						{
-							this.cursor.Close();
-							this.cursor = null;
-						}
-			
-						if (this.cmdCursor != null)
-						{
-							this.cmdCursor.Dispose();
-							this.cmdCursor = null;
-						}
-			
-						if (this.transaction != null)
-						{
-							this.rollbackTransaction();
-							this.transaction = null;
-						}
-						
 						if (this.connection != null)
 						{
 							this.connection.Close();
@@ -251,35 +229,16 @@ namespace AS3AP.BenchMark
 
 		public int CountRows(string table)
 		{
-			StringBuilder	commandText = new StringBuilder();
-			int				count = 0;
-
-			commandText.AppendFormat("select count(col_key) from {0}", table);
+			int		count	= 0;
+			string	sql		= "select count(col_key) from " + table;
 			
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(commandText.ToString());
-				if (this.cursorFetch())
-				{
-					count = this.cursor.GetInt32(0);					
-				}
+				count = Convert.ToInt32(this.ExecuteScalar(sql));
 			}
 			catch(Exception)
 			{
 				this.testFailed = true;
-			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
 			}
 
 			return count;
@@ -292,7 +251,8 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				att = (IsolationLevelAttribute)Attribute.GetCustomAttribute(GetType().GetMethod(methodName),
+				att = (IsolationLevelAttribute)Attribute.GetCustomAttribute(
+					GetType().GetMethod(methodName),
 					typeof(IsolationLevelAttribute));
 				isolationLevel = att.IsolationLevel;
 			}
@@ -314,9 +274,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("create view "								+
-					"reportview(col_key,col_signed,col_date,col_decim, "	+
+				int count = this.ExecuteNonQuery(
+					"create view reportview("								+
+					"col_key,col_signed,col_date,col_decim, "				+
 					"col_name,col_code,col_int) as "						+
 					"select updates.col_key, updates.col_signed, "			+
 					"updates.col_date, updates.col_decim, "					+
@@ -324,7 +284,6 @@ namespace AS3AP.BenchMark
 					"hundred.col_int "										+
 					"from updates, hundred "								+
 					"where updates.col_key = hundred.col_key");
-				this.commitTransaction();
 			}
 			catch(Exception)
 			{				
@@ -341,13 +300,8 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(
-					"select min(col_key) from hundred group by col_name");			
-				while (this.cursorFetch()) 
-				{
-					count++;
-				}
+				count = this.ExecuteReader(
+					"select min(col_key) from hundred group by col_name");
 			}
 			catch(Exception)
 			{
@@ -355,18 +309,8 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
+				this.testResult = count;
 			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -374,34 +318,17 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(
+				this.testResult = this.ExecuteScalar(
 					"select * "						+
 					"from updates "					+
 					"where updates.col_key in "		+
 					"(select updates.col_key "		+
 					"from updates, hundred "		+
 					"where hundred.col_key = updates.col_key)");
-				
-				this.cursorFetch();
-
-				this.testResult = cursor.GetValue(0);
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
-			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
 			}
 		}
 
@@ -410,8 +337,7 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(
+				this.testResult = this.ExecuteScalar(
 					"select count(col_key) "									+
 					"from tenpct "												+
 					"where col_name = 'THE+ASAP+BENCHMARKS+' "					+
@@ -420,26 +346,10 @@ namespace AS3AP.BenchMark
 					"and not (col_float between -450000000 and 450000000) "		+
 					"and col_double > 600000000 "								+
 					"and col_decim < -600000000");
-
-				this.cursorFetch();
-
-				this.testResult = cursor.GetValue(0);
 			}
 			catch(Exception)
 			{
 				this.testFailed = true;
-			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
 			}
 		}
 
@@ -448,72 +358,33 @@ namespace AS3AP.BenchMark
 		{	
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen("select min(col_key) from uniques");
-				
-				this.cursorFetch();
-				
-				this.testResult = cursor.GetValue(0);
+				this.testResult = this.ExecuteScalar(
+					"select min(col_key) from uniques");				
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
-				this.testResult = -1;
-			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
 			}
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void agg_subtotal_report() 
 		{
-			int count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(
+				this.testResult = this.ExecuteReader(
 					"select avg(col_signed), min(col_signed), max(col_signed), "	+
 					"max(col_date), min(col_date), "								+
 					"count(distinct col_name), count(col_name), "					+
 					"col_code, col_int "											+
 					"from reportview "												+
-					"where col_decim >980000000 "									+
-					"group by col_code, col_int");
-				
-				while (this.cursorFetch())
-				{  
-					count++;
-				}
+					"where col_decim > 980000000 "									+
+					"group by col_code, col_int");				
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -521,41 +392,17 @@ namespace AS3AP.BenchMark
 		{			
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(
+				this.testResult = this.ExecuteScalar(
 					"select avg(col_signed), min(col_signed), max(col_signed), "	+
-					"max(col_date), min(col_date), "						+
-					"count(distinct col_name), count(col_name), "			+
-					"count(col_code), count(col_int) "						+
+					"max(col_date), min(col_date), "								+
+					"count(distinct col_name), count(col_name), "					+
+					"count(col_code), count(col_int) "								+
 					"from reportview "												+
-					"where col_decim >980000000");
-
-				if (this.cursorFetch())
-				{
-					this.testResult = cursor.GetValue(0);
-				}
-				else
-				{
-					this.cursorClose();					
-					this.rollbackTransaction();
-
-					this.testFailed = true;
-					this.testResult = -1;
-				}
+					"where col_decim > 980000000");
 			}
 			catch (Exception)
 			{
-				this.rollbackTransaction();
 				this.testFailed = true;
-				this.testResult = -1;
-			}
-			finally
-			{
-				this.cursorClose();
-				if (!this.testFailed)
-				{
-					this.commitTransaction();
-				}
 			}
 		}
 
@@ -564,9 +411,8 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("insert into updates select * from saveupdates");
-				this.commitTransaction();
+				int count = this.ExecuteNonQuery(
+					"insert into updates select * from saveupdates");
 			}
 			catch (Exception)
 			{
@@ -581,9 +427,8 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("delete from updates where col_key < 0");
-				this.commitTransaction();
+				int count = this.ExecuteNonQuery(
+					"delete from updates where col_key < 0");
 			}
 			catch (Exception)
 			{
@@ -598,11 +443,10 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("update updates "	+
-					"set col_key = col_key - 100000 "		+
+				int count = this.ExecuteNonQuery(
+					"update updates "					+
+					"set col_key = col_key - 100000 "	+
 					"where col_key between 5000 and 5999");
-				this.commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -619,10 +463,9 @@ namespace AS3AP.BenchMark
 			{
 				this.createTable("saveupdates", baseTableStructure, null);
 
-				this.beginTransaction();
-				this.executeStatement("insert into saveupdates select * "	+
-							"from updates where col_key between 5000 and 5999");
-				this.commitTransaction();
+				int count = this.ExecuteNonQuery(
+					"insert into saveupdates select * "	+
+					"from updates where col_key between 5000 and 5999");
 			}
 			catch (Exception)
 			{
@@ -635,20 +478,14 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_hundred_code_h() 
 		{
-			if (this.configuration.UseIndexes) 
+			try
 			{
-				try
-				{
-					this.createIndex(
-						IndexType.Btree		,
-						"hundred_code_h"	, 
-						"hundred"			, 
-						"col_code");
-				}
-				catch (Exception)
-				{
-					this.testFailed = true;
-				}
+				this.createIndex(
+					IndexType.Btree, "hundred_code_h", "hundred", "col_code");
+			}
+			catch (Exception)
+			{
+				this.testFailed = true;
 			}
 
 			this.testResult = 0;
@@ -1110,15 +947,13 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					this.beginTransaction();
-					this.executeStatement("drop index updates_int_bt");
-					this.executeStatement("drop index updates_double_bt");
-					this.executeStatement("drop index updates_decim_bt");
+					this.ExecuteNonQuery("drop index updates_int_bt");
+					this.ExecuteNonQuery("drop index updates_double_bt");
+					this.ExecuteNonQuery("drop index updates_decim_bt");
 					if (this.configuration.SupportsHashIndexes)
 					{
-						this.executeStatement("drop index updates_code_h");
+						this.ExecuteNonQuery("drop index updates_code_h");
 					}
-					this.commitTransaction();
 				}
 				catch (Exception)
 				{
@@ -1136,10 +971,8 @@ namespace AS3AP.BenchMark
 			{
 				this.createTable("integrity_temp", this.baseTableStructure, null);
 
-				this.beginTransaction();
-				this.executeStatement(
+				int count = this.ExecuteNonQuery(
 					"insert into integrity_temp select * from hundred where col_int = 0");
-				this.commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -1148,9 +981,8 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("update hundred set col_signed = '-500000000' where col_int = 0");
-				this.commitTransaction();
+				int count = this.ExecuteNonQuery(
+					"update hundred set col_signed = '-500000000' where col_int = 0");
 
 				this.testFailed = true;				
 				this.testResult = 0;	
@@ -1161,9 +993,8 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("delete from hundred where col_int = 0");
-				this.commitTransaction();
+				int count = this.ExecuteNonQuery(
+					"delete from hundred where col_int = 0");
 			}
 			catch (Exception)
 			{
@@ -1172,9 +1003,8 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("insert into hundred select * from integrity_temp");
-				this.commitTransaction();
+				int count = this.ExecuteNonQuery(
+					"insert into hundred select * from integrity_temp");
 			}
 			catch (Exception)
 			{
@@ -1183,9 +1013,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("drop table integrity_temp");
-				this.commitTransaction();
+				this.ExecuteNonQuery("drop table integrity_temp");
 			}
 			catch (Exception)
 			{
@@ -1198,315 +1026,155 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void proj_100() 
 		{
-			int count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(
+				this.testResult = this.ExecuteReader(
 					"select distinct col_address, col_signed from hundred");
-			
-				while (this.cursorFetch()) 
-				{
-					count++;
-				}				
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void proj_10pct() 
 		{
-			int count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen("select distinct col_signed from tenpct");
-				
-				while (this.cursorFetch()) 
-				{
-					count++;
-				}				
+				this.testResult = this.ExecuteReader(
+					"select distinct col_signed from tenpct");
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void sel_1_cl() 
 		{
-			int count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(
+				int count = this.ExecuteReader(
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
 					"from updates where col_key = 1000");
-				
-				while (this.cursorFetch()) 
+
+				if (count != 1)
 				{
-					count++;
-				}			
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			this.testResult = count; 
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void sel_1_ncl() 
 		{
-			int count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen( 
+				int count = this.ExecuteReader(
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
-					"from updates where col_code = 'BENCHMARKS'");
-				
-				while (this.cursorFetch()) 
-				{  
-					count++;
+					"from updates where col_code = 'BENCHMARKS'");				
+
+				if (count != 1)
+				{
+					this.testFailed = true;
 				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void sel_100_cl() 
 		{
-			int count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(
+				this.testResult = this.ExecuteReader(
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
-					"from updates where col_key <= 100");
-				
-				while (this.cursorFetch()) 
-				{
-					count++;
-				}
+					"from updates where col_key <= 100");				
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void sel_100_ncl() 
 		{
-			int count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(
+				int count = this.ExecuteReader(
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
 					"from updates where col_int <= 100");
-				
-				while (this.cursorFetch()) 
+
+				if (count != 100)
 				{
-					count++;
+					this.testFailed = true;
 				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-
-			this.testResult = count;
 		}
 	
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void	sel_10pct_ncl() 
 		{
-			int count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen( 
+				this.testResult = this.ExecuteReader(
 					"select col_key, col_int, col_signed, col_code, "	+
-					"col_double, col_name "						+
-					"from tenpct "									+
+					"col_double, col_name "								+
+					"from tenpct "										+
 					"where col_name = 'THE+ASAP+BENCHMARKS+'");
-				
-				while (this.cursorFetch()) 
-				{  
-					count++;
-				}
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void	sel_variable_select(long foo) 
 		{
-			StringBuilder	lineBuf = new StringBuilder();
-			int				count = 0;
-
 			try
 			{
-				lineBuf.AppendFormat(
+				this.testResult = this.ExecuteReader(
 					"select col_key, col_int, col_signed, col_code, "	+
-					"col_double, col_name "							+
-					"from tenpct "									+
-					"where col_signed < {0}",						+
+					"col_double, col_name "								+
+					"from tenpct "										+
+					"where col_signed < {0}",							+
 					foo);
-
-				this.beginTransaction();
-				this.cursorOpen(lineBuf.ToString());
-				
-				while (this.cursorFetch()) 
-				{
-					count++;
-				}
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			this.testResult = count;
 		}
-
 
 		public void sel_variable_select_high() 
 		{
 			this.sel_variable_select(-250000000);
 		}
-
 
 		public void sel_variable_select_low() 
 		{
@@ -1516,86 +1184,51 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void table_scan() 
 		{
-			int count = 0;
-
 			try
-			{			
-				this.beginTransaction();
-				this.cursorOpen("select * from uniques where col_int = 1");
-				
-				while (this.cursorFetch()) 
-				{  
-					count++;
-				}
+			{	
+				this.testResult = this.ExecuteReader(
+					"select * from uniques where col_int = 1");
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void upd_app_t_end() 
 		{
-			int count = 0;
-		
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("insert into updates "		+
+				this.testResult = this.ExecuteNonQuery(
+					"insert into updates "							+
 					"values (1000000001, 50005, 50005, 50005.00, "	+
 					"50005.00, 50005.00, '1/1/1988', "				+
 					"'CONTROLLER', 'ALICE IN WONDERLAND', "			+
-					"'UNIVERSITY OF ILLINOIS AT CHICAGO')"); 				
-				this.commitTransaction();
-				
-				count++;
+					"'UNIVERSITY OF ILLINOIS AT CHICAGO')");
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = count; 
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void	upd_app_t_mid() 
 		{
-			int count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("insert into updates "							+
+				this.testResult = this.ExecuteNonQuery(
+					"insert into updates "								+
 					"values (5005, 5005, 50005, 50005.00, 50005.00, "	+
 					"50005.00, '1/1/1988', 'CONTROLLER', "				+
 					"'ALICE IN WONDERLAND', "							+
 					"'UNIVERSITY OF ILLINOIS AT CHICAGO')");
-				this.commitTransaction();
-
-				count++;
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1605,14 +1238,13 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					this.beginTransaction();
-					this.executeStatement( "insert into updates  "		+
-						"values (6000, 0, 60000, 39997.90, "				+
-						"50005.00, 50005.00, "								+
-						"'11/10/1985', 'CONTROLLER', "						+
-						"'ALICE IN WONDERLAND', "							+
+					this.testResult = this.ExecuteNonQuery( 
+						"insert into updates  "					+
+						"values (6000, 0, 60000, 39997.90, "	+
+						"50005.00, 50005.00, "					+
+						"'11/10/1985', 'CONTROLLER', "			+
+						"'ALICE IN WONDERLAND', "				+
 						"'UNIVERSITY OF ILLINOIS AT CHICAGO')"); 
-					this.commitTransaction();
 
 					this.testFailed = true;
 				}
@@ -1620,8 +1252,6 @@ namespace AS3AP.BenchMark
 				{
 				}
 			}
-
-			this.testResult = 0;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1629,16 +1259,13 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("delete from updates where col_key = -1000"); 
-				this.commitTransaction();
+				this.testResult = this.ExecuteNonQuery(
+					"delete from updates where col_key = -1000");
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0; 
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1646,16 +1273,13 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("delete from updates where (col_key='5005') or (col_key='-5000')");
-				this.commitTransaction();
+				this.testResult = this.ExecuteNonQuery(
+					"delete from updates where (col_key='5005') or (col_key='-5000')");
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1663,18 +1287,15 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("update updates "	+
-					"set col_code = 'SQL+GROUPS' "			+
+				this.testResult = this.ExecuteNonQuery(
+					"update updates "				+
+					"set col_code = 'SQL+GROUPS' "	+
 					"where col_key = 5005");
-				this.commitTransaction();
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1682,17 +1303,14 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement( "update updates "	+
+				this.testResult = this.ExecuteNonQuery(
+					"update updates "	+
 					"set col_key = -1000 where col_key = 1000000001");
-				this.commitTransaction();
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1700,16 +1318,13 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("update updates set col_int = 50015 where col_key = 5005");
-				this.commitTransaction();
+				this.testResult = this.ExecuteNonQuery(
+					"update updates set col_int = 50015 where col_key = 5005");
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0; 
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1717,16 +1332,13 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("update updates set col_key = '-5000' where col_key = 5005");
-				this.commitTransaction();
+				this.testResult = this.ExecuteNonQuery(
+					"update updates set col_key = '-5000' where col_key = 5005");
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -1734,16 +1346,13 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("delete from updates where col_key = 6000 and col_int = 0");
-				this.commitTransaction();
+				this.testResult = this.ExecuteNonQuery(
+					"delete from updates where col_key = 6000 and col_int = 0");
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0;
 		}
 
 		#endregion
@@ -1753,113 +1362,54 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
 		public void o_mode_tiny()
 		{	
-			int count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen("select * from tiny");
-			
-				while (this.cursorFetch())
-				{
-					count++;
-				}
+				this.testResult = this.ExecuteReader("select * from tiny");
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
 		public void o_mode_100k()
 		{
-			int count = 0;
+			string sql = "select * from hundred where col_key <= 1000";
 
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen("select * from hundred where col_key<=1000");
-			
-				while (this.cursorFetch())
-				{
-					count++;
-				}
+				this.testResult = this.ExecuteReader(sql);
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
 		public void mu_checkmod_100_rand() 
 		{
-			object count = 0;
-			
+			string sql = 
+					"select count(*) from updates, sel100rand "+
+					"where updates.col_int = sel100rand.col_int "		+
+					"and not updates.col_double = sel100rand.col_double";
+
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(
-					"select count(*) from updates, sel100rand "		+
-					"where updates.col_int=sel100rand.col_int "		+
-					"and not updates.col_double=sel100rand.col_double");
-			
-				this.cursorFetch();
+				int count = this.ExecuteReader(sql);
 
-				count = this.cursor.GetValue(0);
+				if (count != 100) 
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{					
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			if (Convert.ToInt32(count) != 100) 
-			{
-				this.testFailed = true;
-			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -1867,58 +1417,36 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("drop table sel100rand");
-				this.commitTransaction();
+				this.testResult = this.ExecuteNonQuery("drop table sel100rand");
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void mu_checkmod_100_seq() 
 		{
-			object count = 0;
+			string sql = "select count(*) from updates, sel100seq "		+
+						"where updates.col_key = sel100seq.col_key "	+
+						"and not updates.col_double = sel100seq.col_double";
 
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(
-					"select count(*) from updates, sel100seq "		+
-					"where updates.col_key=sel100seq.col_key "		+
-					"and not updates.col_double=sel100seq.col_double");
-			
-				this.cursorFetch();
-			
-				count = this.cursor.GetValue(0); 
+				int count = this.ExecuteReader(sql);
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			if (Convert.ToInt32(count) != 100) 
-			{
-				this.testFailed = true;
-			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
@@ -1926,27 +1454,22 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("drop table sel100seq");
-				this.commitTransaction();
+				this.testResult = this.ExecuteNonQuery("drop table sel100seq");
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void mu_ir_select()
-		{
-			StringBuilder	lineBuf = new StringBuilder();
-			int				count = 0;
-			int				r;
-				
-			Random randNumber = new Random(unchecked((int)DateTime.Now.Ticks));
-			r = 1;
+		{			
+			Random	randNumber	= new Random(unchecked((int)DateTime.Now.Ticks));
+			int		r			= 0;
+			string	sql			=
+					"select col_key, col_code, col_date, col_signed, col_name "	+
+					"from updates where col_key = {0}";
 
 			try
 			{
@@ -1955,61 +1478,35 @@ namespace AS3AP.BenchMark
 					r = randNumber.Next(0, tupleCount);   // there IS no key 1
 				}
 		
-				lineBuf.AppendFormat(
-					"select col_key, col_code, col_date, col_signed, col_name "	+
-					"from updates where col_key = {0}",	r);
-
-				this.beginTransaction();
-				this.cursorOpen(lineBuf.ToString());
-				if (!this.cursorFetch())
-				{
-					this.testFailed = true;
-					count = 0;
-				}
-				else
-				{
-					count++;
-				}
+				this.testResult = this.ExecuteReader(sql, r);
 			}	
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (this.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
 		public void mu_mod_100_rand() 
 		{
-			int count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("update updates "	+
-					"set col_double=col_double+100000000 "	+
+				int count = this.ExecuteNonQuery(
+					"update updates "							+
+					"set col_double = col_double + 100000000 "	+
 					"where col_int between 1001 and 1100");
-				this.commitTransaction();
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
@@ -2017,49 +1514,40 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();					
-				this.executeStatement("update updates "		+
-					"set col_double = col_double+100000000 "	+
+				this.testResult = this.ExecuteAborting(
+					"update updates "							+
+					"set col_double = col_double + 100000000 "	+
 					"where col_key between 1001 and 1100");
-				this.rollbackTransaction();
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0;
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void mu_oltp_update()
 		{
-			StringBuilder   lineBuf = new StringBuilder();
-			int				r;
+			int		r			= 0;
+			Random	randNumber	= new Random(unchecked((int)DateTime.Now.Ticks));
+			string	sql			= 
+					"update updates set col_signed = col_signed + 1 " +
+					"where col_key = {0}";
 
 			try
-			{
-				Random randomNumber = new Random(unchecked((int)DateTime.Now.Ticks));
+			{				
 				r = 1;
 				while (r == 1)
 				{
-					r = randomNumber.Next(0, tupleCount);    // There IS no col_key 1
+					r = randNumber.Next(0, tupleCount);   // There IS no col_key 1
 				}	
 
-				lineBuf.AppendFormat(
-					"update updates set col_signed = col_signed + 1 " +
-					"where col_key = {0}", r);
-
-				this.beginTransaction();
-				this.executeStatement(lineBuf.ToString());
-				this.commitTransaction();
+				this.testResult = this.ExecuteNonQuery(sql, r);
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
@@ -2067,19 +1555,23 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				createTable("sel100rand", baseTableStructure, null);
+				this.createTable("sel100rand", baseTableStructure, null);
 
-				this.beginTransaction();
-				this.executeStatement("insert into sel100rand select * from updates "	+
+				int count = this.ExecuteNonQuery(
+					"insert into sel100rand select * from updates "	+
 					"where updates.col_int between 1001 and 1100");
-				this.commitTransaction();
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
@@ -2087,19 +1579,23 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				createTable("sel100seq", baseTableStructure, null);
+				this.createTable("sel100seq", baseTableStructure, null);
 
-				this.beginTransaction();
-				this.executeStatement("insert into sel100seq select * from updates "	+
+				int count = this.ExecuteNonQuery(
+					"insert into sel100seq select * from updates "	+
 					"where updates.col_key between 1001 and 1100");
-				this.commitTransaction();
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
@@ -2107,18 +1603,22 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("update updates "	+
-					"set col_double=col_double-100000000 "	+
+				int count = this.ExecuteNonQuery(
+					"update updates "	+
+					"set col_double = col_double - 100000000 "	+
 					"where col_int between 1001 and 1100");
-				this.commitTransaction();
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0;
 		}
 
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
@@ -2126,18 +1626,22 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement("update updates "	+
-					"set col_double=col_double-100000000 "	+
+				int count = this.ExecuteNonQuery(
+					"update updates "							+
+					"set col_double = col_double - 100000000 "	+
 					"where col_key between 1001 and 1100");
-				this.commitTransaction();
+
+				if (count != 100)
+				{
+					this.testFailed = true;
+				}
+
+				this.testResult = count;
 			}
 			catch (Exception)
 			{
 				this.testFailed = true;
 			}
-
-			this.testResult = 0; 
 		}
 
 		#endregion
@@ -2235,8 +1739,12 @@ namespace AS3AP.BenchMark
 
 			elapsed = new TimeSpan(DateTime.Now.Ticks - clocks);
 
-			if (log != null) log.Simple("\r\nSingle user test ( {0} )\r\n\r\n",
-								 elapsed.ToString());
+			if (this.log != null) 
+			{
+				log.Simple(
+					"\r\nSingle user test ( {0} )\r\n\r\n",
+					elapsed.ToString());
+			}
 
 			this.DatabaseDisconnect();
 		}
@@ -2521,8 +2029,8 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				long	startTime;
-				long	endTime;
+				long startTime;
+				long endTime;
 
 				this.DatabaseConnect();
 
@@ -2560,7 +2068,8 @@ namespace AS3AP.BenchMark
 		{	
 			try
 			{
-				ITestSuite testSuite = TestSuiteFactory.GetTestSuite(testSuiteName, configuration);
+				ITestSuite testSuite = TestSuiteFactory.GetTestSuite(
+					testSuiteName, configuration);
 
 				testSuite.DatabaseConnect();
 			
@@ -2800,46 +2309,53 @@ namespace AS3AP.BenchMark
 			return values;
 		}
 
-		private void createIndex(IndexType indextype, string indexName, string tableName, string fields)
+		private void createIndex(
+			IndexType indextype, string indexName, string tableName, string fields)
 		{
-			string createIndexStmt = String.Empty;
+			if (this.configuration.UseIndexes) 
+			{
+				string createIndexStmt = String.Empty;
 			
-			switch (indextype)
-			{
-				case IndexType.Btree:
-					createIndexStmt = configuration.BtreeIndexStmt;
-					break;
+				switch (indextype)
+				{
+					case IndexType.Btree:
+						createIndexStmt = configuration.BtreeIndexStmt;
+						break;
 				
-				case IndexType.Clustered:
-					createIndexStmt = configuration.ClusteredIndexStmt;
-					break;
+					case IndexType.Clustered:
+						createIndexStmt = configuration.ClusteredIndexStmt;
+						break;
 
-				case IndexType.Hash:
-					createIndexStmt = configuration.HashIndexStmt;
-					break;
-			}
+					case IndexType.Hash:
+						createIndexStmt = configuration.HashIndexStmt;
+						break;
+				}
 
-			createIndexStmt	= createIndexStmt.Replace("@INDEX_NAME", indexName);
-			createIndexStmt	= createIndexStmt.Replace("@TABLE_NAME", tableName);
-			createIndexStmt	= createIndexStmt.Replace("@INDEX_FIELDS", fields);
+				createIndexStmt	= createIndexStmt.Replace("@INDEX_NAME", indexName);
+				createIndexStmt	= createIndexStmt.Replace("@TABLE_NAME", tableName);
+				createIndexStmt	= createIndexStmt.Replace("@INDEX_FIELDS", fields);
 
-			try
-			{
-				this.beginTransaction();
-				this.executeStatement(createIndexStmt);
-				this.commitTransaction();
-			}
-			catch(Exception ex)
-			{
-				if (log != null) log.Error("btree error {0}", ex.Message);
-				throw ex;				
+				try
+				{
+					this.ExecuteNonQuery(createIndexStmt);
+				}
+				catch(Exception ex)
+				{
+					if (this.log != null)
+					{
+						this.log.Error("btree error {0}", ex.Message);
+					}
+					throw ex;				
+				}
 			}
 		}
 
-		private void createForeignKey(string foreignTable, string constraintName, 
-										string foreignKeyColumns,
-										string referencesTableName, 
-										string referencesFields)
+		private void createForeignKey(
+			string foreignTable, 
+			string constraintName, 
+			string foreignKeyColumns,
+			string referencesTableName, 
+			string referencesFields)
 		{
 			StringBuilder commandText = new StringBuilder();
 
@@ -2850,9 +2366,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				this.beginTransaction();
-				this.executeStatement(commandText.ToString());
-				this.commitTransaction();
+				this.ExecuteNonQuery(commandText.ToString());
 			}
 			catch(Exception ex)
 			{
@@ -2864,12 +2378,13 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		private void createTable(string tableName, string tableStructure, string primaryKey) 
+		private void createTable(
+			string tableName, string tableStructure, string primaryKey) 
 		{
-			try
-			{
-				StringBuilder commandText = new StringBuilder();
+			StringBuilder commandText = new StringBuilder();
 
+			try			
+			{
 				if (primaryKey != null)
 				{
 					commandText.AppendFormat(
@@ -2881,9 +2396,7 @@ namespace AS3AP.BenchMark
 						"create table {0} ({1})", tableName, tableStructure);
 				}
 
-				this.beginTransaction();
-				this.executeStatement(commandText.ToString());
-				this.commitTransaction();
+				this.ExecuteNonQuery(commandText.ToString());
 			}
 			catch (Exception ex)
 			{
@@ -2892,89 +2405,6 @@ namespace AS3AP.BenchMark
 					log.Error("error create table {0}", ex.Message);
 				}
 				throw ex;
-			}
-		}
-
-		protected void cursorOpen(string commandText)
-		{
-			try
-			{
-				this.cmdCursor	= this.getCommand(commandText);
-				this.cursor		= this.cmdCursor.ExecuteReader();
-			}
-			catch (Exception ex)
-			{
-				if (this.log != null) 
-				{
-					log.Error("this.cursorOpen failed {0}", ex.Message);
-				}
-
-				if (this.cursor != null)
-				{
-					this.cursor.Close();
-					this.cursor = null;
-				}
-
-				if (this.cmdCursor != null)
-				{
-					this.cmdCursor.Dispose();
-					this.cmdCursor = null;
-				}
-				
-				throw ex;
-			}
-		}
-
-		protected bool cursorFetch()
-		{
-			bool fetched = false;
-
-			try
-			{
-				fetched = this.cursor.Read();
-			}
-			catch (Exception ex)
-			{
-				if (log != null)
-				{
-					log.Error("this.cursorFetch failed {0}", ex.Message);
-				}
-			}
-
-			return fetched;
-		}
-		
-		protected void cursorClose()
-		{
-			try
-			{
-				if (this.cursor != null)
-				{
-					this.cursor.Close();
-				}
-			}
-			catch(Exception ex)
-			{				
-				if (log != null) 
-				{
-					log.Error("cursorClose failed {0}", ex.Message);
-				}
-
-				throw ex;
-			}
-			finally
-			{
-				if (this.cursor != null)
-				{
-					this.cursor.Close();
-					this.cursor = null;
-				}
-
-				if (this.cmdCursor != null)
-				{
-					this.cmdCursor.Dispose();
-					this.cmdCursor = null;
-				}
 			}
 		}
 
@@ -3000,12 +2430,6 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				if (this.transaction != null)
-				{
-					this.transaction.Rollback();
-					this.transaction = null;
-				}
-
 				if (this.connection != null)
 				{
 					this.connection.Close();
@@ -3022,19 +2446,36 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		protected void executeStatement(string commandText)
-		{			
-			IDbCommand command = null;
+		protected int ExecuteNonQuery(string format, params object[] args)
+		{
+			StringBuilder b = new StringBuilder();
+
+			b.AppendFormat(format, args);
+
+			return this.ExecuteNonQuery(b.ToString());    			
+		}
+
+		protected int ExecuteNonQuery(string commandText)
+		{
+			IDbCommand		command		= null;
+			IDbTransaction	transaction = null;
+			int				count		= 0;
 
 			try
 			{
-				command = this.getCommand(commandText);
-				command.ExecuteNonQuery();
+				transaction = this.BeginTransaction();
+				command		= this.CreateCommand(commandText, transaction);
+				count		= command.ExecuteNonQuery();
+
+				transaction.Commit();
 			}
 			catch (Exception ex)
 			{
-				this.rollbackTransaction();
-				
+				if (transaction != null)
+				{
+					transaction.Rollback();
+					transaction = null;
+				}
 				throw ex;
 			}
 			finally
@@ -3045,53 +2486,163 @@ namespace AS3AP.BenchMark
 					command = null;	
 				}
 			}
+
+			return count;
 		}
 
-		protected void beginTransaction()
+		protected int ExecuteAborting(string format, params object[] args)
+		{
+			StringBuilder b = new StringBuilder();
+
+			b.AppendFormat(format, args);
+
+			return this.ExecuteAborting(b.ToString());    			
+		}
+
+		protected int ExecuteAborting(string commandText)
+		{
+			IDbCommand		command		= null;
+			IDbTransaction	transaction = null;
+			int				count		= 0;
+
+			try
+			{
+				transaction = this.BeginTransaction();
+				command		= this.CreateCommand(commandText, transaction);
+				count		= command.ExecuteNonQuery();
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+			finally
+			{	
+				if (transaction != null)
+				{
+					transaction.Rollback();
+					transaction = null;
+				}
+				if (command != null)
+				{
+					command.Dispose();
+					command = null;	
+				}
+			}
+
+			return count;
+		}
+
+		protected int ExecuteReader(string format, params object[] args)
+		{
+			StringBuilder b = new StringBuilder();
+
+			b.AppendFormat(format, args);
+
+			return this.ExecuteReader(b.ToString());    			
+		}
+
+		protected int ExecuteReader(string commandText)
+		{
+			IDbCommand		command		= null;
+			IDataReader		cursor		= null;
+			IDbTransaction	transaction = null;
+			int				count		= 0;
+
+			try
+			{
+				transaction = this.BeginTransaction();
+				command		= this.CreateCommand(commandText, transaction);
+				cursor		= command.ExecuteReader();
+
+				while (cursor.Read())
+				{
+					count++;
+				}
+				
+				cursor.Close();
+				transaction.Commit();
+			}
+			catch (Exception ex)
+			{
+				if (cursor != null)
+				{
+					cursor.Close();
+					cursor = null;
+				}
+				if (transaction != null)
+				{
+					transaction.Rollback();
+					transaction = null;
+				}
+				throw ex;
+			}
+			finally
+			{	
+				if (command != null)
+				{
+					command.Dispose();
+					command = null;	
+				}
+			}
+
+			return count;
+		}
+
+		protected object ExecuteScalar(string format, params object[] args)
+		{
+			StringBuilder b = new StringBuilder();
+
+			b.AppendFormat(format, args);
+
+			return this.ExecuteScalar(b.ToString());    			
+		}
+
+		protected object ExecuteScalar(string commandText)
+		{
+			IDbCommand		command		= null;
+			IDbTransaction	transaction = null;
+			object			result		= null;
+
+			try
+			{
+				transaction = this.BeginTransaction();
+				command		= this.CreateCommand(commandText, transaction);
+				result		= command.ExecuteScalar();
+				
+				transaction.Commit();
+			}
+			catch (Exception ex)
+			{
+				if (transaction != null)
+				{
+					transaction.Rollback();
+					transaction = null;
+				}
+				throw ex;
+			}
+			finally
+			{	
+				if (command != null)
+				{
+					command.Dispose();
+					command = null;	
+				}
+			}
+
+			return result;
+		}
+
+		protected IDbTransaction BeginTransaction()
 		{
 			try
 			{
-				this.transaction = connection.BeginTransaction(isolation);
+				return this.connection.BeginTransaction(isolation);
 			}
 			catch(Exception ex)
 			{
 				if (log != null)
 				{
 					log.Error("this.beginTransaction failed {0}", ex.Message);
-				}
-				throw ex;
-			}
-		}
-
-		protected void commitTransaction()
-		{
-			try
-			{
-				this.transaction.Commit();
-				this.transaction = null;
-			}
-			catch (Exception ex)
-			{					
-				if (this.log != null)
-				{
-					log.Error("Commit failed {0}", ex.Message);
-				}
-				throw ex;
-			}
-		}
-
-		protected void rollbackTransaction()
-		{
-			try
-			{
-				this.transaction.Rollback();
-				this.transaction = null;
-			}
-			catch (Exception ex)
-			{
-				if (log != null)
-				{
-					log.Error("Rollback failed {0}", ex.Message);
 				}
 				throw ex;
 			}
@@ -3176,36 +2727,23 @@ namespace AS3AP.BenchMark
 				{
 					log.Error("load failed {0}", ex.Message);
 				}
-
-				this.rollbackTransaction();
-
+				
 				throw ex;
 			}
 		}
 
 		private void loadFile(string table)
 		{
-			StringBuilder	commandText = new StringBuilder();
-			StreamReader	stream		= null;
-			IDbCommand		command		= null;
+			StringBuilder	commandText			= new StringBuilder();
+			StreamReader	stream				= null;
+			IDbCommand		command				= null;			
+			IDbTransaction	transaction			= null;
+			bool			transactionPending	= false;
+			bool			commandPrepared		= false;
+			int				rowCount			= 0;			
 			
 			commandText.AppendFormat("insert into {0} values (@col_key,@col_int,@col_signed,@col_float,@col_double,@col_decim,@col_date,@col_code,@col_name,@col_address)", table);
-
-			/* Crate command */
-			command = this.getCommand(commandText.ToString());
 			
-			/* Add parameters	*/
-			command.Parameters.Add(dataHelper.CreateParameter("@col_key", DbType.Int32, 4, "col_key"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_int", DbType.Int32, 4, "col_int"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_signed", DbType.Int32, 4, "col_signed"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_float", DbType.Single, 4, "col_float"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_double", DbType.Double, 8, "col_double"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_decim", DbType.Single, 18, 2, "col_decim"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_date", DbType.StringFixedLength, 20, "col_date"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_code", DbType.StringFixedLength, 10, "col_code"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_name", DbType.StringFixedLength, 20, "col_name"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_address", DbType.String, 80, "col_address"));
-
 			string path = Path.GetFullPath(configuration.DataPath);
 			if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
 			{
@@ -3226,16 +2764,28 @@ namespace AS3AP.BenchMark
 				FileAccess.Read			,
 				FileShare.None));
 
-			int		rowCount			= 0;
-			bool	transactionPending	= false;
-			bool	commandPrepared		= false;
+			/* Crate command */
+			command = this.CreateCommand(commandText.ToString(), transaction);
+
+			/* Add parameters	*/
+			command.Parameters.Add(dataHelper.CreateParameter("@col_key", DbType.Int32, 4, "col_key"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_int", DbType.Int32, 4, "col_int"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_signed", DbType.Int32, 4, "col_signed"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_float", DbType.Single, 4, "col_float"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_double", DbType.Double, 8, "col_double"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_decim", DbType.Single, 18, 2, "col_decim"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_date", DbType.StringFixedLength, 20, "col_date"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_code", DbType.StringFixedLength, 10, "col_code"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_name", DbType.StringFixedLength, 20, "col_name"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_address", DbType.String, 80, "col_address"));
+
 			while (stream.Peek() > -1)
 			{
 				if (rowCount == 0)
 				{
-					this.beginTransaction();
+					transaction			= this.BeginTransaction();
 					transactionPending	= true;
-					command.Transaction = this.transaction;
+					command.Transaction = transaction;
 
 					/* Prepare command execution	*/
 					if (!commandPrepared)
@@ -3258,7 +2808,7 @@ namespace AS3AP.BenchMark
 
 				if (rowCount >= 1000)
 				{
-					this.commitTransaction();
+					transaction.Commit();
 					transactionPending	= false;
 					rowCount			= 0;
 				}
@@ -3266,7 +2816,7 @@ namespace AS3AP.BenchMark
 
 			if (transactionPending)
 			{
-				this.commitTransaction();
+				transaction.Commit();
 			}
 
 			command.Dispose();
@@ -3275,23 +2825,12 @@ namespace AS3AP.BenchMark
 
 		private void loadTinyFile(string table)
 		{
-			this.beginTransaction();
-
 			StringBuilder	commandText = new StringBuilder();
 			StreamReader	stream		= null;
 			IDbCommand		command		= null;
+			IDbTransaction	transaction	= null;
 
 			commandText.AppendFormat("insert into {0} values (@col_key)", table);
-
-			/* Crate command */
-			command = this.getCommand(commandText.ToString());
-
-			/* Add parameters	*/
-			IDbDataParameter p = dataHelper.CreateParameter("@col_key", DbType.Int32, 4, "col_key");
-			command.Parameters.Add(p);
-
-			/* Prepare command execution	*/
-			command.Prepare();
 
 			string path = Path.GetFullPath(configuration.DataPath);
 			if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
@@ -3313,6 +2852,17 @@ namespace AS3AP.BenchMark
 				FileAccess.Read			,
 				FileShare.None));
 
+			/* Crate command */
+			transaction	= this.BeginTransaction();
+			command		= this.CreateCommand(commandText.ToString(), transaction);
+
+			/* Add parameters	*/
+			IDbDataParameter p = dataHelper.CreateParameter("@col_key", DbType.Int32, 4, "col_key");
+			command.Parameters.Add(p);
+
+			/* Prepare command execution	*/
+			command.Prepare();
+
 			while (stream.Peek() > -1)
 			{
 				string[] elements = stream.ReadLine().Split(',');
@@ -3322,13 +2872,13 @@ namespace AS3AP.BenchMark
 				command.ExecuteNonQuery();
 			}
 
+			transaction.Commit();
 			command.Dispose();
 			stream.Close();
-
-			this.commitTransaction();
 		}
 
-		protected IDbCommand getCommand(string commandText)
+		protected IDbCommand CreateCommand(
+			string commandText, IDbTransaction transaction)
 		{
 			IDbCommand command = connection.CreateCommand();
 

@@ -43,174 +43,83 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_2() 
 		{
-			int	count = 0;
-
 			try
-			{			
-				this.beginTransaction();
-				this.cursorOpen( 
+			{	
+				this.testResult = this.ExecuteReader(
 					"select uniques.col_signed, uniques.col_name, "		+
 					"hundred.col_signed, hundred.col_name "				+
 					"from uniques, hundred "							+
 					"where uniques.col_address = hundred.col_address "	+
-					"and uniques.col_address = 'SILICON VALLEY'"	);
-				
-				while (this.cursorFetch()) 
-				{
-					count++;
-				}
+					"and uniques.col_address = 'SILICON VALLEY'"	);				
 			}
 			catch (Exception)
 			{
 				base.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (base.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			base.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_2_cl() 
 		{
-			int	count = 0;
-			
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(
+				this.testResult = this.ExecuteReader(
 					"select uniques.col_signed, uniques.col_name, "	+
 					"hundred.col_signed, hundred.col_name "			+
 					"from uniques, hundred "						+
 					"where uniques.col_key = hundred.col_key "		+
 					"and uniques.col_key = 1000");
-				
-				while (this.cursorFetch()) 
-				{
-					count++;
-				}
 			}
 			catch (Exception)
 			{
 				base.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (base.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			base.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_2_ncl() 
 		{
-			int count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen( 
+				this.testResult = this.ExecuteReader(
 					"select uniques.col_signed, uniques.col_name, "	+
 					"hundred.col_signed, hundred.col_name "			+
 					"from uniques, hundred "						+
 					"where uniques.col_code = hundred.col_code "	+
-					"and uniques.col_code = 'BENCHMARKS'"			);
-				
-				while (this.cursorFetch()) 
-				{
-					count++;
-				}
+					"and uniques.col_code = 'BENCHMARKS'"			);				
 			}
 			catch (Exception)
 			{
 				base.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (base.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			base.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_3_cl() 
 		{
-			int	count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(
+				this.testResult = this.ExecuteReader(
 					"select uniques.col_signed, uniques.col_date, "	+
 					"hundred.col_signed, hundred.col_date, "		+
 					"tenpct.col_signed, tenpct.col_date "			+
 					"from uniques, hundred, tenpct "				+
 					"where uniques.col_key = hundred.col_key "		+
 					"and uniques.col_key = tenpct.col_key "			+
-					"and uniques.col_key = 1000");
-				
-				while (this.cursorFetch()) 
-				{
-					count++;
-				}
+					"and uniques.col_key = 1000");				
 			}
 			catch (Exception)
 			{
 				base.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (base.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			base.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_3_ncl() 
 		{
-			int count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen( 
+				this.testResult = this.ExecuteReader(
 					"select uniques.col_signed, uniques.col_date, "		+
 					"hundred.col_signed, hundred.col_date, "			+
 					"tenpct.col_signed, tenpct.col_date "				+
@@ -218,41 +127,19 @@ namespace AS3AP.BenchMark
 					"where uniques.col_code = hundred.col_code "		+
 					"and uniques.col_code = tenpct.col_code "			+
 					"and uniques.col_code = 'BENCHMARKS'");
-				
-				while (this.cursorFetch()) 
-				{
-					count++;
-				}
 			}
 			catch (Exception)
 			{
 				base.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (base.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			base.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_4_cl() 
 		{
-			int count = 0;
-	
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen(
+				this.testResult = this.ExecuteReader(
 					"select uniques.col_date, hundred.col_date, "	+
 					"tenpct.col_date, updates.col_date "			+
 					"from uniques, hundred, tenpct, updates "		+
@@ -260,72 +147,31 @@ namespace AS3AP.BenchMark
 					"and uniques.col_key = tenpct.col_key "			+
 					"and uniques.col_key = updates.col_key "		+
 					"and uniques.col_key = 1000");
-				
-				while (this.cursorFetch()) 
-				{
-					count++;
-				}
 			}
 			catch (Exception)
 			{
 				base.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (base.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			base.testResult = count;
 		}
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_4_ncl() 
 		{
-			int count = 0;
-
 			try
 			{
-				this.beginTransaction();
-				this.cursorOpen( 
+				this.testResult = this.ExecuteReader(
 					"select uniques.col_date, hundred.col_date, "	+
 					"tenpct.col_date, updates.col_date "			+
 					"from uniques, hundred, tenpct, updates "		+
 					"where uniques.col_code = hundred.col_code "	+
 					"and uniques.col_code = tenpct.col_code "		+
 					"and uniques.col_code = updates.col_code "		+
-					"and uniques.col_code = 'BENCHMARKS'");
-				
-				while (this.cursorFetch()) 
-				{
-					count++;
-				}
+					"and uniques.col_code = 'BENCHMARKS'");				
 			}
 			catch (Exception)
 			{
 				base.testFailed = true;
 			}
-			finally
-			{
-				this.cursorClose();
-				if (base.testFailed)
-				{
-					this.rollbackTransaction();
-				}
-				else
-				{
-					this.commitTransaction();
-				}
-			}
-
-			base.testResult = count;
 		}
 
 		#endregion
