@@ -158,20 +158,6 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		public void CreateData()
-		{
-			try
-			{
-				backend.CreateData();
-			}
-			catch(Exception)
-			{
-				testFailed = true;
-			}
-
-			testResult = 0;
-		}
-
 		public void LoadData()
 		{
 			try

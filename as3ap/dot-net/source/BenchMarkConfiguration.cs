@@ -40,7 +40,6 @@ namespace AS3AP.BenchMark
 		private long	dataSize			= 10000;
 		private string	runSequence			= "SQL87;singleuser;SQL92;singleuser";
 		private bool	runCreate			= true;
-		private string	dataCreationMethod	= "LOAD";
 		private string	dataPath			= String.Empty;
 
 		private string	connectionString	= "AS3AP.FDB;User=SYSDBA;Password=masterkey;Server=localhost;Port=3050;Dialect=3;Charset=NONE;Role=;Connection Lifetime=15;Pooling=true";
@@ -79,12 +78,6 @@ namespace AS3AP.BenchMark
 		{
 			get { return runCreate; }
 			set { runCreate = value; }
-		}
-
-		public string DataCreationMethod
-		{
-			get { return dataCreationMethod; }
-			set { dataCreationMethod = value; }
 		}
 
 		public string DataPath

@@ -183,7 +183,6 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-
 		private int createDataBase() 
 		{
 			testSuite.Backend.DatabaseCreate("AS3AP");
@@ -192,14 +191,7 @@ namespace AS3AP.BenchMark
 
 			testSuite.Backend.DatabaseConnect();
 			timeIt("create_tables");
-			if (configuration.DataCreationMethod == "LOAD")
-			{
-				timeIt("LoadData");
-			}
-			else
-			{
-				timeIt("CreateData");
-			}
+			timeIt("LoadData");
 			timeIt("create_idx_uniques_key_bt");
 			timeIt("create_idx_updates_key_bt");
 			timeIt("create_idx_hundred_key_bt");

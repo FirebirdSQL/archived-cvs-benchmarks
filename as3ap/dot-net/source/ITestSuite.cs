@@ -71,8 +71,6 @@ namespace AS3AP.BenchMark
 		void SetIsolationLevel(string methodName);
 
 		void setup_database();
-
-		void CreateData();
 		
 		void LoadData();
 		
