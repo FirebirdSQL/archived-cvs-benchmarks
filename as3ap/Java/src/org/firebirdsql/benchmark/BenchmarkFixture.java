@@ -181,16 +181,15 @@ public abstract class BenchmarkFixture {
      * @throws SQLException if something went wrong.
      */
     public void recreateTempUpdates() throws SQLException {
-        /* 
-        // this causes "object in use error", so we will simply delete content
-        manager.executeDDL(BenchmarkDDL.DROP_SEL_100_SEQ_TABLE);
-        manager.executeDDL(BenchmarkDDL.DROP_SEL_100_RND_TABLE);
-        manager.executeDDL(BenchmarkDDL.CREATE_SEL_100_SEQ_TABLE);
-        manager.executeDDL(BenchmarkDDL.CREATE_SEL_100_RND_TABLE);
-        */
-        
-        manager.executeDDL("DELETE FROM " + BenchmarkDDL.SEL_100_SEQ_TABLE);
-        manager.executeDDL("DELETE FROM " + BenchmarkDDL.SEL_100_RND_TABLE);
+        if (getConfig().isRecreateTableAsCleanup()) {
+            manager.executeDDL(BenchmarkDDL.DROP_SEL_100_SEQ_TABLE);
+            manager.executeDDL(BenchmarkDDL.DROP_SEL_100_RND_TABLE);
+            manager.executeDDL(BenchmarkDDL.CREATE_SEL_100_SEQ_TABLE);
+            manager.executeDDL(BenchmarkDDL.CREATE_SEL_100_RND_TABLE);
+        } else {
+            manager.executeDDL("DELETE FROM " + BenchmarkDDL.SEL_100_SEQ_TABLE);
+            manager.executeDDL("DELETE FROM " + BenchmarkDDL.SEL_100_RND_TABLE);
+        }
     }
 
     /**

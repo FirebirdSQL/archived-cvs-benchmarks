@@ -112,6 +112,8 @@ public class LoadTest extends BenchmarkTest {
             Statement stmt = con.createStatement();
             
             stmt.executeUpdate(DROP_HUNDRED_FOREIGN_KEY);
+            con.commit();
+            
             stmt.executeUpdate(DROP_UPDATES_TABLE);
             stmt.executeUpdate(CREATE_UPDATES_TABLE);
             
@@ -119,7 +121,9 @@ public class LoadTest extends BenchmarkTest {
             
             fixture.loadFile(new File(fixture.getDataPath(), UPDATES_FILE), 
                con, BenchmarkInsertSQL.INSERT_UPDATES);
-               
+            
+            con.commit();
+            
             stmt.executeUpdate(CREATE_HUNDRED_FOREIGN_KEY);
             con.commit();
             
