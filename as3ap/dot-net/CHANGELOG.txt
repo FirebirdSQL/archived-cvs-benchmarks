@@ -2,11 +2,19 @@ AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 =============================================================================================
 
 
+2003-04-06 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+
+	* source/GUI/As3apGui.cs:
+
+		- Added license header.
+
+
 2003-04-03 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
 	* source/Backend.cs:
 	
 		- Changed the order of load files
+
 
 2003-04-02 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 	
@@ -19,6 +27,7 @@ AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 	* source/BenchMarkConfiguration.cs:
 
 		- Changed clusteredIndexStmt value.
+
 
 2003-04-01 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
