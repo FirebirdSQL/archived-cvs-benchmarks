@@ -1,0 +1,6 @@
+AS3APGen - AS3AP Data file generator.
+=====================================
+
+2003-04-02 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+	
+	* Initial revision.
