@@ -23,6 +23,8 @@ namespace AS3AP.BenchMark.Generator {
         
         private RANDOM_DATADataTable tableRANDOM_DATA;
         
+        private RANDOM_TENPCTDataTable tableRANDOM_TENPCT;
+        
         public DsRandomData() {
             this.InitClass();
             System.ComponentModel.CollectionChangeEventHandler schemaChangedHandler = new System.ComponentModel.CollectionChangeEventHandler(this.SchemaChanged);
@@ -37,6 +39,9 @@ namespace AS3AP.BenchMark.Generator {
                 ds.ReadXmlSchema(new XmlTextReader(new System.IO.StringReader(strSchema)));
                 if ((ds.Tables["RANDOM_DATA"] != null)) {
                     this.Tables.Add(new RANDOM_DATADataTable(ds.Tables["RANDOM_DATA"]));
+                }
+                if ((ds.Tables["RANDOM_TENPCT"] != null)) {
+                    this.Tables.Add(new RANDOM_TENPCTDataTable(ds.Tables["RANDOM_TENPCT"]));
                 }
                 this.DataSetName = ds.DataSetName;
                 this.Prefix = ds.Prefix;
@@ -64,6 +69,14 @@ namespace AS3AP.BenchMark.Generator {
             }
         }
         
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.DesignerSerializationVisibilityAttribute(System.ComponentModel.DesignerSerializationVisibility.Content)]
+        public RANDOM_TENPCTDataTable RANDOM_TENPCT {
+            get {
+                return this.tableRANDOM_TENPCT;
+            }
+        }
+        
         public override DataSet Clone() {
             DsRandomData cln = ((DsRandomData)(base.Clone()));
             cln.InitVars();
@@ -84,6 +97,9 @@ namespace AS3AP.BenchMark.Generator {
             ds.ReadXml(reader);
             if ((ds.Tables["RANDOM_DATA"] != null)) {
                 this.Tables.Add(new RANDOM_DATADataTable(ds.Tables["RANDOM_DATA"]));
+            }
+            if ((ds.Tables["RANDOM_TENPCT"] != null)) {
+                this.Tables.Add(new RANDOM_TENPCTDataTable(ds.Tables["RANDOM_TENPCT"]));
             }
             this.DataSetName = ds.DataSetName;
             this.Prefix = ds.Prefix;
@@ -107,6 +123,10 @@ namespace AS3AP.BenchMark.Generator {
             if ((this.tableRANDOM_DATA != null)) {
                 this.tableRANDOM_DATA.InitVars();
             }
+            this.tableRANDOM_TENPCT = ((RANDOM_TENPCTDataTable)(this.Tables["RANDOM_TENPCT"]));
+            if ((this.tableRANDOM_TENPCT != null)) {
+                this.tableRANDOM_TENPCT.InitVars();
+            }
         }
         
         private void InitClass() {
@@ -118,9 +138,15 @@ namespace AS3AP.BenchMark.Generator {
             this.EnforceConstraints = true;
             this.tableRANDOM_DATA = new RANDOM_DATADataTable();
             this.Tables.Add(this.tableRANDOM_DATA);
+            this.tableRANDOM_TENPCT = new RANDOM_TENPCTDataTable();
+            this.Tables.Add(this.tableRANDOM_TENPCT);
         }
         
         private bool ShouldSerializeRANDOM_DATA() {
+            return false;
+        }
+        
+        private bool ShouldSerializeRANDOM_TENPCT() {
             return false;
         }
         
@@ -131,6 +157,8 @@ namespace AS3AP.BenchMark.Generator {
         }
         
         public delegate void RANDOM_DATARowChangeEventHandler(object sender, RANDOM_DATARowChangeEvent e);
+        
+        public delegate void RANDOM_TENPCTRowChangeEventHandler(object sender, RANDOM_TENPCTRowChangeEvent e);
         
         [System.Diagnostics.DebuggerStepThrough()]
         public class RANDOM_DATADataTable : DataTable, System.Collections.IEnumerable {
@@ -157,11 +185,11 @@ namespace AS3AP.BenchMark.Generator {
             
             private DataColumn columnCOL_DATE;
             
-            private DataColumn columnCODE;
+            private DataColumn columnCOL_CODE;
             
-            private DataColumn columnNAME;
+            private DataColumn columnCOL_NAME;
             
-            private DataColumn columnADDRESS;
+            private DataColumn columnCOL_ADDRESS;
             
             internal RANDOM_DATADataTable() : 
                     base("RANDOM_DATA") {
@@ -257,21 +285,21 @@ namespace AS3AP.BenchMark.Generator {
                 }
             }
             
-            internal DataColumn CODEColumn {
+            internal DataColumn COL_CODEColumn {
                 get {
-                    return this.columnCODE;
+                    return this.columnCOL_CODE;
                 }
             }
             
-            internal DataColumn NAMEColumn {
+            internal DataColumn COL_NAMEColumn {
                 get {
-                    return this.columnNAME;
+                    return this.columnCOL_NAME;
                 }
             }
             
-            internal DataColumn ADDRESSColumn {
+            internal DataColumn COL_ADDRESSColumn {
                 get {
-                    return this.columnADDRESS;
+                    return this.columnCOL_ADDRESS;
                 }
             }
             
@@ -293,7 +321,7 @@ namespace AS3AP.BenchMark.Generator {
                 this.Rows.Add(row);
             }
             
-            public RANDOM_DATARow AddRANDOM_DATARow(int RANDOMIZER, int SPARSE_KEY, int DENSE_KEY, int SPARSE_SIGNED, int UNIFORM100_DENSE, System.Single ZIPF10_FLOAT, System.Single ZIPF100_FLOAT, System.Single UNIFORM100_FLOAT, System.Double DOUBLE_NORMAL, int R10PCT_KEY, string COL_DATE, string CODE, string NAME, string ADDRESS) {
+            public RANDOM_DATARow AddRANDOM_DATARow(int RANDOMIZER, int SPARSE_KEY, int DENSE_KEY, int SPARSE_SIGNED, int UNIFORM100_DENSE, System.Single ZIPF10_FLOAT, System.Single ZIPF100_FLOAT, System.Single UNIFORM100_FLOAT, System.Double DOUBLE_NORMAL, int R10PCT_KEY, string COL_DATE, string COL_CODE, string COL_NAME, string COL_ADDRESS) {
                 RANDOM_DATARow rowRANDOM_DATARow = ((RANDOM_DATARow)(this.NewRow()));
                 rowRANDOM_DATARow.ItemArray = new object[] {
                         RANDOMIZER,
@@ -307,9 +335,9 @@ namespace AS3AP.BenchMark.Generator {
                         DOUBLE_NORMAL,
                         R10PCT_KEY,
                         COL_DATE,
-                        CODE,
-                        NAME,
-                        ADDRESS};
+                        COL_CODE,
+                        COL_NAME,
+                        COL_ADDRESS};
                 this.Rows.Add(rowRANDOM_DATARow);
                 return rowRANDOM_DATARow;
             }
@@ -340,9 +368,9 @@ namespace AS3AP.BenchMark.Generator {
                 this.columnDOUBLE_NORMAL = this.Columns["DOUBLE_NORMAL"];
                 this.columnR10PCT_KEY = this.Columns["R10PCT_KEY"];
                 this.columnCOL_DATE = this.Columns["COL_DATE"];
-                this.columnCODE = this.Columns["CODE"];
-                this.columnNAME = this.Columns["NAME"];
-                this.columnADDRESS = this.Columns["ADDRESS"];
+                this.columnCOL_CODE = this.Columns["COL_CODE"];
+                this.columnCOL_NAME = this.Columns["COL_NAME"];
+                this.columnCOL_ADDRESS = this.Columns["COL_ADDRESS"];
             }
             
             private void InitClass() {
@@ -368,12 +396,12 @@ namespace AS3AP.BenchMark.Generator {
                 this.Columns.Add(this.columnR10PCT_KEY);
                 this.columnCOL_DATE = new DataColumn("COL_DATE", typeof(string), null, System.Data.MappingType.Element);
                 this.Columns.Add(this.columnCOL_DATE);
-                this.columnCODE = new DataColumn("CODE", typeof(string), null, System.Data.MappingType.Element);
-                this.Columns.Add(this.columnCODE);
-                this.columnNAME = new DataColumn("NAME", typeof(string), null, System.Data.MappingType.Element);
-                this.Columns.Add(this.columnNAME);
-                this.columnADDRESS = new DataColumn("ADDRESS", typeof(string), null, System.Data.MappingType.Element);
-                this.Columns.Add(this.columnADDRESS);
+                this.columnCOL_CODE = new DataColumn("COL_CODE", typeof(string), null, System.Data.MappingType.Element);
+                this.Columns.Add(this.columnCOL_CODE);
+                this.columnCOL_NAME = new DataColumn("COL_NAME", typeof(string), null, System.Data.MappingType.Element);
+                this.Columns.Add(this.columnCOL_NAME);
+                this.columnCOL_ADDRESS = new DataColumn("COL_ADDRESS", typeof(string), null, System.Data.MappingType.Element);
+                this.Columns.Add(this.columnCOL_ADDRESS);
                 this.columnRANDOMIZER.AllowDBNull = false;
                 this.columnSPARSE_KEY.AllowDBNull = false;
                 this.columnDENSE_KEY.AllowDBNull = false;
@@ -386,12 +414,12 @@ namespace AS3AP.BenchMark.Generator {
                 this.columnR10PCT_KEY.AllowDBNull = false;
                 this.columnCOL_DATE.AllowDBNull = false;
                 this.columnCOL_DATE.MaxLength = 20;
-                this.columnCODE.AllowDBNull = false;
-                this.columnCODE.MaxLength = 10;
-                this.columnNAME.AllowDBNull = false;
-                this.columnNAME.MaxLength = 20;
-                this.columnADDRESS.AllowDBNull = false;
-                this.columnADDRESS.MaxLength = 80;
+                this.columnCOL_CODE.AllowDBNull = false;
+                this.columnCOL_CODE.MaxLength = 10;
+                this.columnCOL_NAME.AllowDBNull = false;
+                this.columnCOL_NAME.MaxLength = 20;
+                this.columnCOL_ADDRESS.AllowDBNull = false;
+                this.columnCOL_ADDRESS.MaxLength = 80;
             }
             
             public RANDOM_DATARow NewRANDOM_DATARow() {
@@ -548,30 +576,30 @@ namespace AS3AP.BenchMark.Generator {
                 }
             }
             
-            public string CODE {
+            public string COL_CODE {
                 get {
-                    return ((string)(this[this.tableRANDOM_DATA.CODEColumn]));
+                    return ((string)(this[this.tableRANDOM_DATA.COL_CODEColumn]));
                 }
                 set {
-                    this[this.tableRANDOM_DATA.CODEColumn] = value;
+                    this[this.tableRANDOM_DATA.COL_CODEColumn] = value;
                 }
             }
             
-            public string NAME {
+            public string COL_NAME {
                 get {
-                    return ((string)(this[this.tableRANDOM_DATA.NAMEColumn]));
+                    return ((string)(this[this.tableRANDOM_DATA.COL_NAMEColumn]));
                 }
                 set {
-                    this[this.tableRANDOM_DATA.NAMEColumn] = value;
+                    this[this.tableRANDOM_DATA.COL_NAMEColumn] = value;
                 }
             }
             
-            public string ADDRESS {
+            public string COL_ADDRESS {
                 get {
-                    return ((string)(this[this.tableRANDOM_DATA.ADDRESSColumn]));
+                    return ((string)(this[this.tableRANDOM_DATA.COL_ADDRESSColumn]));
                 }
                 set {
-                    this[this.tableRANDOM_DATA.ADDRESSColumn] = value;
+                    this[this.tableRANDOM_DATA.COL_ADDRESSColumn] = value;
                 }
             }
         }
@@ -589,6 +617,274 @@ namespace AS3AP.BenchMark.Generator {
             }
             
             public RANDOM_DATARow Row {
+                get {
+                    return this.eventRow;
+                }
+            }
+            
+            public DataRowAction Action {
+                get {
+                    return this.eventAction;
+                }
+            }
+        }
+        
+        [System.Diagnostics.DebuggerStepThrough()]
+        public class RANDOM_TENPCTDataTable : DataTable, System.Collections.IEnumerable {
+            
+            private DataColumn columnCOL_KEY;
+            
+            private DataColumn columnCOL_FLOAT;
+            
+            private DataColumn columnCOL_SIGNED;
+            
+            private DataColumn columnCOL_DOUBLE;
+            
+            private DataColumn columnCOL_ADDRESS;
+            
+            internal RANDOM_TENPCTDataTable() : 
+                    base("RANDOM_TENPCT") {
+                this.InitClass();
+            }
+            
+            internal RANDOM_TENPCTDataTable(DataTable table) : 
+                    base(table.TableName) {
+                if ((table.CaseSensitive != table.DataSet.CaseSensitive)) {
+                    this.CaseSensitive = table.CaseSensitive;
+                }
+                if ((table.Locale.ToString() != table.DataSet.Locale.ToString())) {
+                    this.Locale = table.Locale;
+                }
+                if ((table.Namespace != table.DataSet.Namespace)) {
+                    this.Namespace = table.Namespace;
+                }
+                this.Prefix = table.Prefix;
+                this.MinimumCapacity = table.MinimumCapacity;
+                this.DisplayExpression = table.DisplayExpression;
+            }
+            
+            [System.ComponentModel.Browsable(false)]
+            public int Count {
+                get {
+                    return this.Rows.Count;
+                }
+            }
+            
+            internal DataColumn COL_KEYColumn {
+                get {
+                    return this.columnCOL_KEY;
+                }
+            }
+            
+            internal DataColumn COL_FLOATColumn {
+                get {
+                    return this.columnCOL_FLOAT;
+                }
+            }
+            
+            internal DataColumn COL_SIGNEDColumn {
+                get {
+                    return this.columnCOL_SIGNED;
+                }
+            }
+            
+            internal DataColumn COL_DOUBLEColumn {
+                get {
+                    return this.columnCOL_DOUBLE;
+                }
+            }
+            
+            internal DataColumn COL_ADDRESSColumn {
+                get {
+                    return this.columnCOL_ADDRESS;
+                }
+            }
+            
+            public RANDOM_TENPCTRow this[int index] {
+                get {
+                    return ((RANDOM_TENPCTRow)(this.Rows[index]));
+                }
+            }
+            
+            public event RANDOM_TENPCTRowChangeEventHandler RANDOM_TENPCTRowChanged;
+            
+            public event RANDOM_TENPCTRowChangeEventHandler RANDOM_TENPCTRowChanging;
+            
+            public event RANDOM_TENPCTRowChangeEventHandler RANDOM_TENPCTRowDeleted;
+            
+            public event RANDOM_TENPCTRowChangeEventHandler RANDOM_TENPCTRowDeleting;
+            
+            public void AddRANDOM_TENPCTRow(RANDOM_TENPCTRow row) {
+                this.Rows.Add(row);
+            }
+            
+            public RANDOM_TENPCTRow AddRANDOM_TENPCTRow(int COL_KEY, System.Single COL_FLOAT, int COL_SIGNED, System.Double COL_DOUBLE, string COL_ADDRESS) {
+                RANDOM_TENPCTRow rowRANDOM_TENPCTRow = ((RANDOM_TENPCTRow)(this.NewRow()));
+                rowRANDOM_TENPCTRow.ItemArray = new object[] {
+                        COL_KEY,
+                        COL_FLOAT,
+                        COL_SIGNED,
+                        COL_DOUBLE,
+                        COL_ADDRESS};
+                this.Rows.Add(rowRANDOM_TENPCTRow);
+                return rowRANDOM_TENPCTRow;
+            }
+            
+            public System.Collections.IEnumerator GetEnumerator() {
+                return this.Rows.GetEnumerator();
+            }
+            
+            public override DataTable Clone() {
+                RANDOM_TENPCTDataTable cln = ((RANDOM_TENPCTDataTable)(base.Clone()));
+                cln.InitVars();
+                return cln;
+            }
+            
+            protected override DataTable CreateInstance() {
+                return new RANDOM_TENPCTDataTable();
+            }
+            
+            internal void InitVars() {
+                this.columnCOL_KEY = this.Columns["COL_KEY"];
+                this.columnCOL_FLOAT = this.Columns["COL_FLOAT"];
+                this.columnCOL_SIGNED = this.Columns["COL_SIGNED"];
+                this.columnCOL_DOUBLE = this.Columns["COL_DOUBLE"];
+                this.columnCOL_ADDRESS = this.Columns["COL_ADDRESS"];
+            }
+            
+            private void InitClass() {
+                this.columnCOL_KEY = new DataColumn("COL_KEY", typeof(int), null, System.Data.MappingType.Element);
+                this.Columns.Add(this.columnCOL_KEY);
+                this.columnCOL_FLOAT = new DataColumn("COL_FLOAT", typeof(System.Single), null, System.Data.MappingType.Element);
+                this.Columns.Add(this.columnCOL_FLOAT);
+                this.columnCOL_SIGNED = new DataColumn("COL_SIGNED", typeof(int), null, System.Data.MappingType.Element);
+                this.Columns.Add(this.columnCOL_SIGNED);
+                this.columnCOL_DOUBLE = new DataColumn("COL_DOUBLE", typeof(System.Double), null, System.Data.MappingType.Element);
+                this.Columns.Add(this.columnCOL_DOUBLE);
+                this.columnCOL_ADDRESS = new DataColumn("COL_ADDRESS", typeof(string), null, System.Data.MappingType.Element);
+                this.Columns.Add(this.columnCOL_ADDRESS);
+                this.columnCOL_KEY.AllowDBNull = false;
+                this.columnCOL_FLOAT.AllowDBNull = false;
+                this.columnCOL_SIGNED.AllowDBNull = false;
+                this.columnCOL_DOUBLE.AllowDBNull = false;
+                this.columnCOL_ADDRESS.AllowDBNull = false;
+                this.columnCOL_ADDRESS.MaxLength = 80;
+            }
+            
+            public RANDOM_TENPCTRow NewRANDOM_TENPCTRow() {
+                return ((RANDOM_TENPCTRow)(this.NewRow()));
+            }
+            
+            protected override DataRow NewRowFromBuilder(DataRowBuilder builder) {
+                return new RANDOM_TENPCTRow(builder);
+            }
+            
+            protected override System.Type GetRowType() {
+                return typeof(RANDOM_TENPCTRow);
+            }
+            
+            protected override void OnRowChanged(DataRowChangeEventArgs e) {
+                base.OnRowChanged(e);
+                if ((this.RANDOM_TENPCTRowChanged != null)) {
+                    this.RANDOM_TENPCTRowChanged(this, new RANDOM_TENPCTRowChangeEvent(((RANDOM_TENPCTRow)(e.Row)), e.Action));
+                }
+            }
+            
+            protected override void OnRowChanging(DataRowChangeEventArgs e) {
+                base.OnRowChanging(e);
+                if ((this.RANDOM_TENPCTRowChanging != null)) {
+                    this.RANDOM_TENPCTRowChanging(this, new RANDOM_TENPCTRowChangeEvent(((RANDOM_TENPCTRow)(e.Row)), e.Action));
+                }
+            }
+            
+            protected override void OnRowDeleted(DataRowChangeEventArgs e) {
+                base.OnRowDeleted(e);
+                if ((this.RANDOM_TENPCTRowDeleted != null)) {
+                    this.RANDOM_TENPCTRowDeleted(this, new RANDOM_TENPCTRowChangeEvent(((RANDOM_TENPCTRow)(e.Row)), e.Action));
+                }
+            }
+            
+            protected override void OnRowDeleting(DataRowChangeEventArgs e) {
+                base.OnRowDeleting(e);
+                if ((this.RANDOM_TENPCTRowDeleting != null)) {
+                    this.RANDOM_TENPCTRowDeleting(this, new RANDOM_TENPCTRowChangeEvent(((RANDOM_TENPCTRow)(e.Row)), e.Action));
+                }
+            }
+            
+            public void RemoveRANDOM_TENPCTRow(RANDOM_TENPCTRow row) {
+                this.Rows.Remove(row);
+            }
+        }
+        
+        [System.Diagnostics.DebuggerStepThrough()]
+        public class RANDOM_TENPCTRow : DataRow {
+            
+            private RANDOM_TENPCTDataTable tableRANDOM_TENPCT;
+            
+            internal RANDOM_TENPCTRow(DataRowBuilder rb) : 
+                    base(rb) {
+                this.tableRANDOM_TENPCT = ((RANDOM_TENPCTDataTable)(this.Table));
+            }
+            
+            public int COL_KEY {
+                get {
+                    return ((int)(this[this.tableRANDOM_TENPCT.COL_KEYColumn]));
+                }
+                set {
+                    this[this.tableRANDOM_TENPCT.COL_KEYColumn] = value;
+                }
+            }
+            
+            public System.Single COL_FLOAT {
+                get {
+                    return ((System.Single)(this[this.tableRANDOM_TENPCT.COL_FLOATColumn]));
+                }
+                set {
+                    this[this.tableRANDOM_TENPCT.COL_FLOATColumn] = value;
+                }
+            }
+            
+            public int COL_SIGNED {
+                get {
+                    return ((int)(this[this.tableRANDOM_TENPCT.COL_SIGNEDColumn]));
+                }
+                set {
+                    this[this.tableRANDOM_TENPCT.COL_SIGNEDColumn] = value;
+                }
+            }
+            
+            public System.Double COL_DOUBLE {
+                get {
+                    return ((System.Double)(this[this.tableRANDOM_TENPCT.COL_DOUBLEColumn]));
+                }
+                set {
+                    this[this.tableRANDOM_TENPCT.COL_DOUBLEColumn] = value;
+                }
+            }
+            
+            public string COL_ADDRESS {
+                get {
+                    return ((string)(this[this.tableRANDOM_TENPCT.COL_ADDRESSColumn]));
+                }
+                set {
+                    this[this.tableRANDOM_TENPCT.COL_ADDRESSColumn] = value;
+                }
+            }
+        }
+        
+        [System.Diagnostics.DebuggerStepThrough()]
+        public class RANDOM_TENPCTRowChangeEvent : EventArgs {
+            
+            private RANDOM_TENPCTRow eventRow;
+            
+            private DataRowAction eventAction;
+            
+            public RANDOM_TENPCTRowChangeEvent(RANDOM_TENPCTRow row, DataRowAction action) {
+                this.eventRow = row;
+                this.eventAction = action;
+            }
+            
+            public RANDOM_TENPCTRow Row {
                 get {
                     return this.eventRow;
                 }

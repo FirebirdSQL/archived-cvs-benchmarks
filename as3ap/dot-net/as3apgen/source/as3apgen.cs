@@ -32,7 +32,7 @@ namespace AS3AP.BenchMark.Generator
 {
 	public class As3apGen
 	{
-		#region CONSTANTS
+		#region Constants
 
 		private const int HUNDREDMILLION	= 10*10*10*10*10*10*10*10;
 		private const int THOUSANDMILLION	= HUNDREDMILLION*10;
@@ -48,14 +48,14 @@ namespace AS3AP.BenchMark.Generator
 
 		#endregion
 
-		#region FIELDS
+		#region Fields
 
 		private string	destDir	= String.Empty;
 		private long	dataSize = 0;
 
 		#endregion
 
-		#region MAIN
+		#region Main
 
 		static void Main(string[] args)
 		{
@@ -71,7 +71,7 @@ namespace AS3AP.BenchMark.Generator
 
 		#endregion
 
-		#region CONSTRUCTORS
+		#region Constructors
 
 		public As3apGen(string destDir, long dataSize)
 		{
@@ -113,9 +113,10 @@ namespace AS3AP.BenchMark.Generator
 			long rec;
 			long date_random;
 			long dense_key;
-			long hundred_key;			
-			long randomizer = 0;
-			long r10pct_key = 0;
+			long hundred_key;
+			long tenpct_key;
+			long randomizer;
+			long r10pct_key;
 			long sparse_key;
 			long sparse_signed;
 			long sparse_key_spread;
@@ -126,6 +127,7 @@ namespace AS3AP.BenchMark.Generator
 			double double_normal;			
 
 			int random;
+			int nLen;
 			
 			long[] randomSeed = new long[dataSize];
 
@@ -133,7 +135,6 @@ namespace AS3AP.BenchMark.Generator
 			Random			randNumber		= new Random();
 
 			DsRandomData	dsRandomData	= new DsRandomData();
-			DsRandomTenpct	dsRandomTenpct	= new DsRandomTenpct();
 
 			StreamWriter dfUpdates	= null;
 			StreamWriter dfUniques	= null;
@@ -146,8 +147,9 @@ namespace AS3AP.BenchMark.Generator
 
 			string csv_safe_chars = "#%&()[]{};:/~@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-=";
 
-			int Nlen;				
-
+			randomizer = 0;
+			r10pct_key = 0;
+			
 			try
 			{
 				// Configure number format
@@ -230,8 +232,8 @@ namespace AS3AP.BenchMark.Generator
 						col_name += csv_safe_chars[randNumber.Next(0, csv_safe_chars.Length)];
 					} 
 					col_address = col_code;
-					Nlen = randNumber.Next(2, (int)(6 + (25 * (rec & 3))));
-					for (int i = col_code.Length; i < Nlen; i++)
+					nLen = randNumber.Next(2, (int)(6 + (25 * (rec & 3))));
+					for (int i = col_code.Length; i < nLen; i++)
 					{
 						col_address += csv_safe_chars[randNumber.Next(0, csv_safe_chars.Length)];
 					}
@@ -329,9 +331,9 @@ namespace AS3AP.BenchMark.Generator
 					newRow["DOUBLE_NORMAL"]		= double_normal;
 					newRow["R10PCT_KEY"]		= r10pct_key;
 					newRow["COL_DATE"]			= col_date.ToString("dd/MM/yyyy");
-					newRow["CODE"]				= col_code;
-					newRow["NAME"]				= col_name;
-					newRow["ADDRESS"]			= col_address;
+					newRow["COL_CODE"]			= col_code;
+					newRow["COL_NAME"]			= col_name;
+					newRow["COL_ADDRESS"]		= col_address;
 
 					dsRandomData.Tables["RANDOM_DATA"].Rows.Add(newRow);					
 
@@ -355,7 +357,7 @@ namespace AS3AP.BenchMark.Generator
 
 				foreach (DataRow row in foundRows)
 				{
-					row["ADDRESS"] = "SILICON VALLEY";
+					row["COL_ADDRESS"] = "SILICON VALLEY";
 				}
 
 				Array.Clear(foundRows, 0, foundRows.Length);
@@ -364,32 +366,34 @@ namespace AS3AP.BenchMark.Generator
 				// Now generate a table with 10% of some of the fields
 				Console.WriteLine("Now generate a table with 10% of some of the fields");
 
-				dsRandomTenpct.Tables["RANDOM_TENPCT"].BeginLoadData();
+				dsRandomData.Tables["RANDOM_TENPCT"].BeginLoadData();
 								
+				dsRandomData.Tables["RANDOM_DATA"].DefaultView.Sort = "randomizer";
+
 				random	= 0;
 				rec		= 1;
 				foreach (DataRow row in dsRandomData.Tables["RANDOM_DATA"].Rows)
 				{
-					DataRow newRow = dsRandomTenpct.Tables["RANDOM_TENPCT"].NewRow();
+					DataRow newRow = dsRandomData.Tables["RANDOM_TENPCT"].NewRow();
 
 					newRow["COL_KEY"]		= (rec == 1) ? 0 : rec;
 					newRow["COL_SIGNED"]	= row["SPARSE_SIGNED"];
 					newRow["COL_FLOAT"]		= (float)(Convert.ToSingle(row["DOUBLE_NORMAL"]) / 2);
 					newRow["COL_DOUBLE"]	= row["DOUBLE_NORMAL"];
-					newRow["COL_ADDRESS"]	= row["ADDRESS"];
+					newRow["COL_ADDRESS"]	= row["COL_ADDRESS"];
 
-					dsRandomTenpct.Tables["RANDOM_TENPCT"].Rows.Add(newRow);
+					dsRandomData.Tables["RANDOM_TENPCT"].Rows.Add(newRow);
 
 					rec++;
 					
 					if (random < 100)
 					{
 						// Now generate a table with only 100 tuples of interesting data
-						//uniform100_float, double_normal, name, address
+						// uniform100_float, double_normal, name, address
 						hundred_unique_float[random]	= (float)newRow["COL_FLOAT"];
 						hundred_unique_double[random]	= Convert.ToDouble(row["DOUBLE_NORMAL"]);
-						hundred_unique_name[random]		= Convert.ToString(row["NAME"]);
-						hundred_unique_address[random]	= Convert.ToString(row["ADDRESS"]);
+						hundred_unique_name[random]		= Convert.ToString(row["COL_NAME"]);
+						hundred_unique_address[random]	= Convert.ToString(row["COL_ADDRESS"]);
 
 						random++;
 					}
@@ -399,8 +403,10 @@ namespace AS3AP.BenchMark.Generator
 						break;
 					}
 				}
+
+				dsRandomData.Tables["RANDOM_DATA"].DefaultView.Sort = "";
 								
-				dsRandomTenpct.Tables["RANDOM_TENPCT"].EndLoadData();
+				dsRandomData.Tables["RANDOM_TENPCT"].EndLoadData();
 
 				// Update CODE and NAME fields of RANDOM_DATA
 				// in rows where DOUBLE_NORMAL = col_double
@@ -413,16 +419,20 @@ namespace AS3AP.BenchMark.Generator
 				
 				foreach (DataRow row in foundRows)
 				{
-					row["CODE"] = "BENCHMARKS";
-					row["NAME"] = "THE+ASAP+BENCHMARKS+";
+					row["COL_CODE"] = "BENCHMARKS";
+					row["COL_NAME"] = "THE+ASAP+BENCHMARKS+";
 				}
+
+				hundred_unique_name[random] = "THE+ASAP+BENCHMARKS+";
 
 				Array.Clear(foundRows, 0, foundRows.Length);
 				foundRows = null;
 
 				// Generate data Files
 				Console.WriteLine("Generate data Files");
+				
 				hundred_key	= 0;
+				tenpct_key	= 0;
 
 				dfUniques	= this.createStream(destDir + UNIQUES_FILE_NAME);
 				dfUpdates	= this.createStream(destDir + UPDATES_FILE_NAME);
@@ -440,9 +450,9 @@ namespace AS3AP.BenchMark.Generator
 						((double)row["DOUBLE_NORMAL"]).ToString(numberFormat),
 						((double)row["DOUBLE_NORMAL"]).ToString(numberFormat),
 						row["COL_DATE"],
-						row["CODE"],
-						row["NAME"],
-						row["ADDRESS"]);
+						row["COL_CODE"],
+						row["COL_NAME"],
+						row["COL_ADDRESS"]);
 
 					// Updates File
 					dfUpdates.WriteLine("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9}",
@@ -453,9 +463,9 @@ namespace AS3AP.BenchMark.Generator
 						((double)row["DOUBLE_NORMAL"]).ToString(numberFormat),
 						((double)row["DOUBLE_NORMAL"]).ToString(numberFormat),
 						row["COL_DATE"],
-						row["CODE"],
-						row["NAME"],
-						row["ADDRESS"]);
+						row["COL_CODE"],
+						row["COL_NAME"],
+						row["COL_ADDRESS"]);
 					
 					// Hundred file
 					if (++hundred_key >= 100)
@@ -472,16 +482,31 @@ namespace AS3AP.BenchMark.Generator
 						hundred_unique_double[hundred_key].ToString(numberFormat),
 						hundred_unique_double[hundred_key].ToString(numberFormat),
 						row["COL_DATE"],
-						row["CODE"],
+						row["COL_CODE"],
 						hundred_unique_name[hundred_key],
 						hundred_unique_address[hundred_key]);
 
-					// Insert into tenpct
 					filter		= "COL_KEY = " + row["R10PCT_KEY"].ToString();
-					foundRows	= dsRandomTenpct.Tables["RANDOM_TENPCT"].Select(filter);
+					foundRows	= dsRandomData.Tables["RANDOM_TENPCT"].Select(filter);
 					
 					if (foundRows.Length != 0)
 					{
+						// Generate a 10% rows with 'THE+ASAP+BENCHMARKS+'
+						// needed for sel_10pct_ncl test
+						if (tenpct_key == 0)
+						{
+							col_name = hundred_unique_name[random];
+						}
+						else
+						{
+							col_name = row["COL_NAME"].ToString();
+						}
+
+						if (++tenpct_key >= 10)
+						{
+							tenpct_key = 0;
+						}
+
 						DataRow tenpctRow = foundRows[0];
 
 						dfTenpct.WriteLine(
@@ -493,9 +518,9 @@ namespace AS3AP.BenchMark.Generator
 							((double)tenpctRow["COL_DOUBLE"]).ToString(numberFormat),
 							((double)tenpctRow["COL_DOUBLE"]).ToString(numberFormat),
 							row["COL_DATE"],
-							row["CODE"],
-							row["NAME"],
-							row["ADDRESS"]);								
+							row["COL_CODE"],
+							col_name,
+							row["COL_ADDRESS"]);								
 					}
 
 					Array.Clear(foundRows, 0, foundRows.Length);
@@ -561,7 +586,6 @@ namespace AS3AP.BenchMark.Generator
 			finally
 			{
 				dsRandomData.Dispose();
-				dsRandomTenpct.Dispose();
 			}
 		}
 

@@ -23,21 +23,38 @@
 									</xs:restriction>
 								</xs:simpleType>
 							</xs:element>
-							<xs:element name="CODE">
+							<xs:element name="COL_CODE">
 								<xs:simpleType>
 									<xs:restriction base="xs:string">
 										<xs:maxLength value="10" />
 									</xs:restriction>
 								</xs:simpleType>
 							</xs:element>
-							<xs:element name="NAME">
+							<xs:element name="COL_NAME">
 								<xs:simpleType>
 									<xs:restriction base="xs:string">
 										<xs:maxLength value="20" />
 									</xs:restriction>
 								</xs:simpleType>
 							</xs:element>
-							<xs:element name="ADDRESS">
+							<xs:element name="COL_ADDRESS">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:maxLength value="80" />
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="RANDOM_TENPCT">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="COL_KEY" type="xs:int" />
+							<xs:element name="COL_FLOAT" type="xs:float" />
+							<xs:element name="COL_SIGNED" type="xs:int" />
+							<xs:element name="COL_DOUBLE" type="xs:double" />
+							<xs:element name="COL_ADDRESS">
 								<xs:simpleType>
 									<xs:restriction base="xs:string">
 										<xs:maxLength value="80" />
