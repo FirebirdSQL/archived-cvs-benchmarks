@@ -2,8 +2,6 @@
 // AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark
 //			for Relational Database Systems.
 //
-// Ported from OSDB project at http://osdb.sourceforge.net
-//
 // Author: Carlos Guzmán Álvarez <carlosga@telefonica.net>
 //
 // Distributable under LGPL license.
