@@ -1,6 +1,24 @@
 AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems.
 =============================================================================================
 
+
+2003-04-29 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+
+	* Backend class is no more needed.
+
+
+2003-04-24 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+
+	* Fixed serious logging problems.
+
+	* Little changes on MultiUser tests ( no testsed yet ).
+
+	* Changes on Transaction* method names.
+
+	* Make Backend.cs to work only with Firebird ( For work with other database it's better to use a 
+	DAL than use late binding that have performance penaltie in runtime).
+
+
 2003-04-11 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
 	* Added changes on some methods name for use _ ( as in as3ap documentation )
