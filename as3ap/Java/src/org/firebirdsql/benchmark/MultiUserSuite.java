@@ -18,7 +18,6 @@
  */
 package org.firebirdsql.benchmark;
 
-import sun.security.action.GetBooleanAction;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
