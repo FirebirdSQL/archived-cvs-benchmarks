@@ -99,7 +99,7 @@ public class MultiUserSuite extends BenchmarkSuite {
             MainstreamMultiUserTest perfIrTest = 
                 new MainstreamMultiUserTest("testIrSelect", getKeyRange(), 
                     getDatabaseManager().getConfig().getPerformanceDuration());
-            
+                    
             perfIrTest.run(testResult);
             
             System.out.println("step 3 completed: " + perfIrTest.getThroughput() + " fetches");
@@ -134,6 +134,10 @@ public class MultiUserSuite extends BenchmarkSuite {
             System.out.println("step 6 completed");
             
             // Step 7
+            checkTest = new MainstreamMultiUserTest("testCheck", 0, 0);
+                
+            checkTest.run(testResult);
+            
             getFixture().recreateTempUpdates();
             
             System.out.println("step 7 completed");
@@ -156,6 +160,9 @@ public class MultiUserSuite extends BenchmarkSuite {
             System.out.println("step 8 completed");
             
             // Step 9
+            perfIrTest = new MainstreamMultiUserTest("testIrSelect", getKeyRange(), 
+                    getDatabaseManager().getConfig().getPerformanceDuration());
+
             perfIrTest.run(testResult);
             
             System.out.println("step 9 completed: " + perfIrTest.getThroughput());
@@ -175,6 +182,8 @@ public class MultiUserSuite extends BenchmarkSuite {
             
             bgOltpSuite.waitSuiteCompletion();
             
+            checkTest = new MainstreamMultiUserTest("testCheck", 0, 0);
+
             checkTest.run(testResult);
             
             System.out.println("step 11 completed");
