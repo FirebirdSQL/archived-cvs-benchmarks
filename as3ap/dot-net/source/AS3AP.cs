@@ -206,7 +206,7 @@ namespace AS3AP.BenchMark
 
 			testSuite.Backend.DatabaseConnect();
 			timeIt("create_tables");
-			timeIt("createData");
+			timeIt("CreateData");
 			timeIt("create_idx_uniques_key_bt");
 			timeIt("create_idx_updates_key_bt");
 			timeIt("create_idx_hundred_key_bt");
