@@ -1,6 +1,16 @@
 AS3APGen - AS3AP Data file generator.
 =====================================
 
+
+2003-28-02 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+
+	* Updated dataset classes and added XSD files.
+
+	* source/as3apgen.cs:
+
+		- Fixed some incoherences on data generation.
+
+
 2003-04-02 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 	
 	* Initial revision.

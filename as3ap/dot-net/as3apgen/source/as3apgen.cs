@@ -16,7 +16,7 @@
 // individuals.  Contributors to this file are either listed here or
 // can be obtained from a CVS history command.
 //
-// (c) 2003. All rights reserved.
+// (c) 2003-2004. All rights reserved.
 //
 // For more information please see http://www.firebirdsql.org
 //
@@ -81,6 +81,8 @@ namespace AS3AP.BenchMark.Generator
 
 		#endregion
 
+		#region Methods
+
         /// <summary>
         /// This method is based on OSDB project ( sourceforge.net/projects/osdb )
         /// create_data function.
@@ -127,8 +129,8 @@ namespace AS3AP.BenchMark.Generator
 			
 			long[] randomSeed = new long[dataSize];
 
-			DateTime	col_date	= new DateTime();
-			Random		randNumber	= new Random();
+			DateTime		col_date		= new DateTime();
+			Random			randNumber		= new Random();
 
 			DsRandomData	dsRandomData	= new DsRandomData();
 			DsRandomTenpct	dsRandomTenpct	= new DsRandomTenpct();
@@ -244,69 +246,70 @@ namespace AS3AP.BenchMark.Generator
 
 					try
 					{
+						col_date	= new DateTime(1900, 1, 1);
 						date_random = dense_key % 36835;
-						col_date.AddYears((int)(date_random / 365));
+						col_date	= col_date.AddYears((int)(date_random / 365));
 						date_random = (date_random % 365) + 1;
 
 						if (date_random <= 31) 
 						{
-							col_date.AddMonths(0);
-							col_date.AddDays(date_random);
+							col_date = col_date.AddMonths(0);
+							col_date = col_date.AddDays(date_random);
 						} 
 						else if ((date_random -= 31) <= 28) 
 						{
-							col_date.AddMonths(1);
-							col_date.AddDays(date_random);
+							col_date = col_date.AddMonths(1);
+							col_date = col_date.AddDays(date_random);
 						} 
 						else if ((date_random -= 28) <= 31) 
 						{
-							col_date.AddMonths(2);
-							col_date.AddDays(date_random);
+							col_date = col_date.AddMonths(2);
+							col_date = col_date.AddDays(date_random);
 						} 
 						else if ((date_random -= 31) <= 30) 
 						{
-							col_date.AddMonths(3);
-							col_date.AddDays(date_random);
+							col_date = col_date.AddMonths(3);
+							col_date = col_date.AddDays(date_random);
 						} 
 						else if ((date_random -= 30) <= 31) 
 						{
-							col_date.AddMonths(4);
-							col_date.AddDays(date_random);
+							col_date = col_date.AddMonths(4);
+							col_date = col_date.AddDays(date_random);
 						} 
 						else if ((date_random -= 31) <= 30) 
 						{
-							col_date.AddMonths(5);
-							col_date.AddDays(date_random);
+							col_date = col_date.AddMonths(5);
+							col_date = col_date.AddDays(date_random);
 						} 
 						else if ((date_random -= 30) <= 31) 
 						{
-							col_date.AddMonths(6);
-							col_date.AddDays(date_random);
+							col_date = col_date.AddMonths(6);
+							col_date = col_date.AddDays(date_random);
 						} 
 						else if ((date_random -= 31) <= 31) 
 						{
-							col_date.AddMonths(7);
-							col_date.AddDays(date_random);
+							col_date = col_date.AddMonths(7);
+							col_date = col_date.AddDays(date_random);
 						} 
 						else if ((date_random -= 31) <= 30) 
 						{
-							col_date.AddMonths(8);
-							col_date.AddDays(date_random);
+							col_date = col_date.AddMonths(8);
+							col_date = col_date.AddDays(date_random);
 						} 
 						else if ((date_random -= 30) <= 31) 
 						{
-							col_date.AddMonths(9);
-							col_date.AddDays(date_random);
+							col_date = col_date.AddMonths(9);
+							col_date = col_date.AddDays(date_random);
 						} 
 						else if ((date_random -= 31) <= 30) 
 						{
-							col_date.AddMonths(10);
-							col_date.AddDays(date_random);
+							col_date = col_date.AddMonths(10);
+							col_date = col_date.AddDays(date_random);
 						} 
 						else 
 						{
-							col_date.AddMonths(11);
-							col_date.AddDays(date_random);
+							col_date = col_date.AddMonths(11);
+							col_date = col_date.AddDays(date_random);
 						}
 					}
 					catch (Exception)
@@ -325,7 +328,7 @@ namespace AS3AP.BenchMark.Generator
 					newRow["UNIFORM100_FLOAT"]	= uniform100_float;
 					newRow["DOUBLE_NORMAL"]		= double_normal;
 					newRow["R10PCT_KEY"]		= r10pct_key;
-					newRow["COL_DATE"]			= col_date;
+					newRow["COL_DATE"]			= col_date.ToString("dd/MM/yyyy");
 					newRow["CODE"]				= col_code;
 					newRow["NAME"]				= col_name;
 					newRow["ADDRESS"]			= col_address;
@@ -421,10 +424,10 @@ namespace AS3AP.BenchMark.Generator
 				Console.WriteLine("Generate data Files");
 				hundred_key	= 0;
 
-				dfUniques	= new StreamWriter(new FileStream(destDir + UNIQUES_FILE_NAME, FileMode.Create, FileAccess.Write, FileShare.None));
-				dfUpdates	= new StreamWriter(new FileStream(destDir + UPDATES_FILE_NAME, FileMode.Create, FileAccess.Write, FileShare.None));
-				dfHundred	= new StreamWriter(new FileStream(destDir + HUNDRED_FILE_NAME, FileMode.Create, FileAccess.Write, FileShare.None));
-				dfTenpct	= new StreamWriter(new FileStream(destDir + TENPCT_FILE_NAME, FileMode.Create, FileAccess.Write, FileShare.None));
+				dfUniques	= this.createStream(destDir + UNIQUES_FILE_NAME);
+				dfUpdates	= this.createStream(destDir + UPDATES_FILE_NAME);
+				dfHundred	= this.createStream(destDir + HUNDRED_FILE_NAME);
+				dfTenpct	= this.createStream(destDir + TENPCT_FILE_NAME);
 
 				foreach (DataRow row in dsRandomData.Tables["RANDOM_DATA"].Rows)
 				{
@@ -561,5 +564,16 @@ namespace AS3AP.BenchMark.Generator
 				dsRandomTenpct.Dispose();
 			}
 		}
+
+		#endregion
+
+		#region Private Methods
+
+		private StreamWriter createStream(string fileName)
+		{
+			return new StreamWriter(new BufferedStream(new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None)));
+		}
+
+		#endregion
 	}
 }

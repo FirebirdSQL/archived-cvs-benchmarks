@@ -1,0 +1,53 @@
+<?xml version="1.0" standalone="yes" ?>
+<xs:schema id="RANDOM_DATA" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+	<xs:element name="DsRandomData" msdata:IsDataSet="true" msdata:Locale="es-ES">
+		<xs:complexType>
+			<xs:choice maxOccurs="unbounded">
+				<xs:element name="RANDOM_DATA">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="RANDOMIZER" type="xs:int" />
+							<xs:element name="SPARSE_KEY" type="xs:int" />
+							<xs:element name="DENSE_KEY" type="xs:int" />
+							<xs:element name="SPARSE_SIGNED" type="xs:int" />
+							<xs:element name="UNIFORM100_DENSE" type="xs:int" />
+							<xs:element name="ZIPF10_FLOAT" type="xs:float" />
+							<xs:element name="ZIPF100_FLOAT" type="xs:float" />
+							<xs:element name="UNIFORM100_FLOAT" type="xs:float" />
+							<xs:element name="DOUBLE_NORMAL" type="xs:double" />
+							<xs:element name="R10PCT_KEY" type="xs:int" />
+							<xs:element name="COL_DATE">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:maxLength value="20" />
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="CODE">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:maxLength value="10" />
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="NAME">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:maxLength value="20" />
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+							<xs:element name="ADDRESS">
+								<xs:simpleType>
+									<xs:restriction base="xs:string">
+										<xs:maxLength value="80" />
+									</xs:restriction>
+								</xs:simpleType>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
