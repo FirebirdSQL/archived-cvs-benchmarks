@@ -12,6 +12,9 @@ AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 	* Fixed error in logger.
 
 	* Reorganization of backends project source code.
+	
+	* Added changes for allow specification of SQL syntax 
+	( SQL87 or SQL92 ) in the RunSequence
 
 
 2003-02-10 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
