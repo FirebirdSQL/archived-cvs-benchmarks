@@ -58,8 +58,9 @@ namespace AS3AP.BenchMark
 
 				TestResult = Backend.Cursor.GetInt32(0);
 			}
-			catch (Exception)
+			catch (Exception ex)
 			{
+				Console.WriteLine(ex.Message);
 				TestFailed = true;
 			}
 			finally
