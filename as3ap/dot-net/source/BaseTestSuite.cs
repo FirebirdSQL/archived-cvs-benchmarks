@@ -2830,6 +2830,9 @@ namespace AS3AP.BenchMark
 				if (connection != null)
 				{
 					connection.Close();
+					
+					connection	= null;
+					transaction = null;
 				}
 			}
 			catch (Exception ex)
@@ -2908,25 +2911,15 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				beginTransaction();
 				loadTinyFile("tiny");
-				commitTransaction();
-
-				beginTransaction();
+								
 				loadFile("uniques");
-				commitTransaction();
-
-				beginTransaction();
+				
 				loadFile("updates");
-				commitTransaction();
-
-				beginTransaction();
+				
 				loadFile("hundred");
-				commitTransaction();
-
-				beginTransaction();
+				
 				loadFile("tenpct");
-				commitTransaction();								
 			}
 			catch (Exception ex)
 			{
@@ -2940,17 +2933,18 @@ namespace AS3AP.BenchMark
 
 		private void loadFile(string table)
 		{
+			beginTransaction();
+
 			StringBuilder	commandText = new StringBuilder();
 			StreamReader	stream		= null;
 			FbCommand		command		= null;
-
-			commandText.AppendFormat("insert into {0} values (?,?,?,?,?,?,?,?,?,?)", table);
-			// commandText.AppendFormat("insert into {0} values (@col_key,@col_int,@col_signed,@col_float,@col_double,@col_decim,@col_date,@col_code,@col_name,@col_address)", table);
+			
+			// commandText.AppendFormat("insert into {0} values (?,?,?,?,?,?,?,?,?,?)", table);
+			commandText.AppendFormat("insert into {0} values (@col_key,@col_int,@col_signed,@col_float,@col_double,@col_decim,@col_date,@col_code,@col_name,@col_address)", table);
 
 			/* Crate command */
-			// command = new FbCommand(commandText.ToString(), connection, transaction);
 			command = getCommand(commandText.ToString());
-
+			
 			/* Add parameters	*/
 			command.Parameters.Add("@col_key"	, FbDbType.Integer	, 4, "COL_KEY");
 			command.Parameters.Add("@col_int"	, FbDbType.Integer	, 4, "COL_INT");
@@ -2966,9 +2960,15 @@ namespace AS3AP.BenchMark
 			/* Prepare command execution	*/
 			command.Prepare();
 
+			string path = Path.GetFullPath(configuration.DataPath);
+			if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
+			{
+				path += Path.DirectorySeparatorChar;
+			}
+
 			stream = new StreamReader(
 				(System.IO.Stream)File.Open(
-				configuration.DataPath + "asap." + table	,
+				path + "asap." + table	,
 				FileMode.Open								,
 				FileAccess.Read								,
 				FileShare.None));
@@ -2987,10 +2987,14 @@ namespace AS3AP.BenchMark
 
 			command.Dispose();
 			stream.Close();
+
+			commitTransaction();
 		}
 
 		private void loadTinyFile(string table)
 		{
+			beginTransaction();
+
 			StringBuilder	commandText = new StringBuilder();
 			StreamReader	stream		= null;
 			FbCommand		command		= null;
@@ -3006,11 +3010,17 @@ namespace AS3AP.BenchMark
 			/* Prepare command execution	*/
 			command.Prepare();
 
+			string path = Path.GetFullPath(configuration.DataPath);
+			if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
+			{
+				path += Path.DirectorySeparatorChar;
+			}
+
 			stream = new StreamReader(
 				(System.IO.Stream)File.Open(
-				configuration.DataPath + "asap." + table	,
-				FileMode.Open								,
-				FileAccess.Read								,
+				path + "asap." + table	,
+				FileMode.Open			,
+				FileAccess.Read			,
 				FileShare.None));
 
 			while (stream.Peek() > -1)
@@ -3024,6 +3034,8 @@ namespace AS3AP.BenchMark
 
 			command.Dispose();
 			stream.Close();
+
+			commitTransaction();
 		}
 
 		protected FbCommand getCommand(string commandText)
