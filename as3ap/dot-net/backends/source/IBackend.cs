@@ -62,6 +62,7 @@ namespace AS3AP.BenchMark.Backends
 		void DatabaseDisconnect();
 		void ExecuteStatement(string statement);
 		void CreateData();
+		void LoadData();
 		void TransactionBegin();
 		void TransactionCommit();
 		void TransactionRollback();

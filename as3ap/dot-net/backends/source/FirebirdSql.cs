@@ -8,7 +8,6 @@
 //
 // Distributable under GPL license.
 // You may obtain a copy of the License at http://www.gnu.org/copyleft/gpl.html
-//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
@@ -60,6 +59,8 @@ namespace AS3AP.BenchMark.Backends
 
 		private long			dataSize;
 
+		private string			dataPath = String.Empty;
+
 		#endregion
 
 		#region PROPERTIES
@@ -107,6 +108,12 @@ namespace AS3AP.BenchMark.Backends
 		private void getConfiguration()
 		{
 			connectionString	= ConfigurationSettings.AppSettings["ConnectionString"];
+			dataPath			= ConfigurationSettings.AppSettings["DataPath"];
+
+			if (!dataPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+			{
+				dataPath += Path.DirectorySeparatorChar;
+			}
 		}
 
 		public void CreateIndexBtree(string indexName, string tableName, string fields)
@@ -400,6 +407,124 @@ namespace AS3AP.BenchMark.Backends
 			return new FbCommand(commandText, connection, transaction);
 		}
 
+		public void LoadData()
+		{
+			try
+			{
+				TransactionBegin();
+				loadFile("updates");
+				TransactionCommit();
+
+				TransactionBegin();
+				loadFile("hundred");
+				TransactionCommit();
+				
+				TransactionBegin();
+				loadFile("tenpct");
+				TransactionCommit();
+				
+				TransactionBegin();
+				loadFile("uniques");
+				TransactionCommit();
+				
+				TransactionBegin();
+				loadTinyFile("tiny");
+				TransactionCommit();
+			}
+			catch (Exception ex)
+			{
+				TransactionRollback();
+				log.Error("load failed!!");
+				throw ex;
+			}
+		}
+
+		private void loadFile(string table)
+		{
+			StringBuilder	commandText = new StringBuilder();
+			StreamReader	stream		= null;
+			FbCommand		command		= null;
+
+			commandText.AppendFormat("insert into {0} values (?,?,?,?,?,?,?,?,?,?)", table);
+
+			/* Crate command */
+			command = new FbCommand(commandText.ToString(), connection, transaction);
+
+			/* Add parameters	*/
+			command.Parameters.Add("@col_key"	, FbType.Integer	, "COL_KEY");
+			command.Parameters.Add("@col_int"	, FbType.Integer	, "COL_INT");
+			command.Parameters.Add("@col_signed", FbType.Integer	, "COL_SIGNED");
+			command.Parameters.Add("@col_float"	, FbType.Float		, "COL_FLOAT");
+			command.Parameters.Add("@col_double", FbType.Double		, "COL_DOUBLE");
+			command.Parameters.Add("@col_decim"	, FbType.Decimal	, "COL_DECIM");
+			command.Parameters.Add("@col_date"	, FbType.Char		, "COL_DATE");
+			command.Parameters.Add("@col_code"	, FbType.Char		, "COL_CODE");
+			command.Parameters.Add("@col_name"	, FbType.Char		, "COL_NAME");
+			command.Parameters.Add("@col_address", FbType.VarChar	, "COL_ADDRESS");
+
+			/* Prepare command execution	*/
+			command.Prepare();
+
+			stream = new StreamReader(
+				(System.IO.Stream)File.Open(
+				dataPath + "asap." + table	,
+				FileMode.Open				,
+				FileAccess.Read				,
+				FileShare.None));
+
+			while (stream.Peek() > -1)
+			{
+				string[] elements = stream.ReadLine().Split(',');
+			
+				for (int i = 0; i < 10; i++)
+				{
+					command.Parameters[i].Value = elements[i];
+				}
+	
+				command.ExecuteNonQuery();
+			}
+
+			command.Dispose();
+			stream.Close();
+		}
+
+
+		private void loadTinyFile(string table)
+		{
+			StringBuilder	commandText = new StringBuilder();
+			StreamReader	stream		= null;
+			FbCommand		command		= null;
+
+			commandText.AppendFormat("insert into {0} values (?)", table);
+
+			/* Crate command */
+			command = new FbCommand(commandText.ToString(), connection, transaction);
+
+			/* Add parameters	*/
+			command.Parameters.Add("@col_key", FbType.Integer, "COL_KEY");
+
+			/* Prepare command execution	*/
+			command.Prepare();
+
+			stream = new StreamReader(
+				(System.IO.Stream)File.Open(
+				dataPath + "asap." + table	,
+				FileMode.Open				,
+				FileAccess.Read				,
+				FileShare.None));
+
+			while (stream.Peek() > -1)
+			{
+				string[] elements = stream.ReadLine().Split(',');
+			
+				command.Parameters[0].Value = elements[0];
+	
+				command.ExecuteNonQuery();
+			}
+
+			stream.Close();
+		}
+
 		public void CreateData()
 		{
 			string col_address				= String.Empty;
@@ -625,9 +750,9 @@ namespace AS3AP.BenchMark.Backends
 			/* Now generate a table with only 100 tuples of interesting data */
 			TransactionBegin();
 			CursorOpen(
-				"SELECT FIRST 100"									+
+				"SELECT FIRST 100"										+
 					" uniform100_float, double_normal, name, address"	+
-				" FROM random_data"									+
+				" FROM random_data"										+
 					" ORDER BY randomizer");
 	
 			i = 0;
@@ -800,7 +925,14 @@ namespace AS3AP.BenchMark.Backends
 				hundred_float	= hundred_unique_float[hundred_key];
 				hundred_double	= hundred_unique_double[hundred_key];
 				hundred_name	= hundred_unique_name[hundred_key];
-				hundred_address	= hundred_unique_address[hundred_key];
+				if (col_address.Trim() == "SILICON VALLEY")
+				{
+					hundred_address	= col_address;
+				}
+				else
+				{
+					hundred_address	= hundred_unique_address[hundred_key];
+				}
 
 				sqlCommand = new StringBuilder();
 				sqlCommand.AppendFormat(
