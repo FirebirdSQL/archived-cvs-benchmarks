@@ -70,6 +70,8 @@ public class FirebirdDatabaseManager extends BenchmarkDatabaseManager {
         pool.setUserName(getConfig().getUserName());
         pool.setPassword(getConfig().getPassword());
 
+        pool.setType(getConfig().getCustomProperty("firebird.type", "PURE_JAVA"));
+        
         return pool;
     }
 
