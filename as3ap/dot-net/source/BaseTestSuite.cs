@@ -2483,12 +2483,14 @@ namespace AS3AP.BenchMark
 
 		private void runTest(string testName)
 		{
-			MethodInfo	method		= null;
-			long		clocks;
+			Type 		type	= null;
+			MethodInfo	method	= null;
+			long		clocks	= 0;
 
 			testFailed	= false;
 
-			method = this.GetType().GetMethod(testName);
+			type	= this.GetType();
+			method 	= type.GetMethod(testName, BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance);
 			
 			// Set IsolationLevel for test execution
 			set_isolation_level(testName);
@@ -2812,7 +2814,7 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		private void load_data()
+		public void load_data()
 		{
 			try
 			{
