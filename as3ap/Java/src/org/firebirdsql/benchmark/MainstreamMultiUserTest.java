@@ -26,8 +26,6 @@ package org.firebirdsql.benchmark;
  */
 public class MainstreamMultiUserTest extends MultiUserTest {
     
-    private static final int SLEEP_TIME = 20;
-    
     private int duration;
     
     public MainstreamMultiUserTest(String name, int keyRange, int duration) {
@@ -48,7 +46,9 @@ public class MainstreamMultiUserTest extends MultiUserTest {
         while(System.currentTimeMillis() - start < duration) {
             throughput += doIrSelect();
             
-            wait(SLEEP_TIME);
+            int sleepDuration = getDatabaseManager().getConfig().getSleepDuration();
+            if (sleepDuration > 0)
+                wait(sleepDuration);
         }
     }
     

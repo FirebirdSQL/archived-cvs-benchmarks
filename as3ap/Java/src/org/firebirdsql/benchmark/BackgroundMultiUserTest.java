@@ -28,8 +28,6 @@ package org.firebirdsql.benchmark;
  */
 public class BackgroundMultiUserTest extends MultiUserTest {
     
-    public static final int SLEEP_TIME = 20;
-    
     public BackgroundMultiUserTest(String name, int keyRange) {
         super(name, keyRange);
     }
@@ -55,7 +53,9 @@ public class BackgroundMultiUserTest extends MultiUserTest {
         while(!stopped) {
             doOltpUpdate();
             
-            wait(SLEEP_TIME);
+            int sleepDuration = getDatabaseManager().getConfig().getSleepDuration();
+            if (sleepDuration > 0)
+                wait(sleepDuration);
         }
     }
 
@@ -63,7 +63,11 @@ public class BackgroundMultiUserTest extends MultiUserTest {
         while(!stopped) {
             doIrSelect();
             
-            wait(SLEEP_TIME);
+            int sleepDuration = getDatabaseManager().getConfig().getSleepDuration();
+            if (sleepDuration > 0)
+                wait(sleepDuration);
         }
+        
+        System.out.println("[" + Thread.currentThread().getName() + "] stopped.");
     }
 }

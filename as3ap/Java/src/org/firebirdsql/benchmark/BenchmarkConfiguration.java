@@ -54,6 +54,7 @@ public class BenchmarkConfiguration {
     
     public static final String BACKGROUND_TEST_DURATION = "bgDuration";
     public static final String MEASURMENT_TEST_DURARION = "perfDuration";
+    public static final String SLEEP_DURATION = "sleepDuration";
     
     public static final String RECREATE_TABLE_AS_CLEANUP = "recreateTable";
     
@@ -180,5 +181,9 @@ public class BenchmarkConfiguration {
     
     public String getJdbcUrl() {
         return RES.getProperty(JDBC_DRIVER_URL);
+    }
+    
+    public int getSleepDuration() {
+        return getIntProperty(SLEEP_DURATION, 0);
     }
 }
