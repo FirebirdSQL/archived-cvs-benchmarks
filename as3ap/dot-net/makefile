@@ -29,7 +29,7 @@ install:
 	$(COPY) *.exe ./build
 	$(COPY) *.dll ./build
 	$(COPY) ./source/AS3AP.BenchMark.exe.config ./build
-	$(COPY) ./data/AS3AP.FDB ./build
+	$(COPY) ./data/as3ap.fdb ./build
 
 clean: 
 	rm -rf AS3AP.BenchMark.exe
