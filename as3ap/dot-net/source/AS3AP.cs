@@ -53,13 +53,22 @@ namespace AS3AP.BenchMark
 
 		private int			timeToRun		= 15;
 
+		private int			userNumber		= 0;
+
 		#endregion
 
 		#region CONSTRUCTORS
 
 		public AS3AP()
 		{
-			log	= new Logger(GetType(), ConfigurationSettings.AppSettings["LogFile"], Mode.OVERWRITE);
+			if (ConfigurationSettings.AppSettings["LogMode"].ToUpper() == "APPEND")
+			{
+				log	= new Logger(GetType(), ConfigurationSettings.AppSettings["LogFile"], Mode.APPEND);
+			}
+			else
+			{
+				log	= new Logger(GetType(), ConfigurationSettings.AppSettings["LogFile"], Mode.OVERWRITE);
+			}
 			getConfiguration();
 
 			callableSql	= new CallableSql(backendName);
@@ -75,6 +84,8 @@ namespace AS3AP.BenchMark
 			runSingleUser	= Boolean.Parse(ConfigurationSettings.AppSettings["RunSingleUser"]);
 			runMultiUser	= Boolean.Parse(ConfigurationSettings.AppSettings["RunMultiUser"]);
 
+			userNumber		= Int32.Parse(ConfigurationSettings.AppSettings["UserNumber"]);
+
 			backendName		= ConfigurationSettings.AppSettings["Backend"];
 		}
 
@@ -86,6 +97,8 @@ namespace AS3AP.BenchMark
 			
 			currentTest = "Test Initialization";
 
+			log.Simple("Starting as3ap benchmar at: {0}", DateTime.Now);
+
 			/* Start of database table creation */
 			if (runCreate) 
 			{
@@ -93,6 +106,7 @@ namespace AS3AP.BenchMark
 				callableSql.Backend.DatabaseConnect();
 
 				/* Database data generation should go here */
+				Console.WriteLine("Creating tables and loading data {0}.", DateTime.Now);
 				timeIt("populateDataBase()", "populateDataBase");
 				
 				callableSql.Backend.DatabaseDisconnect();
@@ -142,7 +156,7 @@ namespace AS3AP.BenchMark
 				Console.WriteLine("Starting multi-user test");
 				
 				clocks = DateTime.Now.Ticks;
-				multiUserTests((int)(dbSize / 4));
+				multiUserTests(userNumber == 0 ? (int)(dbSize / 4) : userNumber);
 				elapsed = elapsedTime(clocks = (DateTime.Now.Ticks - clocks));
 
 				log.Simple("");
