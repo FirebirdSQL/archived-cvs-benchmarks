@@ -55,7 +55,7 @@ namespace AS3AP.BenchMark
 		private string	parameterClass		= "FirebirdSql.Data.Firebird.FbParameter";
 		
 		private string	btreeIndexStmt		= "create index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
-		private string	clusteredIndexStmt	= "create index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
+		private string	clusteredIndexStmt	= "create unique clustered index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
 		private string	hashIndexStmt		= "create index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
 	
 		private string	charTypeName		= "char";
