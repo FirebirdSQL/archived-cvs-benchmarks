@@ -28,20 +28,14 @@ namespace AS3AP.BenchMark
 		static void Main(string[] args)
 		{
 #if (CONSOLE)
-			RunConsole();
-#else
-			RunGui();			
-#endif
-		}
-
-		static void RunGui()
-		{
-			Application.Run(new As3apGui());
-		}
-
-		static void RunConsole()
-		{
 			As3apConsole.Run();
+#else
+    #if (NET_2_0)
+            Application.EnableVisualStyles();
+            Application.EnableRTLMirroring();
+    #endif
+            Application.Run(new As3apGui());
+#endif
 		}
 	}
 }

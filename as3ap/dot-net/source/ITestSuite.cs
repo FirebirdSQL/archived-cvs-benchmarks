@@ -68,10 +68,14 @@ namespace AS3AP.BenchMark
 		public TestResultEventArgs(
 			string		testName, 
 			object		testResult, 
-			TimeSpan	testTime, 
+			TimeSpan	testTime,  
 			bool		testFailed)
 		{
 			this.testName	= testName;
+			if (testResult == null)
+			{
+				testResult = 0;
+			}
 			this.testResult = testResult;
 			this.testTime	= testTime;
 			this.testFailed	= testFailed;
