@@ -80,7 +80,15 @@ public class BenchmarkSuite {
     public static void fillSuite(TestSuite suite) {
         // add tests to the test suite here
         
-        suite.addTest(new BenchmarkTest("testLoadData"));
+        suite.addTest(new LoadTest("testLoadData"));
+        
+        /*
+        suite.addTestSuite(OutputTest.class);
+        suite.addTestSuite(SelectTest.class);
+        suite.addTestSuite(JoinTest.class);
+        suite.addTestSuite(ProjectionTest.class);
+        suite.addTestSuite(AggregateTest.class );
+        */
     }
     
     public static void main(String[] args) {
