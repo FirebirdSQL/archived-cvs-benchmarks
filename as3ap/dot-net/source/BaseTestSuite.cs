@@ -2773,7 +2773,7 @@ namespace AS3AP.BenchMark
 			string	user		= "SYSDBA";
 			string	password	= "masterkey";
 			byte	dialect		= 3;
-			bool	forcedWrite = true;
+			bool	forcedWrite = configuration.ForcedWrites;
 			short	pageSize	= 4096;
 			string	charset		= "NONE";
 
