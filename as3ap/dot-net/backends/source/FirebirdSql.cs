@@ -131,7 +131,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch(Exception ex)
 			{
-				log.Error("btree error");
+				log.Error("btree error {0}", ex.Message);
 				throw ex;				
 			}
 		}
@@ -152,7 +152,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch(Exception ex)
 			{
-				log.Error("cluster error");
+				log.Error("cluster error {0}", ex.Message);
 				throw ex;
 			}
 		}
@@ -177,7 +177,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch(Exception ex)
 			{
-				log.Error("foreign key error");
+				log.Error("foreign key error {0}", ex.Message);
 				throw ex;
 			}
 		}
@@ -198,7 +198,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch (Exception ex)
 			{
-				log.Error("btree error");
+				log.Error("btree error {0}", ex.Message);
 				throw ex;
 			}
 		}
@@ -226,7 +226,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch (Exception ex)
 			{
-				log.Error("error create table");
+				log.Error("error create table {0}", ex.Message);
 				throw ex;
 			}
 		}
@@ -305,7 +305,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch (Exception ex)
 			{
-				log.Error("connection error");
+				log.Error("connection error {0}", ex.Message);
 				throw ex;
 			}
 		}
@@ -327,7 +327,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch (Exception ex)
 			{
-				log.Error("disconnect error");
+				log.Error("disconnect error {0}", ex.Message);
 				throw ex;
 			}
 		}
@@ -434,7 +434,7 @@ namespace AS3AP.BenchMark.Backends
 			catch (Exception ex)
 			{
 				TransactionRollback();
-				log.Error("load failed!!");
+				log.Error("load failed {0}", ex.Message);
 				throw ex;
 			}
 		}
@@ -885,9 +885,9 @@ namespace AS3AP.BenchMark.Backends
 						tm.AddDays(date_random);
 					}
 				}
-				catch (Exception)
+				catch (Exception ex)
 				{
-					log.Error("random date error");
+					log.Error("random date error {0}", ex.Message);
 				}
 
 				sqlCommand = new StringBuilder();
