@@ -4,6 +4,9 @@ AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 
 2003-02-07 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
+	* Added implementation of CreateData method ported from OSDB project, 
+	at this moment don´t work and needs lots of work.
+
 
 Added suggestions of Sean Layne:
 
