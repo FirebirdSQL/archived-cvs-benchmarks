@@ -1,5 +1,10 @@
-AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems.
+AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems.
 =============================================================================================
+
+
+2003-02-14 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+
+	* Added Neutral backend class ( needs testing )
 
 
 2003-02-13 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
@@ -7,7 +12,6 @@ AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 	* backends/source/FirebirdSql.cs:
 
 		- Give better error messages.
-
 
 
 2003-02-12 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
