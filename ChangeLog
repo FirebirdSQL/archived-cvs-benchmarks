@@ -1,3 +1,59 @@
+2003-08-07  skidder
+	* as3ap/dot-net/as3ap.BenchMark.build:
+		Make AS3AP benchmark build
+
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
+		Fix default connection string
+
+2003-08-07  carlosga_fb
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+			Added changes for run the benchmark using new 1.5 version of the .NET data Provider
+			Prior sources can be accesed using the TAG -> as3ap_dotnet_pre_15
+		
+			* Added database creation on the fly.
+		
+			* Fixed problem displaying the result of some lines ( Thanks to Nickolay Samofatov  )
+		
+			* Added config file for the GUI APP with configuration for the default config file that will
+			be loaded automatically.
+
+	* as3ap/dot-net/as3ap.BenchMark.build:
+		Updated build file.
+
+	* as3ap/dot-net/as3ap.BenchMark.build:
+		Updated build file to reflect latest changes
+
+	* as3ap/dot-net/CHANGELOG.txt:
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated CHANGELOG.TXT
+
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
+	* as3ap/dot-net/source/Sql87TestSuite.cs:
+	* as3ap/dot-net/source/Sql92TestSuite.cs:
+		* Removed Test from SQL92 test suite.
+		
+		*  Removed invalid log sentence.
+		
+		*  Added a new configuration parameter for ForcedWrites mode.
+
+	* as3ap/dot-net/source/GUI/As3apGui.cs:
+		* Added check box for new ForcedWrites configuration parameter.
+		
+		* Added Loading of default configuration file at start
+
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+		Make us of the new configuration parameter for the forced
+		writes mode.
+
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated changelog
+
+	* as3ap/dot-net/Build.NET.bat:
+		Added bat file for simplify the build process in Windows
+
 2003-05-17  rrokytskyy
 	* as3ap/Java/src/org/firebirdsql/benchmark/SingleUserSuite.java:
 		fixed the issue with database creation
