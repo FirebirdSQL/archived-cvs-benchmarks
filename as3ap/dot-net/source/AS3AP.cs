@@ -50,10 +50,9 @@ namespace AS3AP.BenchMark
 		private bool		runMultiUser	= false;
 
 		private int			iters			= 0;
-
 		private int			timeToRun		= 15;
-
 		private int			userNumber		= 0;
+		private long		dataSize		= 0;
 
 		#endregion
 
@@ -84,9 +83,10 @@ namespace AS3AP.BenchMark
 			runSingleUser	= Boolean.Parse(ConfigurationSettings.AppSettings["RunSingleUser"]);
 			runMultiUser	= Boolean.Parse(ConfigurationSettings.AppSettings["RunMultiUser"]);
 
-			userNumber		= Int32.Parse(ConfigurationSettings.AppSettings["UserNumber"]);
-
 			backendName		= ConfigurationSettings.AppSettings["Backend"];
+
+			userNumber		= Int32.Parse(ConfigurationSettings.AppSettings["UserNumber"]);
+			dataSize		= Int64.Parse(ConfigurationSettings.AppSettings["DataSize"]);			
 		}
 
 		public void Run()
@@ -177,7 +177,7 @@ namespace AS3AP.BenchMark
 		private int populateDataBase() 
 		{
 			timeIt("create_tables()"				, "create_tables");
-			timeIt("load()"							, "load");
+			timeIt("load()"							, "load", dataSize);
 			timeIt("create_idx_uniques_key_bt()"	, "create_idx_uniques_key_bt");
 			timeIt("create_idx_updates_key_bt()"	, "create_idx_updates_key_bt");
 			timeIt("create_idx_hundred_key_bt()"	, "create_idx_hundred_key_bt");

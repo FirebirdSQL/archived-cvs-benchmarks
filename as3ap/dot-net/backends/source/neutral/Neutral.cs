@@ -385,126 +385,6 @@ namespace AS3AP.BenchMark.Backends
 			}
 		}
 
-		public int Load()
-		{
-			try
-			{
-				TransactionBegin();
-				loadFile("updates");
-				TransactionCommit();
-
-				TransactionBegin();
-				loadFile("hundred");
-				TransactionCommit();
-				
-				TransactionBegin();
-				loadFile("tenpct");
-				TransactionCommit();
-				
-				TransactionBegin();
-				loadFile("uniques");
-				TransactionCommit();
-				
-				TransactionBegin();
-				loadTinyFile("tiny");
-				TransactionCommit();
-			}
-			catch (Exception ex)
-			{
-				TransactionRollback();
-				log.Error("load failed!!");
-				throw ex;
-			}
-
-			return -1;			
-		}
-
-		private void loadFile(string table)
-		{
-			StringBuilder	commandText = new StringBuilder();
-			StreamReader	stream		= null;
-			IDbCommand		command		= null;
-
-			commandText.AppendFormat("insert into {0} values (?,?,?,?,?,?,?,?,?,?)", table);
-
-			/* Crate command */
-			command = GetCommand(commandText.ToString());
-
-			/* Add parameters	*/
-			command.Parameters.Add(GetParameter("@col_key", "COL_KEY"));
-			command.Parameters.Add(GetParameter("@col_int", "COL_INT"));
-			command.Parameters.Add(GetParameter("@col_signed", "COL_SIGNED"));
-			command.Parameters.Add(GetParameter("@col_float", "COL_FLOAT"));
-			command.Parameters.Add(GetParameter("@col_double", "COL_DOUBLE"));
-			command.Parameters.Add(GetParameter("@col_decim", "COL_DECIM"));
-			command.Parameters.Add(GetParameter("@col_date", "COL_DATE"));
-			command.Parameters.Add(GetParameter("@col_code", "COL_CODE"));
-			command.Parameters.Add(GetParameter("@col_name", "COL_NAME"));
-			command.Parameters.Add(GetParameter("@col_address", "COL_ADDRESS"));
-
-			/* Prepare command execution	*/
-			command.Prepare();
-
-			stream = new StreamReader(
-					(System.IO.Stream)File.Open(
-												dataPath + "asap." + table	,
-												FileMode.Open				,
-												FileAccess.Read				,
-												FileShare.None));
-
-			while (stream.Peek() > -1)
-			{
-				string[] elements = stream.ReadLine().Split(',');
-			
-				for (int i = 0; i < 10; i++)
-				{
-					((IDataParameter)command.Parameters[i]).Value = elements[i];
-				}
-	
-				command.ExecuteNonQuery();
-			}
-
-			command.Dispose();
-			stream.Close();
-		}
-
-
-		private void loadTinyFile(string table)
-		{
-			StringBuilder	commandText = new StringBuilder();
-			StreamReader	stream		= null;
-			IDbCommand		command		= null;
-
-			// commandText.AppendFormat("insert into {0} values (?)", table);
-			commandText.AppendFormat("insert into {0} values (@col_key)", table);
-
-			/* Crate command */
-			command = GetCommand(commandText.ToString());
-
-			/* Add parameters	*/
-			command.Parameters.Add(GetParameter("@col_key", "COL_KEY"));
-
-			/* Prepare command execution	*/
-			command.Prepare();
-
-			stream = new StreamReader(
-				(System.IO.Stream)File.Open(
-				dataPath + "asap." + table	,
-				FileMode.Open				,
-				FileAccess.Read				,
-				FileShare.None));
-
-			while (stream.Peek() > -1)
-			{
-				string[] elements = stream.ReadLine().Split(',');
-							
-				((IDataParameter)command.Parameters[0]).Value = elements[0];
-	
-				command.ExecuteNonQuery();
-			}
-
-			stream.Close();
-		}
 
 		public void TransactionBegin()
 		{
@@ -519,6 +399,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 		}
 
+
 		public void TransactionCommit()
 		{
 			try
@@ -530,6 +411,7 @@ namespace AS3AP.BenchMark.Backends
 				throw ex;
 			}
 		}
+
 
 		public void TransactionRollback()
 		{
@@ -543,6 +425,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 		}
 
+
 		private IDbCommand GetCommand(string commandText)
 		{
 			IDbCommand command = (IDbCommand)Activator.CreateInstance(
@@ -555,6 +438,7 @@ namespace AS3AP.BenchMark.Backends
 			return command;
 		}
 
+
 		private IDataParameter GetParameter(string parameterName, string sourceColumn)
 		{
 			IDataParameter param = (IDataParameter)Activator.CreateInstance(
@@ -566,6 +450,7 @@ namespace AS3AP.BenchMark.Backends
 
 			return param;
 		}
+
 
 		public int CreateData(long dataSize)
 		{

@@ -93,7 +93,7 @@ namespace AS3AP.BenchMark
 			}
 			catch(Exception ex)
 			{
-				Console.WriteLine(ex.Message);
+				testFailed = true;
 			}
 
 			return returnValue;

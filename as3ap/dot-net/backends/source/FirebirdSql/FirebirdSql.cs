@@ -44,9 +44,9 @@ namespace AS3AP.BenchMark.Backends
 		
 		#endregion
 
-		private NumberFormatInfo numberFormat = new NumberFormatInfo();
-
 		#region FIELDS
+
+		private NumberFormatInfo numberFormat = new NumberFormatInfo();
 
 		private bool			autoCommit = true;
 		private IsolationLevel	isolation  = IsolationLevel.ReadCommitted;
@@ -387,140 +387,6 @@ namespace AS3AP.BenchMark.Backends
 			}
 		}
 
-		public int Load()
-		{
-			try
-			{
-				loadFile("updates");
-				loadFile("hundred");
-				loadFile("tenpct");			
-				loadFile("uniques");
-				loadTinyFile("tiny");
-			}
-			catch (Exception ex)
-			{
-				TransactionRollback();
-				log.Error("load failed!!");
-				throw ex;
-			}
-
-			return -1;			
-		}
-
-		private void loadFile(string table)
-		{
-			int				count		= 0;
-			StringBuilder	commandText = new StringBuilder();
-			StreamReader	stream		= null;
-			FbCommand		command		= null;
-
-			TransactionBegin();
-
-			commandText.AppendFormat(
-					"insert into {0} values (@col_key, @col_int, @col_signed, @col_float, @col_double, @col_decim, @col_date, @col_code, @col_name, @col_address)", table);
-
-			/* Crate command */
-			command = GetCommand(commandText.ToString());
-
-			/* Add parameters	*/
-			command.Parameters.Add("@col_key"	, FbType.Integer, "COL_KEY");
-			command.Parameters.Add("@col_int"	, FbType.Integer, "COL_INT");
-			command.Parameters.Add("@col_signed", FbType.Integer, "COL_SIGNED");
-			command.Parameters.Add("@col_float"	, FbType.Float	, "COL_FLOAT");
-			command.Parameters.Add("@col_double", FbType.Double	, "COL_DOUBLE");
-			command.Parameters.Add("@col_decim"	, FbType.Decimal, "COL_DECIM");
-			command.Parameters.Add("@col_date"	, FbType.Char	, "COL_DATE");
-			command.Parameters.Add("@col_code"	, FbType.Char	, "COL_CODE");
-			command.Parameters.Add("@col_name"	, FbType.Char	, "COL_NAME");
-			command.Parameters.Add("@col_address", FbType.VarChar, "COL_ADDRESS");
-
-			/* Prepare command execution	*/
-			command.Prepare();
-
-			stream = new StreamReader((System.IO.Stream)File.Open(
-										dataPath + "asap." + table	,
-										FileMode.Open				,
-										FileAccess.ReadWrite		,
-										FileShare.None), Encoding.ASCII);
-
-			while (stream.Peek() > -1)
-			{
-				string[] elements = stream.ReadLine().Split(',');
-			
-				for (int i = 0; i < 10; i++)
-				{
-					command.Parameters[i].Value = elements[i];
-				}
-	
-				command.ExecuteNonQuery();
-
-				if (count < 10000)
-				{
-					count++;
-				}
-				else
-				{
-					count = 0;
-
-					/* Commit work after 500 records	*/
-					TransactionCommit();
-
-					/* Begin a new transaction	*/
-					TransactionBegin();
-
-					/* Assign the new transaction to the command	*/
-					command.Transaction = transaction;
-				}
-			}
-
-			TransactionCommit();
-
-			command.Dispose();
-			stream.Close();
-		}
-
-
-		private void loadTinyFile(string table)
-		{
-			StringBuilder	commandText = new StringBuilder();
-			StreamReader	stream		= null;
-			FbCommand		command		= null;
-
-			TransactionBegin();
-
-			commandText.AppendFormat("insert into {0} values (?)", table);
-
-			/* Crate command */
-			command = GetCommand(commandText.ToString());
-
-			/* Add parameters	*/
-			command.Parameters.Add("@col_key", FbType.Integer, "COL_KEY");
-
-			/* Prepare command execution	*/
-			command.Prepare();
-
-			stream = new StreamReader(
-				(System.IO.Stream)File.Open(
-				dataPath + "asap." + table	,
-				FileMode.Open				,
-				FileAccess.Read				,
-				FileShare.None));
-			            
-			while (stream.Peek() > -1)
-			{
-				string[] elements = stream.ReadLine().Split(',');
-			
-				command.Parameters[0].Value = elements[0];
-	
-				command.ExecuteNonQuery();
-			}
-
-			TransactionCommit();
-
-			command.Dispose();
-			stream.Close();
-		}
-
 		public void TransactionBegin()
 		{
 			try
@@ -766,30 +632,27 @@ namespace AS3AP.BenchMark.Backends
 			adapter.Fill(dataset, "RANDOM_DATA");
 
 			rec = 0;
-			foreach (DataTable table in dataset.Tables)
-			{				
-				foreach (DataRow row in table.Rows)
-				{
-					sqlCommand = new StringBuilder();
+			foreach (DataRow row in dataset.Tables["RANDOM_DATA"].Rows)
+			{
+				sqlCommand = new StringBuilder();
 
-					col_key		= rec;		    	
-					col_signed	= Convert.ToInt64(row["sparse_signed"]);
-					col_double  = Convert.ToDouble(row["double_normal"]);
-					col_address = Convert.ToString(row["address"]);
-					col_float 	= Convert.ToSingle(col_double / 2.0);
-		    	
-					sqlCommand.AppendFormat(
-						numberFormat,
-						"INSERT INTO random_tenpct ("	+
+				col_key		= rec;		    	
+				col_signed	= Convert.ToInt64(row["sparse_signed"]);
+				col_double  = Convert.ToDouble(row["double_normal"]);
+				col_address = Convert.ToString(row["address"]);
+				col_float 	= Convert.ToSingle(col_double / 2.0);
+		    
+				sqlCommand.AppendFormat(
+					numberFormat,
+					"INSERT INTO random_tenpct ("	+
 						" col_key, col_signed, col_float, col_double, col_address)" +
-						" VALUES ({0}, {1}, {2}, {3}, '{4}')",
+					" VALUES ({0}, {1}, {2}, {3}, '{4}')",
 						col_key, col_signed, col_float, col_double, col_address);
 
-					dml(sqlCommand.ToString());
+				dml(sqlCommand.ToString());
 
-					rec++;
-				}
-		    }
+				rec++;
+			}
 			TransactionCommit();
 			command.Dispose();
 		    adapter.Dispose();
@@ -838,6 +701,7 @@ namespace AS3AP.BenchMark.Backends
 		    tenpct_key	= 0;
 		    
 			TransactionBegin();
+
 			command = new FbCommand(
 				"SELECT randomizer, sparse_key, dense_key, sparse_signed,"	+
 						" uniform100_dense, zipf10_float, zipf100_float,"	+
@@ -851,17 +715,7 @@ namespace AS3AP.BenchMark.Backends
 			dataset = new DataSet("RANDOM_DATA");
 			adapter.Fill(dataset, "RANDOM_DATA");
 
-			DataRowCollection rows = dataset.Tables["RANDOM_DATA"].Rows;
-
-			TransactionCommit();
-
-			command.Dispose();
-			adapter.Dispose();
-			dataset.Dispose();
-
-			TransactionBegin();
-
-			foreach (DataRow row in rows)
+			foreach (DataRow row in dataset.Tables["RANDOM_DATA"].Rows)
 			{
 				randomizer			= Convert.ToInt64(row["randomizer"]);
 				sparse_key			= Convert.ToInt64(row["sparse_key"]);
@@ -1017,37 +871,44 @@ namespace AS3AP.BenchMark.Backends
 					" FROM random_tenpct"									+
 					" WHERE col_key = " + tenpct_key.ToString());
 
-				CursorFetch();
+				if (CursorFetch())
+				{
+					col_signed		= Convert.ToInt64(Cursor["col_signed"]);
+					col_float		= Convert.ToSingle(Cursor["col_float"]);
+					col_double		= Convert.ToDouble(Cursor["col_double"]);
+					col_address		= Convert.ToString(Cursor["col_address"]);
 
-				col_signed		= Convert.ToInt64(Cursor["col_signed"]);
-				col_float		= Convert.ToSingle(Cursor["col_float"]);
-				col_double		= Convert.ToDouble(Cursor["col_double"]);
-				col_address		= Convert.ToString(Cursor["col_address"]);
+					CursorClose();
 
-				CursorClose();
+					col_name = hundred_unique_name[hundred_key % 10];
 
-				col_name = hundred_unique_name[hundred_key % 10];
+					sqlCommand = new StringBuilder();
+					sqlCommand.AppendFormat(
+						numberFormat,
+						"INSERT INTO tenpct ("							+
+						" col_key, col_int, col_signed,"				+
+						" col_float, col_double, col_decim,"			+
+						" col_date, col_code, col_name, col_address)"	+
+						" VALUES ({0},{1},{2},{3},{4},{5},'{6}','{7}','{8}','{9}')",
+						sparse_key, sparse_key, col_signed,
+						col_float, col_double, col_double,
+						tm, col_code, col_name, col_address);
 
-				sqlCommand = new StringBuilder();
-				sqlCommand.AppendFormat(
-					numberFormat,
-					"INSERT INTO tenpct ("							+
-					" col_key, col_int, col_signed,"				+
-					" col_float, col_double, col_decim,"			+
-					" col_date, col_code, col_name, col_address)"	+
-					" VALUES ({0},{1},{2},{3},{4},{5},'{6}','{7}','{8}','{9}')",
-					sparse_key, sparse_key, col_signed,
-					col_float, col_double, col_double,
-					tm, col_code, col_name, col_address);
-
-				dml(sqlCommand.ToString());
+					dml(sqlCommand.ToString());
+				}
+				else
+				{
+					CursorClose();
+				}
 			}
+			command.Dispose();
+			adapter.Dispose();
+			dataset.Dispose();
+
 			TransactionCommit();
 
-			TransactionBegin();
 		    ddl("drop table random_data");
 		    ddl("drop table random_tenpct");
-			TransactionCommit();
 
 		    return 0;
     	}

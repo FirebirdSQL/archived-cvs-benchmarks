@@ -55,7 +55,6 @@ namespace AS3AP.BenchMark.Backends
 		void DatabaseDisconnect();
 		void ddl(string stg);
 		void dml(string stg);
-		int  Load();
 		int CreateData(long dataSize);
 		void TransactionBegin();
 		void TransactionCommit();
