@@ -52,14 +52,14 @@ namespace AS3AP.BenchMark
 		private IBackend	backend;
 		private bool		doIndexes;
 		private bool		testFailed = false;
-		private int		testResult = 0;
+		private object		testResult = 0;
 		private int			tupleCount = 0;
 
 		#endregion
 
 		#region PROPERTIES
 
-		public int TestResult
+		public object TestResult
 		{
 			get { return testResult; }
 			set { testResult = value; }
@@ -301,7 +301,7 @@ namespace AS3AP.BenchMark
 
 				backend.CursorFetch();
 
-				testResult = backend.Cursor.GetInt32(0);
+				testResult = backend.Cursor.GetValue(0);
 			}
 			catch(Exception)
 			{
@@ -324,7 +324,7 @@ namespace AS3AP.BenchMark
 				
 				backend.CursorFetch();
 				
-				testResult = backend.Cursor.GetInt32(0);
+				testResult = backend.Cursor.GetValue(0);
 			}
 			catch (Exception)
 			{
@@ -389,7 +389,7 @@ namespace AS3AP.BenchMark
 
 				backend.CursorFetch();
 
-				testResult = backend.Cursor.GetInt32(0);
+				testResult = backend.Cursor.GetValue(0);
 			}
 			catch (Exception)
 			{
@@ -1558,7 +1558,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
 		public void mu_checkmod_100_rand() 
 		{
-			int count = 0;
+			object count = 0;
 			
 			lock (backend)
 			{
@@ -1572,7 +1572,7 @@ namespace AS3AP.BenchMark
 				
 					backend.CursorFetch();
 
-					count = backend.Cursor.GetInt32(0);
+					count = backend.Cursor.GetValue(0);
 				}
 				catch (Exception)
 				{
@@ -1585,7 +1585,7 @@ namespace AS3AP.BenchMark
 				}
 			}
 
-			if (count != 100) 
+			if (Convert.ToInt32(count) != 100) 
 			{
 				testFailed = true;
 			}
@@ -1616,7 +1616,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void mu_checkmod_100_seq() 
 		{
-			int count = 0;
+			object count = 0;
 
 			lock (backend)
 			{
@@ -1630,7 +1630,7 @@ namespace AS3AP.BenchMark
 				
 					backend.CursorFetch();
 				
-					count = backend.Cursor.GetInt32(0); 
+					count = backend.Cursor.GetValue(0); 
 				}
 				catch (Exception)
 				{
@@ -1643,7 +1643,7 @@ namespace AS3AP.BenchMark
 				}
 			}
 
-			if (count != 100) 
+			if (Convert.ToInt32(count) != 100) 
 			{
 				testFailed = true;
 			}

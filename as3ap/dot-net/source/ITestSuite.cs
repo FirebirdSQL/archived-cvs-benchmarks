@@ -34,7 +34,7 @@ namespace AS3AP.BenchMark
 	{
 		#region PROPERTIES
 
-		int TestResult
+		object TestResult
 		{
 			get;
 			set;

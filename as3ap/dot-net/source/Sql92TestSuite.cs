@@ -53,11 +53,10 @@ namespace AS3AP.BenchMark
 				
 				Backend.CursorFetch();
 
-				TestResult = Backend.Cursor.GetInt32(0);
+				TestResult = Backend.Cursor.GetValue(0);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				Console.WriteLine(ex.Message);
 				TestFailed = true;
 			}
 			finally

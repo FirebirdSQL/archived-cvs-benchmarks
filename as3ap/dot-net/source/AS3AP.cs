@@ -591,7 +591,7 @@ namespace AS3AP.BenchMark
 			MethodInfo	method		= null;
 			MethodInfo	thisMethod	= null;
 			long		clocks;
-			int			retval;
+			object		retval;
 
 			currentTest				= methodName;
 			testSuite.TestFailed	= false;
