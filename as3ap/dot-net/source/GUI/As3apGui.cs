@@ -37,6 +37,8 @@ namespace AS3AP.BenchMark
 {		
 	public class As3apGui : System.Windows.Forms.Form 
 	{
+		#region Fields
+
 		private BenchMarkConfiguration	configuration = new BenchMarkConfiguration();
 		private Thread					runThread;
 		private bool					isRunning = false;
@@ -98,8 +100,12 @@ namespace AS3AP.BenchMark
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.ComboBox cboHelperType;
 		private System.Windows.Forms.TabControl tabControl;
+		
+		#endregion
 
-		public As3apGui() 
+		#region Constructors
+
+		public As3apGui()
 		{
 			// Initialize component
 			this.InitializeComponent();
@@ -110,6 +116,10 @@ namespace AS3AP.BenchMark
 			// Load Default config file.
 			this.loadDefaultConfig();
 		}
+
+		#endregion
+
+		#region Designer Methods
 		
 		private void InitializeComponent() 
 		{
@@ -700,22 +710,24 @@ namespace AS3AP.BenchMark
 
 		}
 
-		#region UPDATE_METHODS
+		#endregion
+
+		#region Update Methods
 
 		private void updateControls()
 		{
 			// General TAB
-			chkCreateDB.Checked			= configuration.RunCreate;
-			chkCreateIndexes.Checked	= configuration.UseIndexes;
-			chkEnableLog.Checked		= configuration.EnableLogging;
-			chkEnableErrorLog.Checked	= configuration.EnableErrorLogging;
-			txtDataFilesPath.Text		= configuration.DataPath;
-			txtUserNumber.Text			= configuration.UserNumber.ToString();
-			txtRunSequence.Text			= configuration.RunSequence;
+			this.chkCreateDB.Checked		= configuration.RunCreate;
+			this.chkCreateIndexes.Checked	= configuration.UseIndexes;
+			this.chkEnableLog.Checked		= configuration.EnableLogging;
+			this.chkEnableErrorLog.Checked	= configuration.EnableErrorLogging;
+			this.txtDataFilesPath.Text		= configuration.DataPath;
+			this.txtUserNumber.Text			= configuration.UserNumber.ToString();
+			this.txtRunSequence.Text		= configuration.RunSequence;
 			
 			// ADO .NET Provider  TAB
-			txtConnectionString.Text	= configuration.ConnectionString;
-			switch (configuration.HelperType)
+			this.txtConnectionString.Text = this.configuration.ConnectionString;
+			switch (this.configuration.HelperType)
 			{
 				case DataHelperType.Firebird:
 					this.cboHelperType.SelectedItem = this.cboHelperType.Items[0];
@@ -735,82 +747,82 @@ namespace AS3AP.BenchMark
 			}
 
 			// RDBMS TAB
-			chkClusterIndexes.Checked	= configuration.SupportsClusteredIndexes;
-			chkHashIndexes.Checked		= configuration.SupportsHashIndexes;
-			chkForcedWrites.Checked		= configuration.ForcedWrites;
-			txtBTreeIndex.Text			= configuration.BtreeIndexStmt;
-			txtClusterIndex.Text		= configuration.ClusteredIndexStmt;
-			txtHashIndex.Text			= configuration.HashIndexStmt;
-			txtInteger.Text				= configuration.IntegerTypeName;
-			txtFloat.Text				= configuration.FloatTypeName;
-			txtDecimal.Text				= configuration.DecimalTypeName;
-			txtDouble.Text				= configuration.DoubleTypeName;
-			txtChar.Text				= configuration.CharTypeName;
-			txtVarchar.Text				= configuration.VarcharTypeName;
+			this.chkClusterIndexes.Checked	= this.configuration.SupportsClusteredIndexes;
+			this.chkHashIndexes.Checked		= this.configuration.SupportsHashIndexes;
+			this.chkForcedWrites.Checked	= this.configuration.ForcedWrites;
+			this.txtBTreeIndex.Text			= this.configuration.BtreeIndexStmt;
+			this.txtClusterIndex.Text		= this.configuration.ClusteredIndexStmt;
+			this.txtHashIndex.Text			= this.configuration.HashIndexStmt;
+			this.txtInteger.Text			= this.configuration.IntegerTypeName;
+			this.txtFloat.Text				= this.configuration.FloatTypeName;
+			this.txtDecimal.Text			= this.configuration.DecimalTypeName;
+			this.txtDouble.Text				= this.configuration.DoubleTypeName;
+			this.txtChar.Text				= this.configuration.CharTypeName;
+			this.txtVarchar.Text			= this.configuration.VarcharTypeName;
 		}
 
 		private void updateConfiguration()
 		{
 			// General TAB
-			configuration.RunCreate		= chkCreateDB.Checked;
-			configuration.UseIndexes	= chkCreateIndexes.Checked;
-			configuration.EnableLogging	= chkEnableLog.Checked;
-			configuration.EnableErrorLogging = chkEnableErrorLog.Checked;
-			configuration.DataPath		= txtDataFilesPath.Text;
-			configuration.UserNumber	= Convert.ToInt32(txtUserNumber.Text);
-			configuration.RunSequence	= txtRunSequence.Text;
+			this.configuration.RunCreate			= this.chkCreateDB.Checked;
+			this.configuration.UseIndexes			= this.chkCreateIndexes.Checked;
+			this.configuration.EnableLogging		= this.chkEnableLog.Checked;
+			this.configuration.EnableErrorLogging	= this.chkEnableErrorLog.Checked;
+			this.configuration.DataPath				= this.txtDataFilesPath.Text;
+			this.configuration.UserNumber			= Convert.ToInt32(this.txtUserNumber.Text);
+			this.configuration.RunSequence			= this.txtRunSequence.Text;
 
 			// ADO .NET Provider  TAB
-			configuration.ConnectionString	= txtConnectionString.Text;
-			switch (cboHelperType.Text)
+			this.configuration.ConnectionString	= this.txtConnectionString.Text;
+			switch (this.cboHelperType.Text)
 			{
 				case "Firebird":
-					configuration.HelperType = DataHelperType.Firebird;
+					this.configuration.HelperType = DataHelperType.Firebird;
 					break;
 
 				case "Oracle":
-					configuration.HelperType = DataHelperType.OracleClient;
+					this.configuration.HelperType = DataHelperType.OracleClient;
 					break;
 
 				case "PostgreSQL":
-					configuration.HelperType = DataHelperType.PgSqlClient;
+					this.configuration.HelperType = DataHelperType.PgSqlClient;
 					break;
 
 				case "Sql Server":
-					configuration.HelperType = DataHelperType.SqlClient;
+					this.configuration.HelperType = DataHelperType.SqlClient;
 					break;
 			}
 
 			// RDBMS TAB
-			configuration.SupportsClusteredIndexes	= chkClusterIndexes.Checked;
-			configuration.SupportsHashIndexes		= chkHashIndexes.Checked;
-			configuration.ForcedWrites				= chkForcedWrites.Checked;
-			configuration.BtreeIndexStmt			= txtBTreeIndex.Text;
-			configuration.ClusteredIndexStmt		= txtClusterIndex.Text;
-			configuration.HashIndexStmt				= txtHashIndex.Text;
-			configuration.IntegerTypeName			= txtInteger.Text;
-			configuration.FloatTypeName				= txtFloat.Text;
-			configuration.DecimalTypeName			= txtDecimal.Text;
-			configuration.DoubleTypeName			= txtDouble.Text;
-			configuration.CharTypeName				= txtChar.Text;
-			configuration.VarcharTypeName			= txtVarchar.Text;
+			this.configuration.SupportsClusteredIndexes	= this.chkClusterIndexes.Checked;
+			this.configuration.SupportsHashIndexes		= this.chkHashIndexes.Checked;
+			this.configuration.ForcedWrites				= this.chkForcedWrites.Checked;
+			this.configuration.BtreeIndexStmt			= this.txtBTreeIndex.Text;
+			this.configuration.ClusteredIndexStmt		= this.txtClusterIndex.Text;
+			this.configuration.HashIndexStmt			= this.txtHashIndex.Text;
+			this.configuration.IntegerTypeName			= this.txtInteger.Text;
+			this.configuration.FloatTypeName			= this.txtFloat.Text;
+			this.configuration.DecimalTypeName			= this.txtDecimal.Text;
+			this.configuration.DoubleTypeName			= this.txtDouble.Text;
+			this.configuration.CharTypeName				= this.txtChar.Text;
+			this.configuration.VarcharTypeName			= this.txtVarchar.Text;
 		}
 
 		#endregion
 
-		#region CONTROL_EVENTS
+		#region Event Handler Methods
 
 		private void As3apGui_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
-			if (isRunning)
+			if (this.isRunning)
 			{
-				stopBenchMark();
+				this.stopBenchMark();
 			}
 		}
 
 		private void cmdLoad_Click(object sender, System.EventArgs e)
 		{
-			OpenFileDialog	openDlg = new OpenFileDialog();
+			OpenFileDialog openDlg = new OpenFileDialog();
 
 			openDlg.Filter = "Archivos Config (*.config)|*.config|"	+
 				"All files (*.*)|*.*" ;
@@ -827,9 +839,8 @@ namespace AS3AP.BenchMark
 				{
 					FileInfo info = new FileInfo(fileName);
 
-					configuration = BenchMarkConfiguration.Load(info.FullName);
-
-					updateControls();
+					this.configuration = BenchMarkConfiguration.Load(info.FullName);
+					this.updateControls();
 				}
 				catch (Exception ex)
 				{
@@ -838,36 +849,9 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		private void loadDefaultConfig()
-		{
-			string defaultConfig = ConfigurationSettings.AppSettings["DefaultConfigFile"];
-
-			if (defaultConfig != null)
-			{
-				if (File.Exists(defaultConfig))
-				{
-					FileInfo info = new FileInfo(defaultConfig);
-
-					try
-					{
-						configuration = BenchMarkConfiguration.Load(info.FullName);
-
-						updateControls();
-
-						// Set the second TAB as the active
-						this.tabBenchmark.SelectedTab = this.tabRun;
-					}
-					catch (Exception ex)
-					{
-						MessageBox.Show(this, ex.Message, "Error loading config file");
-					}
-				}
-			}
-		}
-
 		private void cmdSave_Click(object sender, System.EventArgs e)
 		{
-			SaveFileDialog	saveDlg = new SaveFileDialog();
+			SaveFileDialog saveDlg = new SaveFileDialog();
 
 			saveDlg.Filter = "Archivos Config (*.config)|*.config|"	+
 				"All files (*.*)|*.*" ;
@@ -882,9 +866,8 @@ namespace AS3AP.BenchMark
 			{
 				FileInfo info = new FileInfo(fileName);
 
-				updateConfiguration();
-		
-				configuration.Save(info.FullName);
+				this.updateConfiguration();
+				this.configuration.Save(info.FullName);
 			}
 		}
 
@@ -896,33 +879,29 @@ namespace AS3AP.BenchMark
 		private void cmdRun_Click(object sender, System.EventArgs e)
 		{
 			// Update configuration before start execution
-			updateConfiguration();
+			this.updateConfiguration();
 
 			// Clear ListView contents
-			lstTestResults.Items.Clear();
+			this.lstTestResults.Items.Clear();
 
 			// Create a new thread
-			runThread = new Thread(new ThreadStart(this.runBenchMark));
+			this.runThread = new Thread(new ThreadStart(this.runBenchMark));
 
 			// Configure Thread
-			runThread.IsBackground = true;
+			this.runThread.IsBackground = true;
 
 			// Start Thread execution
-			runThread.Start();
+			this.runThread.Start();
 		}
 
 		private void cmdStop_Click(object sender, System.EventArgs e)
 		{
-			stopBenchMark();
+			this.stopBenchMark();
 		}
-
-		#endregion
-
-		#region EVENT_HANDLERS
 
 		private void OnTestResult(object Sender, TestResultEventArgs e)
 		{
-			lstTestResults.BeginUpdate();
+			this.lstTestResults.BeginUpdate();
 
 			ListViewItem item = new ListViewItem(e.TestName.Trim());
 
@@ -930,42 +909,72 @@ namespace AS3AP.BenchMark
 			item.SubItems.Add(e.TestTime.ToString());
 			item.SubItems.Add(e.TestFailed.ToString());
 			
-			lstTestResults.Items.Add(item);
-			
-			lstTestResults.EnsureVisible(lstTestResults.Items.Count - 1);
+			this.lstTestResults.Items.Add(item);
+			this.lstTestResults.EnsureVisible(lstTestResults.Items.Count - 1);
 
-			lstTestResults.EndUpdate();			
+			this.lstTestResults.EndUpdate();			
 		}
 
 		private void OnProgressMessage(object Sender, ProgressMessageEventArgs e)
 		{
-			showProgressMessage(e.Message);
+			this.showProgressMessage(e.Message);
 		}
 
 		#endregion
 
-		#region METHODS
+		#region Private Methods
+
+		private void loadDefaultConfig()
+		{
+			string defaultConfig = ConfigurationSettings.AppSettings["DefaultConfigFile"];
+
+			if (defaultConfig != null)
+			{
+				if (File.Exists(defaultConfig))
+				{
+					FileInfo info = new FileInfo(defaultConfig);
+
+					try
+					{
+						this.configuration = BenchMarkConfiguration.Load(
+							info.FullName);
+						this.updateControls();
+
+						// Set the second TAB as the active
+						this.tabBenchmark.SelectedTab = this.tabRun;
+					}
+					catch (Exception ex)
+					{
+						MessageBox.Show(this, ex.Message, "Error loading config file");
+					}
+				}
+			}
+		}
 
 		private void runBenchMark()
 		{
 			try
 			{
-				as3ap = new AS3AP(Path.GetDirectoryName(Application.ExecutablePath),
-					configuration);
+				this.as3ap = new AS3AP(
+					Path.GetDirectoryName(Application.ExecutablePath),
+					this.configuration);
 			
 				// Test Result Event handler
-				testResultHandler		= new TestResultEventHandler(OnTestResult);
-				as3ap.TestResult		+= testResultHandler;
+				this.testResultHandler	= new TestResultEventHandler(OnTestResult);
+				this.as3ap.TestResult	+= this.testResultHandler;
 
 				// Progress Message Event handler
-				progressMessageHandler	= new ProgressMessageEventHandler(OnProgressMessage);
-				as3ap.ProgressMessage	+= progressMessageHandler;
+				this.progressMessageHandler	= new ProgressMessageEventHandler(OnProgressMessage);
+				this.as3ap.ProgressMessage	+= this.progressMessageHandler;
 
-				isRunning = true;
+				this.isRunning = true;
 
-				updateButtonState();
+				this.updateButtonState();
 
-				as3ap.Run();
+				this.as3ap.Run();
+			}
+			catch (ThreadAbortException)
+			{
 			}
 			catch (Exception ex)
 			{
@@ -976,63 +985,67 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				if (testResultHandler != null)
+				if (this.testResultHandler != null)
 				{
-					as3ap.TestResult	-= testResultHandler;
+					this.as3ap.TestResult -= testResultHandler;
 				}
-				if (progressMessageHandler != null)
+				if (this.progressMessageHandler != null)
 				{
-					as3ap.ProgressMessage -= progressMessageHandler;
+					this.as3ap.ProgressMessage -= progressMessageHandler;
 				}
-				as3ap		= null;
-				isRunning	= false;
+				this.as3ap.Dispose();
+				this.as3ap		= null;
+				this.isRunning	= false;
 				
-				updateButtonState();
+				this.updateButtonState();
 			}
 		}
 
 		private void stopBenchMark()
 		{
-			showProgressMessage("Stopping benchmark");
+			this.showProgressMessage("Stopping benchmark");
 
-			if (testResultHandler != null)
+			if (this.testResultHandler != null)
 			{
-				as3ap.TestResult	-= testResultHandler;
+				this.as3ap.TestResult -= testResultHandler;
 			}
-			if (progressMessageHandler != null)
+			if (this.progressMessageHandler != null)
 			{
-				as3ap.ProgressMessage -= progressMessageHandler;
+				this.as3ap.ProgressMessage -= progressMessageHandler;
 			}
 				
-			updateButtonState();
+			this.updateButtonState();
 			
-			runThread.Interrupt();
-			runThread.Abort();
-			runThread = null;
+			this.runThread.Abort();
+			this.runThread.Join();
+			this.runThread = null;
 
-			as3ap.Dispose();
-			as3ap = null;
+			if (this.as3ap != null)
+			{
+				this.as3ap.Dispose();
+				this.as3ap = null;
+			}
 
-			isRunning = false;
+			this.isRunning = false;
 
-			showProgressMessage("Stopped");
+			this.showProgressMessage("Stopped");
 			
-			updateButtonState();
+			this.updateButtonState();
 		}
 
 		private void updateButtonState()
 		{
 			// Update button state
-			cmdRun.Enabled	= !isRunning;
-			cmdStop.Enabled	= isRunning;
+			this.cmdRun.Enabled		= !this.isRunning;
+			this.cmdStop.Enabled	= this.isRunning;
 
 			this.Refresh();
 		}
 
 		private void showProgressMessage(string message)
 		{
-			lblProgressMessage.Text = message;
-			lblProgressMessage.Refresh();
+			this.lblProgressMessage.Text = message;
+			this.lblProgressMessage.Refresh();
 		}
 
 		#endregion
