@@ -200,7 +200,7 @@ namespace AS3AP.BenchMark.Backends
 
 			try
 			{
-				// Firebird dont have clustered indexes
+				// Firebird doesn't have clustered indexes
 				ddl(commandText.ToString());
 			}
 			catch (Exception ex)
@@ -304,7 +304,7 @@ namespace AS3AP.BenchMark.Backends
 
 		public void DatabaseCreate(string dName)
 		{
-			// ADO.NET interfaces dont support database creation
+			// ADO.NET interfaces don't support database creation
 		}
 
 		public void DatabaseDisconnect()
