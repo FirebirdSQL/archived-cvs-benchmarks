@@ -83,6 +83,25 @@ namespace AS3AP.BenchMark
 
 		#region METHODS
 
+		public void setup_database()
+		{
+			try
+			{
+				// Remove reportview
+				backend.ddl("drop view reportview");
+
+				// Remove saveupdates table
+				backend.ddl("drop table saveupdates");
+
+				// Create indexes for updates table				
+				create_idx_updates_double_bt();
+				create_idx_updates_decim_bt();
+			}
+			catch (Exception)
+			{
+			}
+		}
+
 		public int load(long dataSize)
 		{
 			int returnValue = 0;
