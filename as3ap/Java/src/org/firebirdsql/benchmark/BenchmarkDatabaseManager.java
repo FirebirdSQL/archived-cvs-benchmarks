@@ -20,12 +20,14 @@
 package org.firebirdsql.benchmark;
 
 import java.sql.*;
-
+import javax.sql.DataSource;
 import javax.resource.ResourceException;
-
 import org.firebirdsql.gds.*;
 import org.firebirdsql.jdbc.FBSQLException;
 import org.firebirdsql.jdbc.FBSimpleDataSource;
+import org.firebirdsql.pool.FBConnectionPoolConfiguration;
+import org.firebirdsql.pool.FBConnectionPoolDataSource;
+import org.firebirdsql.pool.SimpleDataSource;
 import org.firebirdsql.jdbc.FBWrappingDataSource;
 
 /**
@@ -34,13 +36,7 @@ import org.firebirdsql.jdbc.FBWrappingDataSource;
  */
 public class BenchmarkDatabaseManager {
     
-    private static final boolean USE_POOLING = true;
-    
-    private String database;
-    private String userName;
-    private String password;
-    
-    private FBSimpleDataSource dataSource;
+    private DataSource dataSource;
     
     /**
      * Create instance of this class. 
@@ -58,36 +54,83 @@ public class BenchmarkDatabaseManager {
      * 
      * @throws SQLException if database cannot be created.
      */
-    public BenchmarkDatabaseManager(String database, String userName, 
-        String password, boolean create) throws SQLException 
+    public BenchmarkDatabaseManager(boolean create) throws SQLException 
     {
-        this.database = database;
-        this.userName = userName;
-        this.password = password;
-        
         if (create)
             createDatabase();
-            
-        if (USE_POOLING)
-            try {
-				dataSource = new FBWrappingDataSource();
-			} catch (ResourceException e) {
-				throw new FBSQLException(e);
-			}
-        else
-            dataSource = new FBSimpleDataSource();
-            
-        dataSource.setDatabase(database);
-        dataSource.setUserName(userName);
-        dataSource.setPassword(password);
         
-        if (USE_POOLING) {
-            FBWrappingDataSource pool = (FBWrappingDataSource)dataSource;
-            
-            pool.setPooling(true);
-            pool.setMaxSize(20);
+        switch(getConfig().getPoolingType()) {
+            case BenchmarkConfiguration.NO_POOLING :
+                dataSource = getNoPoolingDataSource();
+                break;
+                
+            case BenchmarkConfiguration.CONNECTION_POOLING :
+                dataSource = getConnectionPoolingDataSource();
+                break;
+                
+            case BenchmarkConfiguration.STATEMENT_POOLING :
+                dataSource = getStatementPoolingDataSource();
+                break;
+                
+            default :
+                throw new SQLException("Pooling type unknown.");
         }
     }
+    
+    public BenchmarkConfiguration getConfig() {
+        return BenchmarkConfiguration.getConfiguration();
+    }
+    
+    protected DataSource getNoPoolingDataSource() throws SQLException {
+        FBSimpleDataSource ds = new FBSimpleDataSource();
+        
+        try {
+            ds.setTpbMapping(getConfig().getTpbMapping());
+            ds.setDatabase(getConfig().getDatabasePath());
+            ds.setUserName(getConfig().getUserName());
+            ds.setPassword(getConfig().getPassword());
+        } catch(ResourceException ex) {
+            throw new FBSQLException(ex);
+        }
+        
+        return ds;
+    }
+
+    protected DataSource getConnectionPoolingDataSource() throws SQLException {
+        try {
+            FBWrappingDataSource ds = new FBWrappingDataSource();
+        
+            ds.setTpbMapping(getConfig().getTpbMapping());
+            ds.setDatabase(getConfig().getDatabasePath());
+            ds.setUserName(getConfig().getUserName());
+            ds.setPassword(getConfig().getPassword());
+            ds.setPooling(true);
+            ds.setMaxSize(getConfig().getMaxConnections());
+        
+            return ds;
+
+        } catch(ResourceException ex) {
+            throw new FBSQLException(ex);
+        }
+    }
+    
+    protected DataSource getStatementPoolingDataSource() throws SQLException {
+        FBConnectionPoolConfiguration config = new FBConnectionPoolConfiguration();
+        config.setJdbcUrl("jdbc:firebirdsql:" + getConfig().getDatabasePath());
+        config.setProperty("user", getConfig().getUserName());
+        config.setProperty("password", getConfig().getPassword());
+        config.setProperty(
+            "tpb_mapping",
+            getConfig().getTpbMapping()
+        );
+        config.setMaxConnections(getConfig().getMaxConnections());
+        
+        FBConnectionPoolDataSource pool = new FBConnectionPoolDataSource(config);
+        pool.start();
+        
+        return new SimpleDataSource(pool);
+    }
+
     
     /**
      * Create database that was specified in a constructor. This method uses
@@ -120,18 +163,18 @@ public class BenchmarkDatabaseManager {
 
         dpb.append(GDSFactory.newClumplet(
             ISCConstants.isc_dpb_user_name, 
-            userName)
+            getConfig().getUserName())
         );
         
         dpb.append(GDSFactory.newClumplet(
             ISCConstants.isc_dpb_password, 
-            password)
+            getConfig().getPassword())
         );
         
         isc_db_handle db = gds.get_new_isc_db_handle();
         
         try {
-            gds.isc_create_database(database, db, dpb);
+            gds.isc_create_database(getConfig().getDatabasePath(), db, dpb);
             gds.isc_detach_database(db);
         } catch(GDSException ex) {
             throw new FBSQLException(ex);
