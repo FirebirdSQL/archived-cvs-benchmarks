@@ -100,7 +100,7 @@ public class MultiUserSuite extends BenchmarkSuite {
             getCheckSuite().run(testResult);
             
             // Step 6
-            new LoadTest("testRecoverUpdates").run(testResult);
+            new LoadTest("testRestoreUpdates").run(testResult);
             
             // Step 7
             getFixture().recreateTempUpdates();
