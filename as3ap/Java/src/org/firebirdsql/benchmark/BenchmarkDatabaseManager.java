@@ -193,7 +193,7 @@ public class BenchmarkDatabaseManager {
                 if (stmt != null)
                     stmt.close();
             } finally {
-                connection.close();
+                releaseConnection(connection);
             }
         }
     }
