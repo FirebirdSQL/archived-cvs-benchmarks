@@ -116,7 +116,7 @@ namespace AS3AP.BenchMark
 
 			currentTest = "Counting tuples";
 			testSuite.Backend.DatabaseConnect();
-			if ((testSuite.TupleCount = testSuite.CountTuples("updates")) == 0)
+			if ((testSuite.TupleCount = testSuite.CountRows("updates")) == 0)
 			{
 				log.Simple("empty database -- empty results");
 				return;
@@ -172,7 +172,7 @@ namespace AS3AP.BenchMark
 							/* Start of the multi-user test */
 							currentTest = "Preparing multi-user test";
 							testSuite.Backend.DatabaseConnect();
-							if (testSuite.TupleCount != testSuite.CountTuples("updates")) 
+							if (testSuite.TupleCount != testSuite.CountRows("updates")) 
 							{
 								log.Simple("Invalid data ( skipping multi-user test )");
 							}
@@ -202,9 +202,11 @@ namespace AS3AP.BenchMark
 		{
 			testSuite.Backend.DatabaseCreate("AS3AP");
 
+			testSuite.Backend.DataSize = dataSize;
+
 			testSuite.Backend.DatabaseConnect();
 			timeIt("create_tables");
-			timeIt("load", dataSize);
+			timeIt("createData");
 			timeIt("create_idx_uniques_key_bt");
 			timeIt("create_idx_updates_key_bt");
 			timeIt("create_idx_hundred_key_bt");
@@ -265,7 +267,7 @@ namespace AS3AP.BenchMark
 			timeIt("proj_100");
 			timeIt("join_4_ncl");
 			timeIt("proj_10pct");
-			timeIt("sel_1_ncl", IsolationLevel.ReadCommitted);
+			timeIt("sel_1_ncl");
 			timeIt("join_2_ncl");
 			timeIt("integrity_test");
 			timeIt("drop_updates_keys");
@@ -489,18 +491,18 @@ namespace AS3AP.BenchMark
 
 			startTime = DateTime.Now.Ticks;
 
-			timeIt("o_mode_tiny"		, IsolationLevel.RepeatableRead);
-			timeIt("o_mode_100k"		, IsolationLevel.RepeatableRead);
-			timeIt("sel_1_ncl"			, IsolationLevel.ReadUncommitted);
-			timeIt("sel_1_ncl"			, IsolationLevel.ReadCommitted);
-			timeIt("sel_1_ncl"			, IsolationLevel.RepeatableRead);
+			timeIt("o_mode_tiny");
+			timeIt("o_mode_100k");
+			timeIt("sel_1_ncl");
+			timeIt("sel_1_ncl");
+			timeIt("sel_1_ncl");
 			timeIt("agg_simple_report");
-			timeIt("mu_sel_100_seq"		, IsolationLevel.RepeatableRead);
-			timeIt("mu_sel_100_rand"	, IsolationLevel.RepeatableRead);
-			timeIt("mu_mod_100_seq"		, IsolationLevel.RepeatableRead);
-			timeIt("mu_mod_100_rand"	, IsolationLevel.RepeatableRead);
-			timeIt("mu_unmod_100_seq"	, IsolationLevel.RepeatableRead);
-			timeIt("mu_unmod_100_rand"	, IsolationLevel.RepeatableRead);
+			timeIt("mu_sel_100_seq");
+			timeIt("mu_sel_100_rand");
+			timeIt("mu_mod_100_seq");
+			timeIt("mu_mod_100_rand");
+			timeIt("mu_unmod_100_seq");
+			timeIt("mu_unmod_100_rand");
 
 			testSuite.Backend.DatabaseDisconnect();
 
@@ -567,7 +569,7 @@ namespace AS3AP.BenchMark
 		}
 
 
-		private void timeIt(string methodName, params object[] parameters) 
+		private void timeIt(string methodName) 
 		{
 			MethodInfo	method		= null;
 			MethodInfo	thisMethod	= null;
@@ -582,15 +584,19 @@ namespace AS3AP.BenchMark
 			{
 				thisMethod = this.GetType().GetMethod(methodName, BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.DeclaredOnly);
 			}
+			
+			// Set IsolationLevel for test execution
+			testSuite.SetIsolationLevel(methodName);
+
 			clocks = DateTime.Now.Ticks;
 
 			if (method != null)
 			{
-				method.Invoke(testSuite, parameters);
+				method.Invoke(testSuite, null);
 			}
 			else
 			{
-				thisMethod.Invoke(this, parameters);
+				thisMethod.Invoke(this, null);
 			}
 			retval = testSuite.TestResult;
 
@@ -612,11 +618,10 @@ namespace AS3AP.BenchMark
 			else
 			{
 				logMessage.AppendFormat(
-							"{0}\t{1} seconds\treturn value = {2} \t\t with {3}",
+							"{0}\t{1} seconds\treturn value = {2} \t\t",
 							methodName + "()"							,
 							Math.Round((double)clocks/ticksPerSecond, 4),
-							retval										,
-							parameters.Length > 0 ? parameters[0] : "nothing");
+							retval);
 			}
 
 			log.Simple(logMessage.ToString());

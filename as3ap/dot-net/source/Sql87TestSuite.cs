@@ -23,6 +23,7 @@
 //
 
 using System;
+using System.Data;
 
 namespace AS3AP.BenchMark
 {
@@ -38,6 +39,7 @@ namespace AS3AP.BenchMark
 
 		#region METHODS
 
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void agg_simple_report()
 		{
 			try
@@ -67,7 +69,7 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_2() 
 		{
 			int	count = 0;
@@ -100,7 +102,7 @@ namespace AS3AP.BenchMark
 			TestResult = count;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_2_cl() 
 		{
 			int	count = 0;
@@ -133,7 +135,7 @@ namespace AS3AP.BenchMark
 			TestResult = count;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_2_ncl() 
 		{
 			int count = 0;
@@ -166,7 +168,7 @@ namespace AS3AP.BenchMark
 			TestResult = count;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_3_cl() 
 		{
 			int	count = 0;
@@ -201,7 +203,7 @@ namespace AS3AP.BenchMark
 			TestResult = count;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_3_ncl() 
 		{
 			int count = 0;
@@ -236,7 +238,7 @@ namespace AS3AP.BenchMark
 			TestResult = count;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_4_cl() 
 		{
 			int count = 0;
@@ -271,7 +273,7 @@ namespace AS3AP.BenchMark
 			TestResult = count;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_4_ncl() 
 		{
 			int count=0;

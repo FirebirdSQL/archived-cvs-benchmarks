@@ -58,9 +58,17 @@ namespace AS3AP.BenchMark.Backends
 		private FbDataReader	cursor;
 		private FbCommand		cmdCursor;	
 
+		private long			dataSize;
+
 		#endregion
 
 		#region PROPERTIES
+
+		public long DataSize
+		{
+			get { return dataSize; }
+			set { dataSize = value; }
+		}
 
 		IDataReader IBackend.Cursor
 		{
@@ -392,7 +400,7 @@ namespace AS3AP.BenchMark.Backends
 			return new FbCommand(commandText, connection, transaction);
 		}
 
-		public int CreateData(long dataSize)
+		public void CreateData()
 		{
 			string col_address				= String.Empty;
 			string col_code					= String.Empty;
@@ -867,8 +875,6 @@ namespace AS3AP.BenchMark.Backends
 			ExecuteStatement("drop table random_data");
 			ExecuteStatement("drop table random_tenpct");
 			TransactionCommit();
-
-			return 0;
 		}
 
 		#endregion

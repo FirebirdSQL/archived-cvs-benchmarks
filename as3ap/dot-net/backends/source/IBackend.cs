@@ -40,6 +40,12 @@ namespace AS3AP.BenchMark.Backends
 			get;
 		}
 
+		long DataSize
+		{
+			get;
+			set;
+		}
+
 		void CreateIndexBtree(string indexName, string tableName, string fields);
 		void CreateIndexCluster(string indexName, string tableName, string fields);
 		void CreateForeignKey(string foreignTable, string constraintName, 
@@ -55,7 +61,7 @@ namespace AS3AP.BenchMark.Backends
 		void DatabaseCreate(string databaseName);
 		void DatabaseDisconnect();
 		void ExecuteStatement(string statement);
-		int CreateData(long dataSize);
+		void CreateData();
 		void TransactionBegin();
 		void TransactionCommit();
 		void TransactionRollback();

@@ -118,7 +118,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region METHODS
+		#region MISC_METHODS
 
 		public void setup_database()
 		{
@@ -143,19 +143,21 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		public void load(long dataSize)
+		public void CreateData()
 		{
 			try
 			{
-				testResult = backend.CreateData(dataSize);
+				backend.CreateData();
 			}
 			catch(Exception)
 			{
 				testFailed = true;
 			}
+
+			testResult = 0;
 		}
 
-		public int CountTuples(string table)
+		public int CountRows(string table)
 		{
 			StringBuilder	commandText = new StringBuilder();
 			int				count = 0;
@@ -177,7 +179,7 @@ namespace AS3AP.BenchMark
 				testFailed = true;
 			}
 			finally
-			{				
+			{
 				backend.CursorClose();
 				backend.TransactionCommit();
 			}
@@ -185,6 +187,31 @@ namespace AS3AP.BenchMark
 			return count;
 		}
 
+		public void SetIsolationLevel(string methodName)
+		{
+			IsolationLevel			isolationLevel = IsolationLevel.ReadCommitted;
+			IsolationLevelAttribute att;
+
+			try
+			{
+				att = (IsolationLevelAttribute)Attribute.GetCustomAttribute(GetType().GetMethod(methodName),
+					typeof(IsolationLevelAttribute));
+				isolationLevel = att.IsolationLevel;
+			}
+			catch
+			{				
+			}
+			finally
+			{
+				backend.Isolation = isolationLevel;
+			}
+		}
+
+		#endregion
+
+		#region SINGLE_USER_TESTS_METHODS
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void agg_create_view() 
 		{
 			try
@@ -209,7 +236,7 @@ namespace AS3AP.BenchMark
 			testResult = 0; 
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void agg_func() 
 		{		
 			int count = 0;
@@ -237,7 +264,7 @@ namespace AS3AP.BenchMark
 			testResult = count; 
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void agg_info_retrieval() 
 		{
 			try
@@ -268,7 +295,7 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void agg_scal() 
 		{	
 			try
@@ -292,7 +319,7 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void agg_subtotal_report() 
 		{
 			int count = 0;
@@ -327,7 +354,7 @@ namespace AS3AP.BenchMark
 			testResult = count;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void agg_total_report() 
 		{			
 			try
@@ -357,7 +384,7 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void bulk_append() 
 		{
 			try
@@ -374,7 +401,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void bulk_delete() 
 		{
 			try
@@ -391,7 +418,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void bulk_modify() 
 		{
 			try
@@ -410,7 +437,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void bulk_save()
 		{
 			try
@@ -430,7 +457,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_hundred_code_h() 
 		{
 			if (doIndexes) 
@@ -450,7 +477,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_hundred_foreign() 
 		{
 			if (doIndexes) 
@@ -472,7 +499,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_hundred_key_bt() 
 		{
 			if (doIndexes) 
@@ -492,7 +519,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_code_h() 
 		{
 			if (doIndexes) 
@@ -512,7 +539,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_decim_bt() 
 		{
 			if (doIndexes) 
@@ -532,7 +559,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_double_bt() 
 		{
 			if (doIndexes) 
@@ -552,7 +579,7 @@ namespace AS3AP.BenchMark
 			testResult = 0; 
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_float_bt() 
 		{
 			if (doIndexes) 
@@ -572,7 +599,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_int_bt() 
 		{
 			if (doIndexes) 
@@ -592,6 +619,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_key_bt() 
 		{
 			if (doIndexes) 
@@ -611,7 +639,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_key_code_bt() 
 		{
 			if (doIndexes) 
@@ -631,7 +659,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_name_h() 
 		{
 			if (doIndexes) 
@@ -651,7 +679,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_signed_bt() 
 		{
 			if (doIndexes) 
@@ -671,7 +699,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tiny_key_bt() 
 		{
 			if (doIndexes) 
@@ -691,7 +719,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_uniques_code_h() 
 		{
 			if (doIndexes) 
@@ -711,7 +739,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		} 
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_uniques_key_bt() 
 		{
 			if (doIndexes) 
@@ -731,7 +759,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		} 
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_code_h() 
 		{
 			if (doIndexes) 
@@ -751,7 +779,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_decim_bt() 
 		{
 			if (doIndexes) 
@@ -771,7 +799,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_double_bt() 
 		{
 			if (doIndexes) 
@@ -790,7 +818,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		} 
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_int_bt() 
 		{
 			if (doIndexes) 
@@ -810,7 +838,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		} 
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_key_bt() 
 		{
 			if (doIndexes) 
@@ -830,7 +858,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_tables() 
 		{
 			try
@@ -853,7 +881,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void drop_updates_keys() 
 		{
 			if (doIndexes) 
@@ -876,7 +904,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void integrity_test() 
 		{
 			try
@@ -941,444 +969,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
-		public void o_mode_tiny(IsolationLevel isolationLevel)
-		{	
-			int count = 0;
-
-			lock (backend)
-			{
-				try
-				{
-					backend.Isolation = isolationLevel;
-
-					backend.TransactionBegin();
-					backend.CursorOpen("select * from tiny");
-				
-					while (backend.CursorFetch())
-					{
-						count++;
-					}
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
-				finally
-				{
-					backend.CursorClose();
-					backend.TransactionCommit();
-					backend.Isolation = IsolationLevel.ReadCommitted;
-				}
-			}
-
-			testResult = count;
-		}
-
-
-		public void o_mode_100k(IsolationLevel isolationLevel)
-		{
-			int count = 0;
-
-			lock (backend)
-			{
-				try
-				{
-					backend.Isolation = isolationLevel;
-
-					backend.TransactionBegin();
-					backend.CursorOpen("select * from hundred where col_key<=1000");
-				
-					while (backend.CursorFetch())
-					{
-						count++;
-					}
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
-				finally
-				{
-					backend.CursorClose();
-					backend.TransactionCommit();
-					backend.Isolation = IsolationLevel.ReadCommitted;
-				}
-			}
-
-			testResult = count;
-		}
-
-
-		public void mu_checkmod_100_rand() 
-		{
-			int count = 0;
-			
-			lock (backend)
-			{
-				try
-				{
-					backend.TransactionBegin();
-					backend.CursorOpen(
-						"select count(*) from updates, sel100rand "		+
-						"where updates.col_int=sel100rand.col_int "		+
-						"and not updates.col_double=sel100rand.col_double");
-				
-					backend.CursorFetch();
-
-					count = backend.Cursor.GetInt32(0);
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
-				finally
-				{					
-					backend.CursorClose();
-					backend.TransactionCommit();
-				}
-			}
-
-			if (count != 100) 
-			{
-				testFailed = true;
-			}
-
-			testResult = count;
-		}
-
-		public void mu_drop_sel100_rand() 
-		{
-			lock (backend)
-			{
-				try
-				{
-					backend.TransactionBegin();
-					backend.ExecuteStatement("drop table sel100rand");
-					backend.TransactionCommit();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
-			}
-
-			testResult = 0;
-		}
-
-		public void mu_checkmod_100_seq() 
-		{
-			int count = 0;
-
-			lock (backend)
-			{
-				try
-				{
-					backend.TransactionBegin();
-					backend.CursorOpen(
-						"select count(*) from updates, sel100seq "		+
-						"where updates.col_key=sel100seq.col_key "		+
-						"and not updates.col_double=sel100seq.col_double");
-				
-					backend.CursorFetch();
-				
-					count = backend.Cursor.GetInt32(0); 
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
-				finally
-				{
-					backend.CursorClose();
-					backend.TransactionCommit();
-				}
-			}
-
-			if (count != 100) 
-			{
-				testFailed = true;
-			}
-
-			testResult = count;
-		}
-
-
-		public void mu_drop_sel100_seq() 
-		{
-			lock (backend)
-			{
-				try
-				{
-					backend.TransactionBegin();
-					backend.ExecuteStatement("drop table sel100seq");
-					backend.TransactionCommit();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
-			}
-
-			testResult = 0;
-		}
-
-
-		public void mu_ir_select()
-		{
-			StringBuilder	lineBuf = new StringBuilder();
-			int				count = 0;
-			int				r;
-				
-			Random randNumber = new Random(unchecked((int)DateTime.Now.Ticks));
-			r = 1;
-
-			lock (backend)
-			{
-				try
-				{
-					while (r == 1)
-					{
-						r = randNumber.Next(0, tupleCount);   // there IS no key 1
-					}
-			
-					lineBuf.AppendFormat(
-						"select col_key, col_code, col_date, col_signed, col_name "	+
-						"from updates where col_key = {0}",	r);
-
-					backend.TransactionBegin();
-					backend.CursorOpen(lineBuf.ToString());
-					if (!backend.CursorFetch())
-					{
-						testFailed = true;
-						count = 0;
-					}
-					else
-					{
-						count++;
-					}
-				}	
-				catch (Exception)
-				{
-					testFailed = true;
-				}
-				finally
-				{
-					backend.CursorClose();
-					backend.TransactionCommit();
-				}
-			}
-
-			testResult = count;
-		}
-
-
-		public void mu_mod_100_rand(IsolationLevel isolationLevel) 
-		{
-			int count = 0;
-
-			lock (backend)
-			{
-				try
-				{
-					backend.Isolation = isolationLevel;
-
-					backend.TransactionBegin();
-					backend.ExecuteStatement("update updates "	+
-						"set col_double=col_double+100000000 "	+
-						"where col_int between 1001 and 1100");
-					backend.TransactionCommit();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
-				finally
-				{
-					backend.Isolation = IsolationLevel.ReadCommitted;
-				}
-			}
-
-			testResult = count;
-		}
-
-
-		public void mu_mod_100_seq(IsolationLevel isolationLevel) 
-		{
-			lock (backend)
-			{
-				try
-				{
-					backend.Isolation = isolationLevel;
-
-					backend.TransactionBegin();					
-					backend.ExecuteStatement("update updates "		+
-						"set col_double = col_double+100000000 "	+
-						"where col_key between 1001 and 1100");
-					backend.TransactionRollback();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
-				finally
-				{
-					backend.Isolation = IsolationLevel.ReadCommitted;
-				}
-			}
-
-			testResult = 0;
-		}
-
-
-		public void mu_oltp_update()
-		{
-			StringBuilder   lineBuf = new StringBuilder();
-			int				r;
-
-			lock (backend)
-			{
-				try
-				{
-					Random randomNumber = new Random(unchecked((int)DateTime.Now.Ticks));
-					r = 1;
-					while (r == 1)
-					{
-						r = randomNumber.Next(0, tupleCount);    // There IS no col_key 1
-					}	
-
-					lineBuf.AppendFormat(
-						"update updates set col_signed = col_signed + 1 " +
-						"where col_key = {0}", r);
-
-					backend.TransactionBegin();
-					backend.ExecuteStatement(lineBuf.ToString());
-					backend.TransactionCommit();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
-			}
-
-			testResult = 0;
-		}
-
-
-		public void mu_sel_100_rand(IsolationLevel isolationLevel) 
-		{
-			lock (backend)
-			{
-				try
-				{
-					backend.Isolation = isolationLevel;
-
-					backend.CreateTable("sel100rand", baseTableStructure, null);
-
-					backend.TransactionBegin();
-					backend.ExecuteStatement("insert into sel100rand select * from updates "	+
-								"where updates.col_int between 1001 and 1100");
-					backend.TransactionCommit();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
-				finally
-				{
-					backend.Isolation = IsolationLevel.ReadCommitted;
-				}
-			}
-
-			testResult = 0;
-		}
-
-
-		public void mu_sel_100_seq(IsolationLevel isolationLevel) 
-		{
-			lock (backend)
-			{
-				try
-				{
-					backend.Isolation = isolationLevel;
-
-					backend.CreateTable("sel100seq", baseTableStructure, null);
-
-					backend.TransactionBegin();
-					backend.ExecuteStatement("insert into sel100seq select * from updates "	+
-								"where updates.col_key between 1001 and 1100");
-					backend.TransactionCommit();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
-				finally
-				{
-					backend.Isolation = IsolationLevel.ReadCommitted;
-				}
-			}
-
-			testResult = 0;
-		}
-
-
-		public void mu_unmod_100_rand(IsolationLevel isolationLevel) 
-		{
-			lock (backend)
-			{
-				try
-				{
-					backend.Isolation = isolationLevel;
-
-					backend.TransactionBegin();
-					backend.ExecuteStatement("update updates "			+
-								"set col_double=col_double-100000000 "	+
-								"where col_int between 1001 and 1100");
-					backend.TransactionCommit();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
-				finally
-				{
-					backend.Isolation = IsolationLevel.ReadCommitted;
-				}
-			}
-
-			testResult = 0;
-		}
-
-
-		public void mu_unmod_100_seq(IsolationLevel isolationLevel) 
-		{
-			lock (backend)
-			{
-				try
-				{
-					backend.Isolation = isolationLevel;
-
-					backend.TransactionBegin();
-					backend.ExecuteStatement("update updates "	+
-						"set col_double=col_double-100000000 "	+
-						"where col_key between 1001 and 1100");
-					backend.TransactionCommit();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
-				finally
-				{
-					backend.Isolation = IsolationLevel.ReadCommitted;
-				}
-			}
-
-			testResult = 0; 
-		}
-
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void proj_100() 
 		{
 			int count = 0;
@@ -1411,7 +1002,7 @@ namespace AS3AP.BenchMark
 			testResult = count;
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void proj_10pct() 
 		{
 			int count = 0;
@@ -1440,7 +1031,7 @@ namespace AS3AP.BenchMark
 			testResult = count;
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void sel_1_cl() 
 		{
 			int count = 0;
@@ -1472,15 +1063,13 @@ namespace AS3AP.BenchMark
 			testResult = count; 
 		}
 
-
-		public void sel_1_ncl(IsolationLevel isolationLevel) 
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void sel_1_ncl() 
 		{
 			int count = 0;
 
 			try
 			{
-				backend.Isolation = isolationLevel;
-
 				backend.TransactionBegin();
 				backend.CursorOpen( 
 					"select col_key, col_int, col_signed, col_code, "	+
@@ -1501,13 +1090,12 @@ namespace AS3AP.BenchMark
 			{
 				backend.CursorClose();
 				backend.TransactionCommit();
-				backend.Isolation = IsolationLevel.ReadCommitted;
 			}
 
 			testResult = count;
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void sel_100_cl() 
 		{
 			int count = 0;
@@ -1539,7 +1127,7 @@ namespace AS3AP.BenchMark
 			testResult = count;
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void sel_100_ncl() 
 		{
 			int count = 0;
@@ -1571,8 +1159,8 @@ namespace AS3AP.BenchMark
 
 			testResult = count;
 		}
-
-
+	
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void	sel_10pct_ncl() 
 		{
 			int count = 0;
@@ -1605,7 +1193,7 @@ namespace AS3AP.BenchMark
 			testResult = count;
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void	sel_variable_select(long foo) 
 		{
 			StringBuilder	lineBuf = new StringBuilder();
@@ -1655,7 +1243,7 @@ namespace AS3AP.BenchMark
 			sel_variable_select(-500000000);
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void table_scan() 
 		{
 			int count = 0;
@@ -1684,7 +1272,7 @@ namespace AS3AP.BenchMark
 			testResult = count;
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void upd_app_t_end() 
 		{
 			int count = 0;
@@ -1709,7 +1297,7 @@ namespace AS3AP.BenchMark
 			testResult = count; 
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void	upd_app_t_mid() 
 		{
 			int count = 0;
@@ -1734,7 +1322,7 @@ namespace AS3AP.BenchMark
 			testResult = count;
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void upd_append_duplicate() 
 		{
 			if (doIndexes) 
@@ -1760,7 +1348,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void upd_del_t_end() 
 		{
 			try
@@ -1777,7 +1365,7 @@ namespace AS3AP.BenchMark
 			testResult = 0; 
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void upd_del_t_mid() 
 		{
 			try
@@ -1794,7 +1382,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void	upd_mod_t_cod() 
 		{
 			try
@@ -1813,7 +1401,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void	upd_mod_t_end() 
 		{
 			try
@@ -1831,7 +1419,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void	upd_mod_t_int() 
 		{
 			try
@@ -1848,7 +1436,7 @@ namespace AS3AP.BenchMark
 			testResult = 0; 
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void	upd_mod_t_mid() 
 		{
 			try
@@ -1865,7 +1453,7 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
-
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void upd_remove_duplicate() 
 		{
 			try
@@ -1880,6 +1468,407 @@ namespace AS3AP.BenchMark
 			}
 
 			testResult = 0;
+		}
+
+		#endregion
+
+		#region MULTIUSER_AND_CROSS_SECTION_TESTS_METHODS
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void o_mode_tiny()
+		{	
+			int count = 0;
+
+			lock (backend)
+			{
+				try
+				{
+					backend.TransactionBegin();
+					backend.CursorOpen("select * from tiny");
+				
+					while (backend.CursorFetch())
+					{
+						count++;
+					}
+				}
+				catch (Exception)
+				{
+					testFailed = true;
+				}
+				finally
+				{
+					backend.CursorClose();
+					backend.TransactionCommit();
+				}
+			}
+
+			testResult = count;
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void o_mode_100k()
+		{
+			int count = 0;
+
+			lock (backend)
+			{
+				try
+				{
+					backend.TransactionBegin();
+					backend.CursorOpen("select * from hundred where col_key<=1000");
+				
+					while (backend.CursorFetch())
+					{
+						count++;
+					}
+				}
+				catch (Exception)
+				{
+					testFailed = true;
+				}
+				finally
+				{
+					backend.CursorClose();
+					backend.TransactionCommit();
+				}
+			}
+
+			testResult = count;
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void mu_checkmod_100_rand() 
+		{
+			int count = 0;
+			
+			lock (backend)
+			{
+				try
+				{
+					backend.TransactionBegin();
+					backend.CursorOpen(
+						"select count(*) from updates, sel100rand "		+
+						"where updates.col_int=sel100rand.col_int "		+
+						"and not updates.col_double=sel100rand.col_double");
+				
+					backend.CursorFetch();
+
+					count = backend.Cursor.GetInt32(0);
+				}
+				catch (Exception)
+				{
+					testFailed = true;
+				}
+				finally
+				{					
+					backend.CursorClose();
+					backend.TransactionCommit();
+				}
+			}
+
+			if (count != 100) 
+			{
+				testFailed = true;
+			}
+
+			testResult = count;
+		}
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void mu_drop_sel100_rand() 
+		{
+			lock (backend)
+			{
+				try
+				{
+					backend.TransactionBegin();
+					backend.ExecuteStatement("drop table sel100rand");
+					backend.TransactionCommit();
+				}
+				catch (Exception)
+				{
+					testFailed = true;
+				}
+			}
+
+			testResult = 0;
+		}
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void mu_checkmod_100_seq() 
+		{
+			int count = 0;
+
+			lock (backend)
+			{
+				try
+				{
+					backend.TransactionBegin();
+					backend.CursorOpen(
+						"select count(*) from updates, sel100seq "		+
+						"where updates.col_key=sel100seq.col_key "		+
+						"and not updates.col_double=sel100seq.col_double");
+				
+					backend.CursorFetch();
+				
+					count = backend.Cursor.GetInt32(0); 
+				}
+				catch (Exception)
+				{
+					testFailed = true;
+				}
+				finally
+				{
+					backend.CursorClose();
+					backend.TransactionCommit();
+				}
+			}
+
+			if (count != 100) 
+			{
+				testFailed = true;
+			}
+
+			testResult = count;
+		}
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void mu_drop_sel100_seq() 
+		{
+			lock (backend)
+			{
+				try
+				{
+					backend.TransactionBegin();
+					backend.ExecuteStatement("drop table sel100seq");
+					backend.TransactionCommit();
+				}
+				catch (Exception)
+				{
+					testFailed = true;
+				}
+			}
+
+			testResult = 0;
+		}
+
+		[IsolationLevel(IsolationLevel.ReadCommitted)]
+		public void mu_ir_select()
+		{
+			StringBuilder	lineBuf = new StringBuilder();
+			int				count = 0;
+			int				r;
+				
+			Random randNumber = new Random(unchecked((int)DateTime.Now.Ticks));
+			r = 1;
+
+			lock (backend)
+			{
+				try
+				{
+					while (r == 1)
+					{
+						r = randNumber.Next(0, tupleCount);   // there IS no key 1
+					}
+			
+					lineBuf.AppendFormat(
+						"select col_key, col_code, col_date, col_signed, col_name "	+
+						"from updates where col_key = {0}",	r);
+
+					backend.TransactionBegin();
+					backend.CursorOpen(lineBuf.ToString());
+					if (!backend.CursorFetch())
+					{
+						testFailed = true;
+						count = 0;
+					}
+					else
+					{
+						count++;
+					}
+				}	
+				catch (Exception)
+				{
+					testFailed = true;
+				}
+				finally
+				{
+					backend.CursorClose();
+					backend.TransactionCommit();
+				}
+			}
+
+			testResult = count;
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void mu_mod_100_rand() 
+		{
+			int count = 0;
+
+			lock (backend)
+			{
+				try
+				{
+					backend.TransactionBegin();
+					backend.ExecuteStatement("update updates "	+
+						"set col_double=col_double+100000000 "	+
+						"where col_int between 1001 and 1100");
+					backend.TransactionCommit();
+				}
+				catch (Exception)
+				{
+					testFailed = true;
+				}
+			}
+
+			testResult = count;
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void mu_mod_100_seq() 
+		{
+			lock (backend)
+			{
+				try
+				{
+					backend.TransactionBegin();					
+					backend.ExecuteStatement("update updates "		+
+						"set col_double = col_double+100000000 "	+
+						"where col_key between 1001 and 1100");
+					backend.TransactionRollback();
+				}
+				catch (Exception)
+				{
+					testFailed = true;
+				}
+			}
+
+			testResult = 0;
+		}
+
+		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
+		public void mu_oltp_update()
+		{
+			StringBuilder   lineBuf = new StringBuilder();
+			int				r;
+
+			lock (backend)
+			{
+				try
+				{
+					Random randomNumber = new Random(unchecked((int)DateTime.Now.Ticks));
+					r = 1;
+					while (r == 1)
+					{
+						r = randomNumber.Next(0, tupleCount);    // There IS no col_key 1
+					}	
+
+					lineBuf.AppendFormat(
+						"update updates set col_signed = col_signed + 1 " +
+						"where col_key = {0}", r);
+
+					backend.TransactionBegin();
+					backend.ExecuteStatement(lineBuf.ToString());
+					backend.TransactionCommit();
+				}
+				catch (Exception)
+				{
+					testFailed = true;
+				}
+			}
+
+			testResult = 0;
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void mu_sel_100_rand() 
+		{
+			lock (backend)
+			{
+				try
+				{
+					backend.CreateTable("sel100rand", baseTableStructure, null);
+
+					backend.TransactionBegin();
+					backend.ExecuteStatement("insert into sel100rand select * from updates "	+
+						"where updates.col_int between 1001 and 1100");
+					backend.TransactionCommit();
+				}
+				catch (Exception)
+				{
+					testFailed = true;
+				}
+			}
+
+			testResult = 0;
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void mu_sel_100_seq() 
+		{
+			lock (backend)
+			{
+				try
+				{
+					backend.CreateTable("sel100seq", baseTableStructure, null);
+
+					backend.TransactionBegin();
+					backend.ExecuteStatement("insert into sel100seq select * from updates "	+
+						"where updates.col_key between 1001 and 1100");
+					backend.TransactionCommit();
+				}
+				catch (Exception)
+				{
+					testFailed = true;
+				}
+			}
+
+			testResult = 0;
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void mu_unmod_100_rand() 
+		{
+			lock (backend)
+			{
+				try
+				{
+					backend.TransactionBegin();
+					backend.ExecuteStatement("update updates "	+
+						"set col_double=col_double-100000000 "	+
+						"where col_int between 1001 and 1100");
+					backend.TransactionCommit();
+				}
+				catch (Exception)
+				{
+					testFailed = true;
+				}
+			}
+
+			testResult = 0;
+		}
+
+		[IsolationLevel(IsolationLevel.RepeatableRead)]
+		public void mu_unmod_100_seq() 
+		{
+			lock (backend)
+			{
+				try
+				{
+					backend.TransactionBegin();
+					backend.ExecuteStatement("update updates "	+
+						"set col_double=col_double-100000000 "	+
+						"where col_key between 1001 and 1100");
+					backend.TransactionCommit();
+				}
+				catch (Exception)
+				{
+					testFailed = true;
+				}
+			}
+
+			testResult = 0; 
 		}
 
 		#endregion

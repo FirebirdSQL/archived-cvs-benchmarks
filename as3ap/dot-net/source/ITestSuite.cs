@@ -61,11 +61,13 @@ namespace AS3AP.BenchMark
 
 		#region METHODS
 
+		void SetIsolationLevel(string methodName);
+
 		void setup_database();
 
-		void load(long dataSize);
+		void CreateData();
 		
-		int CountTuples(string table);
+		int CountRows(string table);
 
 		void agg_create_view();
 
@@ -149,9 +151,9 @@ namespace AS3AP.BenchMark
 
 		void join_4_ncl();
 
-		void o_mode_tiny(IsolationLevel isolationLevel);
+		void o_mode_tiny();
 
-		void o_mode_100k(IsolationLevel isolationLevel);
+		void o_mode_100k();
 
 		void mu_checkmod_100_rand();
 
@@ -163,19 +165,19 @@ namespace AS3AP.BenchMark
 
 		void mu_ir_select();
 
-		void mu_mod_100_rand(IsolationLevel isolationLevel);
+		void mu_mod_100_rand();
 
-		void mu_mod_100_seq(IsolationLevel isolationLevel);
+		void mu_mod_100_seq();
 
 		void mu_oltp_update();
 		
-		void mu_sel_100_rand(IsolationLevel isolationLevel);
+		void mu_sel_100_rand();
 
-		void mu_sel_100_seq(IsolationLevel isolationLevel);
+		void mu_sel_100_seq();
 
-		void mu_unmod_100_rand(IsolationLevel isolationLevel);
+		void mu_unmod_100_rand();
 
-		void mu_unmod_100_seq(IsolationLevel isolationLevel);
+		void mu_unmod_100_seq();
 
 		void proj_100();
 
@@ -183,7 +185,7 @@ namespace AS3AP.BenchMark
 
 		void sel_1_cl();
 
-		void sel_1_ncl(IsolationLevel isolationLevel);
+		void sel_1_ncl();
 
 		void sel_100_cl();
 
