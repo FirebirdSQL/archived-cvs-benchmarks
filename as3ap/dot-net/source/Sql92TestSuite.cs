@@ -46,10 +46,10 @@ namespace AS3AP.BenchMark
 			{
 				Backend.TransactionBegin();
 				Backend.CursorOpen(
-					"select avg(updates.col_decim)"						+
-					"from updates"										+
+					"select avg(updates.col_decim)"							+
+					"from updates"											+
 						"join hundred ON hundred.col_key = updates.col_key"	+
-						"where updates.col_decim > 980000000");
+					"where updates.col_decim > 980000000");
 				
 				Backend.CursorFetch();
 
@@ -66,8 +66,6 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		#warning Change SQL Statements to SQL92 sintax
-
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public override void join_2() 
 		{
@@ -77,10 +75,10 @@ namespace AS3AP.BenchMark
 			{			
 				Backend.TransactionBegin();
 				Backend.CursorOpen( 
-					"select uniques.col_signed, uniques.col_name,"				+
-					"hundred.col_signed, hundred.col_name"						+
-					"from uniques"												+
-					"join hundred ON uniques.col_address = hundred.col_address"	+
+					"select uniques.col_signed, uniques.col_name,"					+
+						"hundred.col_signed, hundred.col_name"						+
+					"from uniques"													+
+						"join hundred ON uniques.col_address = hundred.col_address"	+
 					"where uniques.col_address = 'SILICON VALLEY'");
 				
 				while (Backend.CursorFetch()) 
@@ -110,11 +108,11 @@ namespace AS3AP.BenchMark
 			{
 				Backend.TransactionBegin();
 				Backend.CursorOpen(
-					"select uniques.col_signed, uniques.col_name, "	+
-					"hundred.col_signed, hundred.col_name "			+
-					"from uniques, hundred "						+
-					"where uniques.col_key = hundred.col_key "		+
-					"and uniques.col_key = 1000");
+					"select uniques.col_signed, uniques.col_name,"			+
+						"hundred.col_signed, hundred.col_name"				+
+					"from uniques"											+
+						"join hundred ON uniques.col_key = hundred.col_key"	+
+					"where uniques.col_key = 1000");
 				
 				while (Backend.CursorFetch()) 
 				{
@@ -143,11 +141,11 @@ namespace AS3AP.BenchMark
 			{
 				Backend.TransactionBegin();
 				Backend.CursorOpen( 
-					"select uniques.col_signed, uniques.col_name, "		+
-					"hundred.col_signed, hundred.col_name "		+
-					"from uniques, hundred "						+
-					"where uniques.col_code = hundred.col_code "	+
-					"and uniques.col_code = 'BENCHMARKS'"			);
+					"select uniques.col_signed, uniques.col_name,"				+
+						"hundred.col_signed, hundred.col_name"					+
+					"from uniques"												+
+						"join hundred on uniques.col_code = hundred.col_code"	+
+					"where uniques.col_code = 'BENCHMARKS'");
 				
 				while (Backend.CursorFetch()) 
 				{
@@ -176,13 +174,13 @@ namespace AS3AP.BenchMark
 			{
 				Backend.TransactionBegin();
 				Backend.CursorOpen(
-					"select uniques.col_signed, uniques.col_date, "		+
-					"hundred.col_signed, hundred.col_date, "	+
-					"tenpct.col_signed, tenpct.col_date "		+
-					"from uniques, hundred, tenpct "					+
-					"where uniques.col_key = hundred.col_key "			+
-					"and uniques.col_key = tenpct.col_key "				+
-					"and uniques.col_key = 1000");
+					"select uniques.col_signed, uniques.col_date,"			+
+						"hundred.col_signed, hundred.col_date,"				+
+						"tenpct.col_signed, tenpct.col_date"				+
+					"from uniques"											+
+						"join hundred on uniques.col_key = hundred.col_key"	+
+						"join tenpct on uniques.col_key = tenpct.col_key"	+
+					"where uniques.col_key = 1000");
 				
 				while (Backend.CursorFetch()) 
 				{
@@ -211,13 +209,13 @@ namespace AS3AP.BenchMark
 			{
 				Backend.TransactionBegin();
 				Backend.CursorOpen( 
-					"select uniques.col_signed, uniques.col_date, "		+
-					"hundred.col_signed, hundred.col_date, "	+
-					"tenpct.col_signed, tenpct.col_date "		+
-					"from uniques, hundred, tenpct "					+
-					"where uniques.col_code = hundred.col_code "		+
-					"and uniques.col_code = tenpct.col_code "			+
-					"and uniques.col_code = 'BENCHMARKS'");
+					"select uniques.col_signed, uniques.col_date,"				+
+						"hundred.col_signed, hundred.col_date,"					+
+						"tenpct.col_signed, tenpct.col_date"					+
+					"from uniques"												+
+						"join hundred on uniques.col_code = hundred.col_code"	+
+						"join tenpct on uniques.col_code = tenpct.col_code"		+
+					"where uniques.col_code = 'BENCHMARKS'");
 				
 				while (Backend.CursorFetch()) 
 				{
@@ -246,13 +244,13 @@ namespace AS3AP.BenchMark
 			{
 				Backend.TransactionBegin();
 				Backend.CursorOpen(
-					"select uniques.col_date, hundred.col_date, "	+
-					"tenpct.col_date, updates.col_date "			+
-					"from uniques, hundred, tenpct, updates "		+
-					"where uniques.col_key = hundred.col_key "		+
-					"and uniques.col_key = tenpct.col_key "			+
-					"and uniques.col_key = updates.col_key "		+
-					"and uniques.col_key = 1000");
+					"select uniques.col_date, hundred.col_date,"			+
+						"tenpct.col_date, updates.col_date"					+
+					"from uniques"											+
+						"join hundred on uniques.col_key = hundred.col_key"	+
+						"join tenpct on uniques.col_key = tenpct.col_key"	+
+						"join updates on uniques.col_key = updates.col_key"	+
+					"where uniques.col_key = 1000");
 				
 				while (Backend.CursorFetch()) 
 				{
@@ -281,13 +279,13 @@ namespace AS3AP.BenchMark
 			{
 				Backend.TransactionBegin();
 				Backend.CursorOpen( 
-					"select uniques.col_date, hundred.col_date, "	+
-					"tenpct.col_date, updates.col_date "			+
-					"from uniques, hundred, tenpct, updates "		+
-					"where uniques.col_code = hundred.col_code "	+
-					"and uniques.col_code = tenpct.col_code "		+
-					"and uniques.col_code = updates.col_code "		+
-					"and uniques.col_code = 'BENCHMARKS'");
+					"select uniques.col_date, hundred.col_date,"				+
+						"tenpct.col_date, updates.col_date"						+
+					"from uniques"												+
+						"join hundred on uniques.col_code = hundred.col_code"	+
+						"join tenpct on uniques.col_code = tenpct.col_code"		+
+						"join updates on uniques.col_code = updates.col_code"	+
+						"where uniques.col_code = 'BENCHMARKS'");
 				
 				while (Backend.CursorFetch()) 
 				{
