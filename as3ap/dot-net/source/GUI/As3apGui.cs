@@ -972,7 +972,7 @@ namespace AS3AP.BenchMark
 
 		private void showProgressMessage(string message)
 		{
-			lblProgressMessage.Text = "Stopping benchmark";
+			lblProgressMessage.Text = message;
 			lblProgressMessage.Refresh();
 		}
 
