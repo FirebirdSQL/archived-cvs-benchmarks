@@ -3,6 +3,37 @@ AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 
 
 
+2003-02-12 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+
+
+	* Added the ability to select ( via config file ) the data creation method.
+
+
+	* Updated config file with two new keys:
+
+		- DataPath.
+
+		- DataCreationMethod.
+
+
+	* source/AS3AP.cs:
+
+		- Fixed tgwo bugs.
+
+
+	* source/Sql92TestSuite.cs:
+
+		- Adapted join_2 test to SQL92.
+
+
+	* backends/FirebirdSql.cs:
+
+		- Fixed error in data creation method, table hundred needs to have a record
+
+		with an address of value 'SILICON VALLEY' for join_2 test.
+
+
+
 2003-02-11 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
 	* Rewrited code for allow te execution of the benchmark using SQL87 or SQL92 sintax.
