@@ -34,6 +34,8 @@ public abstract class BenchmarkDDL extends TestCase {
     public static final String UPDATES_TABLE = "\"updates\"";
     public static final String TINY_TABLE = "\"tiny\"";
     
+    public static final String SAVE_UPDATES_TABLE = "\"saveupdates\"";
+    
     public static final String UNIQUES_TABLE_OUTPUT = "\"uniques_output\"";
     public static final String HUNDRED_TABLE_OUTPUT = "\"hundred_output\"";
     public static final String TEN_PCT_TABLE_OUTPUT = "\"tenpct_output\"";
@@ -116,7 +118,13 @@ public abstract class BenchmarkDDL extends TestCase {
     public static final String CREATE_HUNDRED_OUTPUT = ""
         + "CREATE TABLE " + HUNDRED_TABLE_OUTPUT + "("
         + COLUMNS_DEF
-        + ")";
+        + ")"
+        ;
+        
+    public static final String CREATE_SAVE_UPDATES_TABLE = ""
+        + "CREATE TABLE " + SAVE_UPDATES_TABLE + "("
+        + COLUMNS_DEF
+        + ")"
         ;
         
 

@@ -137,7 +137,7 @@ public class AggregateTest extends BenchmarkTest {
             + "WHERE " + UPDATES_KEY_COL + " = " + HUNDRED_KEY_COL
             ;
 
-        getDatabaseManager().executeUpdate(sql);
+        getDatabaseManager().executeDDL(sql);
     }
     
     public void testSubtotalReport() throws Exception {

@@ -21,7 +21,6 @@ package org.firebirdsql.benchmark;
 
 import java.sql.Statement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * This class implements join tests from the AS3AP test suite.

@@ -19,9 +19,7 @@
 
 package org.firebirdsql.benchmark;
 
-import junit.framework.*;
 import java.sql.Connection;
-import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 

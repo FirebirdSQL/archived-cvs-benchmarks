@@ -20,14 +20,9 @@
 package org.firebirdsql.benchmark;
 
 import java.sql.*;
-import java.io.*;
-import java.util.StringTokenizer;
-
-import org.firebirdsql.management.*;
 import org.firebirdsql.gds.*;
 import org.firebirdsql.jdbc.FBSQLException;
 import org.firebirdsql.jdbc.FBSimpleDataSource;
-import java.text.MessageFormat;
 
 /**
  * This class is responsible for database management.
@@ -148,7 +143,7 @@ public class BenchmarkDatabaseManager {
      * 
      * @throws SQLException if statement could not be executed.
      */
-    public void executeUpdate(String sql) throws SQLException {
+    public void executeDDL(String sql) throws SQLException {
         Connection connection = getConnection();
 
         Statement stmt = null;

@@ -22,11 +22,14 @@ package org.firebirdsql.benchmark;
 import junit.framework.*;
 import junit.extensions.TestSetup;
 import java.io.File;
+import java.sql.SQLException;
 
 /**
  * This is AS3AP benchmarking suite.
  */
-public class BenchmarkSuite {
+public class BenchmarkSuite extends TestSuite {
+    
+    public static final boolean CREATE_DATABASE = false;
 
     /** @todo make these params configurable */
     public static final String DATA_PATH = "./../data-4mb";
@@ -45,27 +48,30 @@ public class BenchmarkSuite {
         return fixture;
     }
     
+    protected BenchmarkDatabaseManager createDatabaseManager() throws SQLException {
+        return new BenchmarkDatabaseManager(
+            DATABASE_PATH, USER_NAME, PASSWORD, CREATE_DATABASE);
+    }
+    
     /**
      * Get benchmark test suite that will be executed.
      * 
      * @return instance of {@link Test} containing the suite.
      */
-    public static Test suite() {
+    public Test suite() {
         
-        TestSuite suite = new TestSuite();
+        fillSuite();
         
-        fillSuite(suite);
-        
-        TestSetup setup = new TestSetup(suite) {
+        TestSetup setup = new TestSetup(this) {
             
             protected void setUp() throws Exception {
-                databaseManager = new BenchmarkDatabaseManager(
-                    DATABASE_PATH, USER_NAME, PASSWORD, true);
+                databaseManager = createDatabaseManager();
                     
                 fixture = 
                     new BenchmarkFixture(databaseManager, new File(DATA_PATH));
                     
-                fixture.createDatabase();
+                if (CREATE_DATABASE)
+                    fixture.createDatabase();
             }
 
             protected void tearDown() throws Exception {
@@ -77,10 +83,40 @@ public class BenchmarkSuite {
         return setup;
     }
     
-    public static void fillSuite(TestSuite suite) {
+    protected Test createOutputTest(String name) {
+        return new OutputTest(name);
+    }
+    
+    protected Test createSelectTest(String name) {
+        return new SelectTest(name);
+    }
+    
+    protected Test createJoinTest(String name) {
+        return new JoinTest(name);
+    }
+    
+    protected Test createProjectionTest(String name) {
+        return new ProjectionTest(name);
+    }
+    
+    protected Test createAggregateTest(String name) {
+        return new AggregateTest(name);
+    }
+
+    protected Test createIndexTest(String name) {
+        return new IndexTest(name);
+    }
+    
+    protected Test createUpdateTest(String name) {
+        return new UpdateTest(name);
+    }
+
+    
+    public void fillSuite() {
         // add tests to the test suite here
         
-        suite.addTest(new LoadTest("testLoadData"));
+        if (CREATE_DATABASE)
+            addTest(new LoadTest("testLoadData"));
         
         /*
         suite.addTestSuite(OutputTest.class);
@@ -89,9 +125,80 @@ public class BenchmarkSuite {
         suite.addTestSuite(ProjectionTest.class);
         suite.addTestSuite(AggregateTest.class );
         */
+        
+    }
+    
+    protected TestSuite getSingleUserTests() {
+        TestSuite suite = new TestSuite();
+        
+        suite.addTest(createOutputTest("testModeTinyRelation"));
+
+        suite.addTest(createIndexTest("testTenPctKeyCodeIndex"));
+        suite.addTest(createOutputTest("testModeTinyFile"));
+        
+        suite.addTest(createSelectTest("testSelect1Clustered"));
+        
+        
+        suite.addTest(createUpdateTest("testIntegrity"));
+        
+        suite.addTest(createIndexTest("testUpdatesDropIndices"));
+        
+        suite.addTest(createUpdateTest("testBulkSave"));
+        suite.addTest(createUpdateTest("testBulkModify"));
+        
+        suite.addTest(createUpdateTest("testAppendMiddle"));
+        suite.addTest(createUpdateTest("testUpdateMiddle"));
+        suite.addTest(createUpdateTest("testDeleteMiddle"));
+        
+        suite.addTest(createUpdateTest("testAppendEnd"));
+        suite.addTest(createUpdateTest("testUpdateEnd"));
+        suite.addTest(createUpdateTest("testDeleteEnd"));
+        
+        suite.addTest(createIndexTest("testUpdatesCodeIndex"));
+        
+        suite.addTest(createUpdateTest("testAppendMiddle"));
+        suite.addTest(createUpdateTest("testUpdateMiddleCode"));
+        suite.addTest(createUpdateTest("testDeleteMiddle"));
+        
+        suite.addTest(createIndexTest("testUpdatesIntIndex"));
+
+        suite.addTest(createUpdateTest("testAppendMiddle"));
+        suite.addTest(createUpdateTest("testUpdateMiddleInt"));
+        suite.addTest(createUpdateTest("testDeleteMiddle"));
+        
+        suite.addTest(createUpdateTest("testBulkAppend"));
+        suite.addTest(createUpdateTest("testBulkDelete"));
+        
+        return suite;
+    }
+    
+    /**
+     * Get multiuser test suite. According to the AS3AP suite following tests
+     * are executed in emulated multi-user environment:
+     * <ul>
+     * <li>o_mode_tiny
+     * <li>o_mode_100k
+     * <li>select_1_ncl
+     * <li>simple_report
+     * <li>sel_100_seq
+     * <li>sel_100_rand
+     * <li>mod_100_seq_abort
+     * <li>mod_100_rand
+     * <li>unmod_100_seq
+     * <li>unmod_100_rand
+     * </ul>
+     * 
+     * @return instance of {@link TestSuite} containing multiuser tests.
+     */
+    protected TestSuite getMultiuserTests() {
+        TestSuite suite = new TestSuite();
+        
+        /* @todo fill test suite here */
+
+        return suite;
     }
     
     public static void main(String[] args) {
-        TestRunner.run(suite(), new BenchmarkListener());
+        TestRunner.run(new BenchmarkSuite().suite(), new BenchmarkListener());
     }
 }

@@ -19,7 +19,6 @@
 
 package org.firebirdsql.benchmark;
 
-import junit.framework.TestCase;
 import java.io.*;
 import java.util.StringTokenizer;
 import java.sql.*;
@@ -55,15 +54,17 @@ public class BenchmarkFixture {
     public void createDatabase() throws SQLException {
         manager.createDatabase();
         
-        manager.executeUpdate(BenchmarkDDL.CREATE_UPDATES_TABLE);
-        manager.executeUpdate(BenchmarkDDL.CREATE_HUNDRED_TABLE);
-        manager.executeUpdate(BenchmarkDDL.CREATE_TEN_PCT_TABLE);
-        manager.executeUpdate(BenchmarkDDL.CREATE_UNIQUES_TABLE);
-        manager.executeUpdate(BenchmarkDDL.CREATE_TINY_TABLE);
+        manager.executeDDL(BenchmarkDDL.CREATE_UPDATES_TABLE);
+        manager.executeDDL(BenchmarkDDL.CREATE_HUNDRED_TABLE);
+        manager.executeDDL(BenchmarkDDL.CREATE_TEN_PCT_TABLE);
+        manager.executeDDL(BenchmarkDDL.CREATE_UNIQUES_TABLE);
+        manager.executeDDL(BenchmarkDDL.CREATE_TINY_TABLE);
         
-        manager.executeUpdate(BenchmarkDDL.CREATE_TINY_OUTPUT);
-        manager.executeUpdate(BenchmarkDDL.CREATE_UPDATES_OUTPUT);
-        manager.executeUpdate(BenchmarkDDL.CREATE_HUNDRED_OUTPUT);
+        manager.executeDDL(BenchmarkDDL.CREATE_TINY_OUTPUT);
+        manager.executeDDL(BenchmarkDDL.CREATE_UPDATES_OUTPUT);
+        manager.executeDDL(BenchmarkDDL.CREATE_HUNDRED_OUTPUT);
+        
+        manager.executeDDL(BenchmarkDDL.CREATE_SAVE_UPDATES_TABLE);
     }
 
     /**

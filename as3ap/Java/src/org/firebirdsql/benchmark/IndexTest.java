@@ -19,7 +19,6 @@
 
 package org.firebirdsql.benchmark;
 
-import junit.framework.*;
 import java.sql.SQLException;
 
 /**
@@ -55,16 +54,16 @@ public class IndexTest extends BenchmarkTest {
         
         String indexType = unique ? "UNIQUE " : "";
             
-        String sql = "CREATE " + indexType +"INDEX \"" + indexName + 
-            " ON " + tableName + "(" + getFixture().toCSVString(keys) + ")";
+        String sql = "CREATE " + indexType +"INDEX " + indexName + 
+            " ON " + tableName + "(" + BenchmarkFixture.toCSVString(keys) + ")";
             
-        getDatabaseManager().executeUpdate(sql);
+        getDatabaseManager().executeDDL(sql);
     }
     
     private void dropIndex(String indexName) throws SQLException {
         String sql = "DROP INDEX " + indexName;
         
-        getDatabaseManager().executeUpdate(sql);
+        getDatabaseManager().executeDDL(sql);
     }
     
     // check if this is needed

@@ -21,10 +21,8 @@ package org.firebirdsql.benchmark;
 
 import java.io.PrintStream;
 import junit.framework.*;
-import java.util.HashMap;
 import junit.framework.TestSuite;
 import junit.framework.TestResult;
-import java.io.PrintWriter;
 import java.util.Enumeration;
 
 /**
