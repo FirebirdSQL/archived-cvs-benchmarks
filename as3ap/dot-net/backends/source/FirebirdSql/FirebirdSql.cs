@@ -2,7 +2,7 @@
 // AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark
 //			for Relational Database Systems.
 //
-// Author: Carlos Guzmán Álvarez <carlosga@telefonica.net>
+// Author: Carlos Guzmn lvarez <carlosga@telefonica.net>
 //
 // Distributable under LGPL license.
 // You may obtain a copy of the License at http://www.gnu.org/copyleft/lgpl.html
@@ -35,6 +35,15 @@ namespace AS3AP.BenchMark.Backends
 {
 	public class FirebirdSql : IBackend
 	{
+		#region CONSTANTS
+		
+		private const int HUNDREDMILLION	= 10*10*10*10*10*10*10*10;
+		private const int THOUSANDMILLION	= HUNDREDMILLION*10;
+
+		
+		#endregion
+		
+
 		#region FIELDS
 
 		private bool			autoCommit = true;
@@ -196,7 +205,7 @@ namespace AS3AP.BenchMark.Backends
 
 			try
 			{
-				// Firebird don´t have clustered indexes
+				// Firebird dont have clustered indexes
 				ddl(commandText.ToString());
 			}
 			catch (Exception ex)
@@ -303,7 +312,7 @@ namespace AS3AP.BenchMark.Backends
 
 		public void DatabaseCreate(string dName)
 		{
-			// ADO.NET interfaces don´t support database creation
+			// ADO.NET interfaces dont support database creation
 		}
 
 		public void DatabaseDisconnect()
@@ -563,6 +572,454 @@ namespace AS3AP.BenchMark.Backends
 		{
 			return new FbCommand(commandText, connection, transaction);
 		}
+
+
+		public int createData(long dataSize)
+		{
+			// TODO : Change all char[] to string
+	        char[] col_address				= new char[81];
+	        char[] col_code					= new char[11];
+			char[] col_name					= new char[21];
+			char[] date_string				= new char[32];
+			char[] hundred_address			= new char[81];
+			char[] hundred_name				= new char[81];
+			char[,] hundred_unique_address	= new char[100, 81];
+			char[,] hundred_unique_code		= new char[100, 11];
+			char[,] hundred_unique_name		= new char[100, 21];
+			char[] name						= new char[21];
+			
+			float col_float;
+			float hundred_float;
+			float[] hundred_unique_float = new float[100];
+			float uniform100_dense;
+			float uniform100_float;
+			float[] zipf10 = new float[10];
+			float zipf10_float;
+			float[] zipf100 = new float[100];
+			float zipf100_float;
+			
+			long i;
+			long col_key;
+			long col_signed;
+			long date_random;
+			long dense_key;
+			long hundred_key;			
+			long randomizer = 0;
+			long sparse_key;
+			long sparse_signed;
+			long sparse_key_spread;
+			long sparse_signed_spread;
+			long tenpct;
+			long tenpct_key;
+		        
+			double col_double;
+			double double_normal;
+			double hundred_double;
+			double[] hundred_unique_double = new double[100];
+			
+			DateTime		tm = new DateTime();
+			
+			StringBuilder	sqlCommand = new StringBuilder();
+
+			Random			randNumber = new Random();
+		
+		    string csv_safe_chars = "#%&()[]{};:/~@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-=";
+			/* These characters can be used without hassle in comma-separated-value files */
+		    
+		    int Ncsv_safe_chars;
+			int Nlen;				
+				    
+		    Ncsv_safe_chars = csv_safe_chars.Length;
+		    
+		    /* For our Zipfian distributions, we'll generate values that occur
+		     * most often at Zipf[0], and decay across an asymptotic curve to
+		     * the value at zipf[RANKS_zipfian-1].  (If someone has a better
+		     * algorithm for generating better distributions, please submit it!)
+		     */
+		    for (i = 0; i < 10; i++)
+		    {
+		        zipf10[i] = (float)randNumber.Next(-5*(HUNDREDMILLION), 5*(HUNDREDMILLION));
+		    }
+		    for (i = 0; i < 100; i++)
+		    {
+		        zipf100[i] = (float)randNumber.Next(-5*(HUNDREDMILLION), 5*(HUNDREDMILLION));
+		    }
+		
+		    tenpct = dataSize/10;
+		    if ((sparse_key_spread = (THOUSANDMILLION)/dataSize) < 1)
+		    {
+		    	sparse_key_spread = 1;
+		    }
+		    if ((sparse_signed_spread = (10*(HUNDREDMILLION))/dataSize) < 1)
+		    {
+		    	sparse_signed_spread = 1;
+		    }
+		    				
+		    CreateTable(
+		        "create table random_data("				+
+			        " randomizer int not null,"			+
+			        " sparse_key int not null,"			+
+			        " dense_key	int not null,"			+
+			        " sparse_signed int not null"		+
+			        " uniform100_dense int not null,"	+
+			        " zipf10_float float not null,"		+
+			        " zipf100_float float not null,"	+
+			        " uniform100_float float not null,"	+
+			        " double_normal double not null,"	+
+			        " code char(10) not null,"			+
+			        " name char(20) not null,"			+
+			        " address varchar(800) not null)");
+		    		
+		    CreateTable(
+		         "create table random_tenpct("			+
+			         " col_key 		int not null,"		+
+			         " col_float	int not null,"		+
+			         " col_signed 	int not null,"		+
+			         " col_double 	double not null," 	+
+			         " address varchar(800) not null)");
+					
+			TransactionBegin();
+		    for (long rec = 1; rec <= dataSize; rec++)
+		    {
+		        int	Dlen;
+				int Drec;
+		    	
+		        randomizer 			= randNumber.Next(0, THOUSANDMILLION);
+		        dense_key  			= (rec == 1) ? 0 : rec;       
+		        sparse_key 			= dense_key * sparse_key_spread;
+		        sparse_signed 		= (-5*(HUNDREDMILLION)) + 
+		        					((dense_key) * sparse_signed_spread);
+		        uniform100_dense 	= 100 + (rec % 100);
+		        zipf10_float 		= zipf10[randNumber.Next(0, (int)(rec % 10))];
+		        zipf100_float 		= zipf100[randNumber.Next(0, (int)(rec % 100))];
+		        uniform100_float 	= 100 + (float)((rec % 100));
+		        double_normal 		= (double)randNumber.Next(-(THOUSANDMILLION), (THOUSANDMILLION));
+
+		        /* To ensure uniqueness, we'll start by generating the record number
+		         * in base (Ncsv_safe_chars), followed by "_". We'll then fill out
+		         * the field with additional randomly selected characters. (By writing
+		         * the digits backwards, we should help to keep the data disorderly :)
+		        */
+		        Dlen = 0;
+		        Drec = (int)rec;
+		        while (Drec > 0) 
+		        {
+		            col_code[Dlen++] = csv_safe_chars[Drec % Ncsv_safe_chars];
+		            Drec			/= Ncsv_safe_chars;
+		        }
+		        col_code[Dlen++] = '_';
+		        for (i = Dlen; i < 10; i++)
+		        {
+		            col_code[i] = csv_safe_chars[randNumber.Next(0, Ncsv_safe_chars)];
+		        }
+		        col_code[10] = '\0';
+		        // TODO
+		        // strncpy(col_name, , Dlen);
+		    	for (i = Dlen; i < 20; i++)
+		        {
+		            col_name[i] = csv_safe_chars[randNumber.Next(0, Ncsv_safe_chars)];
+		        } 
+		        col_name[20] = '\0';
+		    	// TODO
+		        // strncpy(col_address, col_code, Dlen);		    	
+		        Nlen = randNumber.Next(2, (int)(6 + (25 * (rec & 3))));
+		        for (i = Dlen; i < Nlen; i++)
+		        {
+		            col_address[i] = csv_safe_chars[randNumber.Next(0, Ncsv_safe_chars)];
+		        }
+		        col_address[(Dlen > Nlen ? Dlen : Nlen)] = '\0';
+		        dml(
+		            "INSERT INTO random_data ("												+
+		                " randomizer, sparse_key, dense_key, sparse_signed, uniform100_dense,"+
+		                " zipf10_float, zipf100_float, uniform100_float, double_normal,"	+
+		                " code, name, address)"												+
+		            " VALUES ("																+
+		                " randomizer, sparse_key, dense_key, sparse_signed, uniform100_dense,"+
+		                " zipf10_float, zipf100_float, uniform100_float, double_normal,"	+
+		                " col_code, col_name, col_address)");
+		    } 
+		    TransactionCommit();
+		    
+		    dml(
+		        "update random_data set"				+
+	                " address='SILICON VALLEY' where "	+
+	                " randomizer = " + randomizer.ToString());		    
+		
+		    /* Now generate a table with 10% of some of the fields */
+		    CursorOpen("SELECT sparse_signed, double_normal, address"	+
+							" FROM random_data"							+
+							" ORDER BY randomizer"						+
+							" FIRST " + tenpct.ToString());		    
+		
+		    for (long rec = 1; rec <= tenpct; rec++)
+		    {
+				// Clear sqlCommand
+				sqlCommand.Remove(0, sqlCommand.Length);
+
+		        col_key = (rec == 1) ? 0 : rec;
+		    	
+		    	CursorFetch();
+		    	col_signed	= Convert.ToInt64(Cursor["sparse_signed"]);
+		    	col_double  = Convert.ToDouble(Cursor["double_normal"]);
+		    	col_address = Convert.ToString(Cursor["address"]).ToCharArray();
+		        col_float 	= Convert.ToSingle(col_double / 2.0);
+		    	
+		    	sqlCommand.AppendFormat(
+		            "INSERT INTO random_tenpct ("	+
+		                " col_key, col_signed, col_float, col_double, col_address)" +
+		            " VALUES ({0}, {1}, {2}, {3}, '{4})",
+		            col_key, col_signed, col_float, col_double, col_address);
+		        
+		        dml(sqlCommand.ToString());
+		    }
+		    CursorClose();
+
+		    ddl("create index random10_ix on random_tenpct(col_key)");
+		    
+		    /* Now generate a table with only 100 tuples of interesting data */
+		    CursorOpen(
+		        "SELECT uniform100_float, double_normal, name, address"	+
+		        " FROM random_data"										+
+		        " ORDER BY randomizer"									+
+		        " FIRST 100");
+	
+		    for (i = 0; i < 100; i++)
+		    {
+		    	CursorFetch();
+		    	col_float	= Convert.ToSingle(Cursor["uniform100_float"]);
+		    	col_double	= Convert.ToDouble(Cursor["double_normal"]);
+		    	col_name	= Convert.ToString(Cursor["name"]).ToCharArray();
+		    	col_address	= Convert.ToString(Cursor["address"]).ToCharArray();
+		        
+		        hundred_unique_float[i]	 = Convert.ToSingle(col_double / 2);
+		        hundred_unique_double[i] = col_double;
+		    	// TODO
+		        // strncpy(hundred_unique_name[i], col_name, 20);
+		        hundred_unique_name[i, 20] = '\0';
+		    	// TODO
+		        // strncpy(hundred_unique_address[i], col_address, 80);
+		        hundred_unique_address[i,80] = '\0';
+		    }
+		    i = randNumber.Next(0, 10);
+		    CursorClose();
+
+		    col_double = hundred_unique_double[i];
+		    dml("update random_data"	+
+	                " set code = 'BENCHMARKS', name = 'THE+ASAP+BENCHMARKS+' where" +
+	                "double_normal = " + col_double.ToString());
+
+			// TODO
+		    // strcpy(hundred_unique_name[i], "THE+ASAP+BENCHMARKS+");
+		    
+		    /* Now generate our testing tables */
+		    hundred_key	= 0;
+		    tenpct_key	= 0;
+		    
+			CursorOpen(
+		        "SELECT randomizer, sparse_key, dense_key, sparse_signed,"	+
+		                " uniform100_dense, zipf10_float, zipf100_float,"	+
+		                " uniform100_float, double_normal,"					+
+		                " code, name, address"								+
+		        " FROM random_data"											+
+		        " ORDER BY randomizer");
+
+		    while (CursorFetch())
+		    {
+                randomizer			= Convert.ToInt64(Cursor["randomizer"]);
+                sparse_key			= Convert.ToInt64(Cursor["sparse_key"]);
+                dense_key			= Convert.ToInt64(Cursor["dense_key"]);
+                sparse_signed       = Convert.ToInt64(Cursor["sparse_signed"]);
+                uniform100_dense	= Convert.ToSingle(Cursor["uniform100_dense"]);
+                zipf10_float		= Convert.ToSingle(Cursor["zipf10_float"]);
+                zipf100_float       = Convert.ToSingle(Cursor["zipf100_float"]);
+                uniform100_float	= Convert.ToSingle(Cursor["uniform100_float"]);
+                double_normal		= Convert.ToDouble(Cursor["double_normal"]);
+                col_code			= Convert.ToString(Cursor["code"]).ToCharArray();
+                col_name			= Convert.ToString(Cursor["name"]).ToCharArray();
+                col_address			= Convert.ToString(Cursor["address"]).ToCharArray();
+
+				try
+				{
+					/* roughly 36,835 days from 1/1/1900-12/1/2000 */
+					date_random = dense_key % 36835;
+					/* ignore leap year considerations */
+					tm.AddYears((int)(date_random / 365));
+					date_random = (date_random % 365) + 1;
+					if (date_random <= 31) 
+					{
+						tm.AddMonths(0);
+						tm.AddDays(date_random);
+					} 
+					else if ((date_random -= 31) <= 28) 
+					{
+						tm.AddMonths(1);
+						tm.AddDays(date_random);
+					} 
+					else if ((date_random -= 28) <= 31) 
+					{
+						tm.AddMonths(2);
+						tm.AddDays(date_random);
+					} 
+					else if ((date_random -= 31) <= 30) 
+					{
+						tm.AddMonths(3);
+						tm.AddDays(date_random);
+					} 
+					else if ((date_random -= 30) <= 31) 
+					{
+						tm.AddMonths(4);
+						tm.AddDays(date_random);
+					} 
+					else if ((date_random -= 31) <= 30) 
+					{
+						tm.AddMonths(5);
+						tm.AddDays(date_random);
+					} 
+					else if ((date_random -= 30) <= 31) 
+					{
+						tm.AddMonths(6);
+						tm.AddDays(date_random);
+					} 
+					else if ((date_random -= 31) <= 31) 
+					{
+						tm.AddMonths(7);
+						tm.AddDays(date_random);
+					} 
+					else if ((date_random -= 31) <= 30) 
+					{
+						tm.AddMonths(8);
+						tm.AddDays(date_random);
+					} 
+					else if ((date_random -= 30) <= 31) 
+					{
+						tm.AddMonths(9);
+						tm.AddDays(date_random);
+					} 
+					else if ((date_random -= 31) <= 30) 
+					{
+						tm.AddMonths(10);
+						tm.AddDays(date_random);
+					} 
+					else 
+					{
+						tm.AddMonths(11);
+						tm.AddDays(date_random);
+					}
+				}
+				catch (Exception)
+				{
+					log.Error("random date error");
+				}
+ 
+				// Empty sqlCommand
+				sqlCommand.Remove(0, sqlCommand.Length);
+
+				sqlCommand.AppendFormat(
+					"INSERT INTO uniques ("										+
+		                    " col_key, col_int, col_signed,"					+
+		                    " col_float, col_double, col_decim,"				+
+		                    " col_date, col_code, col_name, col_address)"		+
+		                " VALUES ({0},{1},{2},{3},{4},{5},{6},'{7}',{8},'{9}','{10}')",
+							sparse_key, sparse_key, sparse_signed,
+							zipf100_float, double_normal, double_normal,
+							date_string, col_code, col_name, col_address);
+
+				dml(sqlCommand.ToString());
+
+				// Empty sqlCommand
+				sqlCommand.Remove(0, sqlCommand.Length);
+
+				sqlCommand.AppendFormat(
+					"INSERT INTO updates ("									+
+		                    " col_key, col_int, col_signed,"				+
+		                    " col_float, col_double, col_decim,"			+
+		                    " col_date, col_code, col_name, col_address)"	+
+		                " VALUES ({0},{1},{2},{3},{4},{5},{6},'{7}',{8},'{9}','{10}')",
+		                    dense_key, dense_key, sparse_signed,
+		                    zipf10_float, double_normal, double_normal,
+							date_string, col_code, col_name, col_address);
+		                    
+		        dml(sqlCommand.ToString());
+					
+				if (++hundred_key >= 100)
+				{
+					hundred_key = 0;
+				}
+		        hundred_float	= hundred_unique_float[hundred_key];
+		        hundred_double	= hundred_unique_double[hundred_key];
+		        // TODO
+				// strncpy(hundred_name, hundred_unique_name[hundred_key], 20);
+		        hundred_name[20] = '\0';
+				// TODO
+		        // strncpy(hundred_address, hundred_unique_address[hundred_key], 80);
+		        hundred_address[80] = '\0';
+
+				// Empty sqlCommand
+				sqlCommand.Remove(0, sqlCommand.Length);
+
+				sqlCommand.AppendFormat(
+					"INSERT INTO hundred ("										+
+						" col_key, col_int, col_signed,"						+
+						" col_float, col_double, col_decim,"					+
+						" col_date, col_code, col_name, col_address)"			+
+					" VALUES ({0},{1},{2},{3},{4},{5},{6},'{7}',{8},'{9}','{10}')",
+						dense_key, sparse_key, uniform100_dense,
+						hundred_float, hundred_double, hundred_double,
+						date_string, col_code, hundred_name, hundred_address);
+
+				dml(sqlCommand.ToString());
+
+		        if (++tenpct_key > tenpct) 
+				{
+		            tenpct_key = 0;
+		        } 
+				else 
+				{
+					if (tenpct_key == 1) 
+					{
+						tenpct_key = 2;
+					}
+		        }
+
+				// TODO
+				CursorOpen("SELECT col_signed, float, double, address"		+
+								"FROM random_tenpct"						+
+								"WHERE key = + tenpct_key.ToString()");
+
+				CursorFetch();
+
+				col_signed		= Convert.ToInt64(Cursor["col_signed"]);
+				col_float		= Convert.ToSingle(Cursor["float"]);
+				col_double		= Convert.ToDouble(Cursor["double"]);
+				col_address		= Convert.ToString(Cursor["address"]).ToCharArray();
+
+				CursorClose();
+
+				// TODO
+		        // strncpy(col_name, hundred_unique_name[hundred_key%10], 20);
+
+				// Empty sqlCommand
+				sqlCommand.Remove(0, sqlCommand.Length);
+
+				sqlCommand.AppendFormat(
+					"INSERT INTO tenpct ("								+
+						" col_key, col_int, col_signed,"				+
+						" col_float, col_double, col_decim,"			+
+						" col_date, col_code, col_name, col_address)"	+
+					" VALUES ({0},{1},{2},{3},{4},{5},{6},'{7}',{8},'{9}','{10}')",
+	                    sparse_key, sparse_key, col_signed,
+						col_float, col_double, col_double,
+						date_string, col_code, col_name, col_address);
+
+		        dml(sqlCommand.ToString());
+		    }
+			CursorClose();
+		    ddl("drop table random_data");
+		    ddl("drop table random_tenpct");
+
+		    return 0;
+    	}
+
 
 		#endregion
 	}
