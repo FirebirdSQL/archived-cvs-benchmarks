@@ -95,7 +95,21 @@ namespace AS3AP.BenchMark.Backends
 		{
 			getConfiguration();
 
-			log = new Logger("AS3AP_ERRORS.LOG", Mode.OVERWRITE);
+			try
+			{
+				log = new Logger("AS3AP_ERRORS.LOG", Mode.OVERWRITE);
+			}
+			catch (Exception)
+			{
+				try
+				{
+					log = new Logger("AS3AP_ERRORS.LOG", Mode.APPEND);
+				}
+				catch (Exception)
+				{
+					log = null;
+				}
+			}
 
 			// Use point as decimal separator
 			numberFormat.CurrencyDecimalSeparator = ".";
@@ -107,7 +121,7 @@ namespace AS3AP.BenchMark.Backends
 
 		public void CloseLogger()
 		{
-			log.Close();
+			if (log != null) log.Close();
 		}
 
 		private void getConfiguration()
@@ -136,7 +150,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch(Exception ex)
 			{
-				log.Error("btree error {0}", ex.Message);
+				if (log != null) log.Error("btree error {0}", ex.Message);
 				throw ex;				
 			}
 		}
@@ -157,7 +171,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch(Exception ex)
 			{
-				log.Error("cluster error {0}", ex.Message);
+				if (log != null) log.Error("cluster error {0}", ex.Message);
 				throw ex;
 			}
 		}
@@ -182,7 +196,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch(Exception ex)
 			{
-				log.Error("foreign key error {0}", ex.Message);
+				if (log != null) log.Error("foreign key error {0}", ex.Message);
 				throw ex;
 			}
 		}
@@ -203,7 +217,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch (Exception ex)
 			{
-				log.Error("btree error {0}", ex.Message);
+				if (log != null) log.Error("btree error {0}", ex.Message);
 				throw ex;
 			}
 		}
@@ -231,7 +245,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch (Exception ex)
 			{
-				log.Error("error create table {0}", ex.Message);
+				if (log != null) log.Error("error create table {0}", ex.Message);
 				throw ex;
 			}
 		}
@@ -307,7 +321,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch (Exception ex)
 			{
-				log.Error("connection error {0}", ex.Message);
+				if (log != null) log.Error("connection error {0}", ex.Message);
 				throw ex;
 			}
 		}
@@ -329,7 +343,7 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch (Exception ex)
 			{
-				log.Error("disconnect error {0}", ex.Message);
+				if (log != null) log.Error("disconnect error {0}", ex.Message);
 				throw ex;
 			}
 		}
@@ -435,7 +449,7 @@ namespace AS3AP.BenchMark.Backends
 			catch (Exception ex)
 			{
 				TransactionRollback();
-				log.Error("load failed {0}", ex.Message);
+				if (log != null) log.Error("load failed {0}", ex.Message);
 				throw ex;
 			}
 		}
@@ -780,7 +794,7 @@ namespace AS3AP.BenchMark.Backends
 					}
 					catch (Exception ex)
 					{
-						log.Error("random date error {0}", ex.Message);
+						if (log != null) log.Error("random date error {0}", ex.Message);
 					}
 				
 					cmdRandomData.Parameters[0].Value = randomizer;
@@ -1043,7 +1057,7 @@ namespace AS3AP.BenchMark.Backends
 			catch (Exception ex)
 			{
 				TransactionRollback();
-				log.Error("load failed {0}", ex.Message);
+				if (log != null) log.Error("load failed {0}", ex.Message);
 			}
 		}
 
