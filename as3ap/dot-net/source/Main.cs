@@ -23,6 +23,7 @@
 //
 
 using System;
+using System.Windows.Forms;
 
 namespace AS3AP.BenchMark
 {
@@ -34,12 +35,7 @@ namespace AS3AP.BenchMark
 		[STAThread]
 		static void Main(string[] args)
 		{
-			AS3AP		as3ap = new AS3AP("as3ap.config");
-
-			as3ap.Run();
-
-			Console.WriteLine("Finished!!");
-			Console.ReadLine();
+			Application.Run(new As3apGui());
 		}
 	}
 }
