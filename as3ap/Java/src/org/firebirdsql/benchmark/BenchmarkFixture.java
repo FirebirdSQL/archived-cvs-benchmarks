@@ -78,8 +78,13 @@ public class BenchmarkFixture {
      * @throws SQLException if something went wrong.
      */    
     public void recreateUpdates() throws SQLException {
+        /* 
+        // this causes "object in use error", so we will simply delete content
         manager.executeDDL(BenchmarkDDL.DROP_UPDATES_TABLE);
         manager.executeDDL(BenchmarkDDL.CREATE_UPDATES_TABLE);
+        */
+        
+        manager.executeDDL("DELETE FROM " + BenchmarkDDL.UPDATES_TABLE);
     }
     
     /**
@@ -88,10 +93,16 @@ public class BenchmarkFixture {
      * @throws SQLException if something went wrong.
      */
     public void recreateTempUpdates() throws SQLException {
+        /* 
+        // this causes "object in use error", so we will simply delete content
         manager.executeDDL(BenchmarkDDL.DROP_SEL_100_SEQ_TABLE);
         manager.executeDDL(BenchmarkDDL.DROP_SEL_100_RND_TABLE);
         manager.executeDDL(BenchmarkDDL.CREATE_SEL_100_SEQ_TABLE);
         manager.executeDDL(BenchmarkDDL.CREATE_SEL_100_RND_TABLE);
+        */
+        
+        manager.executeDDL("DELETE FROM " + BenchmarkDDL.SEL_100_SEQ_TABLE);
+        manager.executeDDL("DELETE FROM " + BenchmarkDDL.SEL_100_RND_TABLE);
     }
 
     /**

@@ -68,6 +68,13 @@ public abstract class BenchmarkDDL extends TestCase {
         + ADDRESS_COL + " VARCHAR(80) NOT NULL "
         ;
         
+    public static final String COLUMNS_LIST = ""
+        + KEY_COL + ", " + INT_COL + ", " + SIGNED_COL + ", "
+        + FLOAT_COL + ", " + DOUBLE_COL + ", " + DECIM_COL + ", "
+        + DATE_COL + ", " + CODE_COL + ", " + NAME_COL + ", "
+        + ADDRESS_COL
+        ;
+        
     public static final String[] COLUMNS_ARRAY = new String[] {
         KEY_COL, INT_COL, SIGNED_COL, FLOAT_COL, DOUBLE_COL,
         DECIM_COL, DATE_COL, CODE_COL, NAME_COL, ADDRESS_COL
@@ -84,7 +91,8 @@ public abstract class BenchmarkDDL extends TestCase {
         + "CREATE TABLE " + HUNDRED_TABLE + "("
         + COLUMNS_DEF + ", "
         + "PRIMARY KEY (" + KEY_COL + "), "
-        + "FOREIGN KEY (" + SIGNED_COL + ") REFERENCES " + UPDATES_TABLE
+        + "FOREIGN KEY (" + SIGNED_COL + ") "
+        + "REFERENCES " + UPDATES_TABLE 
         + ")"
         ;
         
@@ -148,6 +156,7 @@ public abstract class BenchmarkDDL extends TestCase {
         + ")"
         ;
         
+    /*
     public static final String DROP_UPDATES_TABLE = ""
         + "DROP TABLE " + UPDATES_TABLE
         ;
@@ -159,6 +168,7 @@ public abstract class BenchmarkDDL extends TestCase {
     public static final String DROP_SEL_100_RND_TABLE = ""
         + "DROP TABLE " + SEL_100_RND_TABLE
         ;
+    */
 
     public BenchmarkDDL(String string) {
         super(string);
