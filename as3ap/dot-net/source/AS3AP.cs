@@ -112,7 +112,7 @@ namespace AS3AP.BenchMark
 
 		#region CONSTRUCTORS
 
-		public AS3AP(string configFileName)
+		public AS3AP(BenchMarkConfiguration	configuration)
 		{
 			string logName = "as3ap_"								+
 							System.DateTime.Now.Year.ToString()		+
@@ -123,8 +123,8 @@ namespace AS3AP.BenchMark
 							System.DateTime.Now.Second.ToString()	+
 							".log";
 			
-			log				= new Logger(logName, Mode.OVERWRITE);		
-			configuration	= BenchMarkConfiguration.Load(configFileName);
+			this.log			= new Logger(logName, Mode.OVERWRITE);		
+			this.configuration	= configuration;
 	
 			testSuite		= TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
 		}
