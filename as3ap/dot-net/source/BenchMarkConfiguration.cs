@@ -49,10 +49,6 @@ namespace AS3AP.BenchMark
 		private string	providerAssembly	= "FirebirdSql.Data.Firebird";
 		private bool	supportsClusteredIndexes = false;
 		private bool	supportsHashIndexes = false;
-		private string	connectionClass		= "FirebirdSql.Data.Firebird.FbConnection";
-		private string	commandClass		= "FirebirdSql.Data.Firebird.FbCommand";
-		private string	dataAdapterClass	= "FirebirdSql.Data.Firebird.FbDataAdapter";
-		private string	parameterClass		= "FirebirdSql.Data.Firebird.FbParameter";
 		
 		private string	btreeIndexStmt		= "create index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
 		private string	clusteredIndexStmt	= "create unique clustered index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
@@ -135,30 +131,6 @@ namespace AS3AP.BenchMark
 		{
 			get { return supportsHashIndexes; }
 			set { supportsHashIndexes = value; } 
-		}
-
-		public string ConnectionClass
-		{
-			get { return connectionClass; }
-			set { connectionClass = value; }
-		}
-
-		public string CommandClass
-		{
-			get { return commandClass; }
-			set { commandClass = value; }
-		}
-
-		public string DataAdapterClass
-		{
-			get { return dataAdapterClass; }
-			set { dataAdapterClass = value; }
-		}
-
-		public string ParameterClass
-		{
-			get { return parameterClass; }
-			set { parameterClass = value; }
 		}
 
 		public string BtreeIndexStmt

@@ -2109,7 +2109,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region RUN_METHODS
+		#region AS3AP_METHODS
 
 		public void create_database() 
 		{
@@ -2769,7 +2769,7 @@ namespace AS3AP.BenchMark
 		{
 			string	dataSource	= "localhost";
 			int		port		= 3050;
-			string	database	= @"C:\asp3ap.fdb";
+			string	database	= @"c:\asp3ap.fdb";
 			string	user		= "SYSDBA";
 			string	password	= "masterkey";
 			byte	dialect		= 3;
@@ -2911,15 +2911,70 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
+				DateTime start = DateTime.Now;
+
 				loadTinyFile("tiny");
+
+				if (Result != null)
+				{
+					Result(this, 
+						new TestResultEventArgs(
+							"	tiny file loaded", 
+							0, 
+							DateTime.Now - start, false));
+				}
+
+				start = DateTime.Now;
 								
 				loadFile("uniques");
+
+				if (Result != null)
+				{
+					Result(this, 
+						new TestResultEventArgs(
+						"	uniques file loaded", 
+						0, 
+						DateTime.Now - start, false));
+				}
+
+				start = DateTime.Now;
 				
 				loadFile("updates");
+
+				if (Result != null)
+				{
+					Result(this, 
+						new TestResultEventArgs(
+						"	updates file loaded", 
+						0, 
+						DateTime.Now - start, false));
+				}
+
+				start = DateTime.Now;
 				
 				loadFile("hundred");
+
+				if (Result != null)
+				{
+					Result(this, 
+						new TestResultEventArgs(
+						"	hundred file loaded", 
+						0, 
+						DateTime.Now - start, false));
+				}
+
+				start = DateTime.Now;
 				
 				loadFile("tenpct");
+
+				if (Result != null)
+				{
+					Result(this, 
+						new TestResultEventArgs(
+						"	tenpct file loaded", 
+						0, 
+						DateTime.Now - start, false));
+				}
 			}
 			catch (Exception ex)
 			{
@@ -2939,7 +2994,6 @@ namespace AS3AP.BenchMark
 			StreamReader	stream		= null;
 			FbCommand		command		= null;
 			
-			// commandText.AppendFormat("insert into {0} values (?,?,?,?,?,?,?,?,?,?)", table);
 			commandText.AppendFormat("insert into {0} values (@col_key,@col_int,@col_signed,@col_float,@col_double,@col_decim,@col_date,@col_code,@col_name,@col_address)", table);
 
 			/* Crate command */
@@ -2964,6 +3018,13 @@ namespace AS3AP.BenchMark
 			if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
 			{
 				path += Path.DirectorySeparatorChar;
+			}
+
+			if (!File.Exists(path + "asap." + table))
+			{
+				throw new FileNotFoundException(
+					"AS3AP data file not found",
+					path + "asap." + table);
 			}
 
 			stream = new StreamReader(
@@ -2999,7 +3060,7 @@ namespace AS3AP.BenchMark
 			StreamReader	stream		= null;
 			FbCommand		command		= null;
 
-			commandText.AppendFormat("insert into {0} values (?)", table);
+			commandText.AppendFormat("insert into {0} values (@col_key)", table);
 
 			/* Crate command */
 			command = getCommand(commandText.ToString());
@@ -3014,6 +3075,13 @@ namespace AS3AP.BenchMark
 			if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
 			{
 				path += Path.DirectorySeparatorChar;
+			}
+
+			if (!File.Exists(path + "asap." + table))
+			{
+				throw new FileNotFoundException(
+					"AS3AP data file not found",
+					path + "asap." + table);
 			}
 
 			stream = new StreamReader(
