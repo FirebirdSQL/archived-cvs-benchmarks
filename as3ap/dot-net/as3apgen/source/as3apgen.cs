@@ -25,6 +25,7 @@ using System.Data;
 using System.Xml;
 using System.Configuration;
 using System.Globalization;
+using System.Text;
 
 namespace AS3AP.BenchMark.Generator
 {
@@ -87,13 +88,13 @@ namespace AS3AP.BenchMark.Generator
         /// </summary>
 		public void GenerateDataFiles()
 		{
-			string col_address				= String.Empty;
-			string col_code					= String.Empty;
-			string col_name					= String.Empty;
-			string date_string				= String.Empty;
-			string hundred_address			= String.Empty;
-			string hundred_name				= String.Empty;
-			string name						= String.Empty;
+			StringBuilder col_address	= new StringBuilder();
+			StringBuilder col_code		= new StringBuilder();
+			StringBuilder col_name		= new StringBuilder();
+			string date_string			= String.Empty;
+			string hundred_address		= String.Empty;
+			string hundred_name			= String.Empty;
+			string name					= String.Empty;
 
 			string[] hundred_unique_address	= new string[100];
 			string[] hundred_unique_code	= new string[100];
@@ -192,10 +193,10 @@ namespace AS3AP.BenchMark.Generator
 		
 				dsRandomData.Tables["RANDOM_DATA"].BeginLoadData();
 
+				int dRec = 0;
+
 				for (rec = 1; rec <= dataSize; rec++)
 				{
-					int Drec;
-		    	
 					randomizer			= randomSeed[rec - 1];
 					dense_key  			= (rec == 1) ? 0 : rec;       
 					sparse_key 			= dense_key * sparse_key_spread;
@@ -207,34 +208,47 @@ namespace AS3AP.BenchMark.Generator
 					double_normal 		= (double)randNumber.Next(-(THOUSANDMILLION), (THOUSANDMILLION));
 
 					// To ensure uniqueness, we'll start by generating the record number
-					// in base (Ncsv_safe_chars), followed by "_". We'll then fill out
+					// in base (csv_safe_chars), followed by "_". We'll then fill out
 					// the field with additional randomly selected characters. (By writing
 					// the digits backwards, we should help to keep the data disorderly :)
-					Drec		= (int)rec;
-					col_code	= String.Empty;
-					col_name	= String.Empty;
-					col_address = String.Empty;
-					while (Drec > 0) 
+					dRec				= (int)rec;
+					col_code.Length		= 0;
+					col_name.Length		= 0;
+					col_address.Length	= 0;
+
+					// Generate col_code value
+					while (dRec > 0) 
 					{
-						col_code	+= csv_safe_chars[Drec % csv_safe_chars.Length];
-						Drec		/= csv_safe_chars.Length;
+						col_code.Append(csv_safe_chars[dRec % csv_safe_chars.Length]);
+						dRec /= csv_safe_chars.Length;
 					}
-					col_code += '_';
+					col_code.Append('_');
 					for (int i = col_code.Length; i < 10; i++)
 					{
-						col_code += csv_safe_chars[randNumber.Next(0, csv_safe_chars.Length)];
+						col_code.Append(csv_safe_chars[randNumber.Next(0, csv_safe_chars.Length)]);
 					}
-					col_name = col_code;
+
+					// Generate col_name value
+					col_name.Append(col_code.ToString());
 					for (int i = col_code.Length; i < 20; i++)
 					{
-						col_name += csv_safe_chars[randNumber.Next(0, csv_safe_chars.Length)];
+						col_name.Append(csv_safe_chars[randNumber.Next(0, csv_safe_chars.Length)]);
 					} 
-					col_address = col_code;
+
+					// Generate col_address value
+					col_address.Append(col_code.ToString());
 					nLen = randNumber.Next(2, (int)(6 + (25 * (rec & 3))));
 					for (int i = col_code.Length; i < nLen; i++)
 					{
-						col_address += csv_safe_chars[randNumber.Next(0, csv_safe_chars.Length)];
+						col_address.Append(csv_safe_chars[randNumber.Next(0, csv_safe_chars.Length)]);
 					}
+
+					if (col_address.Length == 0)
+					{
+						Console.WriteLine("ba");
+					}
+
+					// Update r10pct_key value
 					if (++r10pct_key > tenpct)
 					{
 						r10pct_key = 0;
@@ -244,6 +258,7 @@ namespace AS3AP.BenchMark.Generator
 						r10pct_key++;
 					} 
 
+					// Generate col_date value
 					try
 					{
 						col_date	= new DateTime(1900, 1, 1);
@@ -316,11 +331,15 @@ namespace AS3AP.BenchMark.Generator
 					{
 					}
 					
+					// Insert new row
 					DataRow newRow = dsRandomData.Tables["RANDOM_DATA"].NewRow();
 				
 					newRow["RANDOMIZER"]		= randomizer;
-					newRow["SPARSE_KEY"]		= sparse_key;
-					newRow["DENSE_KEY"]			= dense_key;
+#warning is this change really correct ??
+//					newRow["SPARSE_KEY"]		= sparse_key;
+//					newRow["DENSE_KEY"]			= dense_key;
+					newRow["SPARSE_KEY"]		= rec;
+					newRow["DENSE_KEY"]			= rec;
 					newRow["SPARSE_SIGNED"]		= sparse_signed;
 					newRow["UNIFORM100_DENSE"]	= uniform100_dense;
 					newRow["ZIPF10_FLOAT"]		= zipf10_float;
@@ -329,9 +348,9 @@ namespace AS3AP.BenchMark.Generator
 					newRow["DOUBLE_NORMAL"]		= double_normal;
 					newRow["R10PCT_KEY"]		= r10pct_key;
 					newRow["COL_DATE"]			= col_date.ToString("dd/MM/yyyy");
-					newRow["COL_CODE"]			= col_code;
-					newRow["COL_NAME"]			= col_name;
-					newRow["COL_ADDRESS"]		= col_address;
+					newRow["COL_CODE"]			= col_code.ToString();
+					newRow["COL_NAME"]			= col_name.ToString();
+					newRow["COL_ADDRESS"]		= col_address.ToString();
 
 					dsRandomData.Tables["RANDOM_DATA"].Rows.Add(newRow);					
 
@@ -353,10 +372,7 @@ namespace AS3AP.BenchMark.Generator
 				filter = "RANDOMIZER = " + randomizer.ToString();
 				DataRow[] foundRows	= dsRandomData.Tables["RANDOM_DATA"].Select(filter);
 
-				foreach (DataRow row in foundRows)
-				{
-					row["COL_ADDRESS"] = "SILICON VALLEY";
-				}
+				foundRows[0]["COL_ADDRESS"] = "SILICON VALLEY";
 
 				Array.Clear(foundRows, 0, foundRows.Length);
 				foundRows = null;
@@ -368,8 +384,8 @@ namespace AS3AP.BenchMark.Generator
 								
 				dsRandomData.Tables["RANDOM_DATA"].DefaultView.Sort = "randomizer";
 
-				random	= 0;
 				rec		= 1;
+				dRec	= 0;
 				foreach (DataRow row in dsRandomData.Tables["RANDOM_DATA"].Rows)
 				{
 					DataRow newRow = dsRandomData.Tables["RANDOM_TENPCT"].NewRow();
@@ -378,29 +394,30 @@ namespace AS3AP.BenchMark.Generator
 					newRow["COL_SIGNED"]	= row["SPARSE_SIGNED"];
 					newRow["COL_FLOAT"]		= (float)(Convert.ToSingle(row["DOUBLE_NORMAL"]) / 2);
 					newRow["COL_DOUBLE"]	= row["DOUBLE_NORMAL"];
-					newRow["COL_ADDRESS"]	= row["COL_ADDRESS"];
-
-					dsRandomData.Tables["RANDOM_TENPCT"].Rows.Add(newRow);
-
-					rec++;
 					
-					if (random < 100)
+					dsRandomData.Tables["RANDOM_TENPCT"].Rows.Add(newRow);
+					
+					if (dRec < 100)
 					{
 						// Now generate a table with only 100 tuples of interesting data
 						// uniform100_float, double_normal, name, address
-						hundred_unique_float[random]	= (float)newRow["COL_FLOAT"];
-						hundred_unique_double[random]	= Convert.ToDouble(row["DOUBLE_NORMAL"]);
-						hundred_unique_name[random]		= Convert.ToString(row["COL_NAME"]);
-						hundred_unique_address[random]	= Convert.ToString(row["COL_ADDRESS"]);
+						hundred_unique_float[dRec]	= (float)newRow["COL_FLOAT"];
+						hundred_unique_double[dRec]	= Convert.ToDouble(row["DOUBLE_NORMAL"]);
+						hundred_unique_name[dRec]	= Convert.ToString(row["COL_NAME"]);
+						hundred_unique_address[dRec]= Convert.ToString(row["COL_ADDRESS"]);
 
-						random++;
+						dRec++;
 					}
 
-					if (rec > tenpct)
+					if (++rec > tenpct)
 					{
 						break;
 					}
 				}
+
+				random	= randNumber.Next(0, 100);
+
+				hundred_unique_address[random] = "SILICON VALLEY";
 
 				dsRandomData.Tables["RANDOM_DATA"].DefaultView.Sort = "";
 								
@@ -415,13 +432,7 @@ namespace AS3AP.BenchMark.Generator
 				filter		= "DOUBLE_NORMAL = " + col_double.ToString();
 				foundRows	= dsRandomData.Tables["RANDOM_DATA"].Select(filter);
 				
-				foreach (DataRow row in foundRows)
-				{
-					row["COL_CODE"] = "BENCHMARKS";
-					row["COL_NAME"] = "THE+ASAP+BENCHMARKS+";
-				}
-
-				hundred_unique_name[random] = "THE+ASAP+BENCHMARKS+";
+				foundRows[0]["COL_CODE"] = "BENCHMARKS";
 
 				Array.Clear(foundRows, 0, foundRows.Length);
 				foundRows = null;
@@ -437,6 +448,7 @@ namespace AS3AP.BenchMark.Generator
 				dfHundred	= this.createStream(destDir + HUNDRED_FILE_NAME);
 				dfTenpct	= this.createStream(destDir + TENPCT_FILE_NAME);
 
+				rec		= 0;
 				foreach (DataRow row in dsRandomData.Tables["RANDOM_DATA"].Rows)
 				{
 					// Unique File
@@ -466,12 +478,12 @@ namespace AS3AP.BenchMark.Generator
 						row["COL_ADDRESS"]);
 					
 					// Hundred file
+
 					if (++hundred_key >= 100)
 					{
 						hundred_key = 0;
 					}
-
-					// Insert into Hundred
+					
 					dfHundred.WriteLine("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9}",
 						row["DENSE_KEY"],
 						row["SPARSE_KEY"],
@@ -489,15 +501,17 @@ namespace AS3AP.BenchMark.Generator
 					
 					if (foundRows.Length != 0)
 					{
+						col_name.Length = 0;
+
 						// Generate a 10% rows with 'THE+ASAP+BENCHMARKS+'
 						// needed for sel_10pct_ncl test
 						if (tenpct_key == 0)
 						{
-							col_name = hundred_unique_name[random];
+							col_name.Append("THE+ASAP+BENCHMARKS+");
 						}
 						else
 						{
-							col_name = row["COL_NAME"].ToString();
+							col_name.Append(row["COL_NAME"].ToString());
 						}
 
 						if (++tenpct_key >= 10)
@@ -517,8 +531,8 @@ namespace AS3AP.BenchMark.Generator
 							((double)tenpctRow["COL_DOUBLE"]).ToString(numberFormat),
 							row["COL_DATE"],
 							row["COL_CODE"],
-							col_name,
-							row["COL_ADDRESS"]);								
+							col_name.ToString(),
+							row["COL_ADDRESS"]);
 					}
 
 					Array.Clear(foundRows, 0, foundRows.Length);

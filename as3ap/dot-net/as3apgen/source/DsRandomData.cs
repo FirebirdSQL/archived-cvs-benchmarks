@@ -640,8 +640,6 @@ namespace AS3AP.BenchMark.Generator {
             
             private DataColumn columnCOL_DOUBLE;
             
-            private DataColumn columnCOL_ADDRESS;
-            
             internal RANDOM_TENPCTDataTable() : 
                     base("RANDOM_TENPCT") {
                 this.InitClass();
@@ -694,12 +692,6 @@ namespace AS3AP.BenchMark.Generator {
                 }
             }
             
-            internal DataColumn COL_ADDRESSColumn {
-                get {
-                    return this.columnCOL_ADDRESS;
-                }
-            }
-            
             public RANDOM_TENPCTRow this[int index] {
                 get {
                     return ((RANDOM_TENPCTRow)(this.Rows[index]));
@@ -718,14 +710,13 @@ namespace AS3AP.BenchMark.Generator {
                 this.Rows.Add(row);
             }
             
-            public RANDOM_TENPCTRow AddRANDOM_TENPCTRow(int COL_KEY, System.Single COL_FLOAT, int COL_SIGNED, System.Double COL_DOUBLE, string COL_ADDRESS) {
+            public RANDOM_TENPCTRow AddRANDOM_TENPCTRow(int COL_KEY, System.Single COL_FLOAT, int COL_SIGNED, System.Double COL_DOUBLE) {
                 RANDOM_TENPCTRow rowRANDOM_TENPCTRow = ((RANDOM_TENPCTRow)(this.NewRow()));
                 rowRANDOM_TENPCTRow.ItemArray = new object[] {
                         COL_KEY,
                         COL_FLOAT,
                         COL_SIGNED,
-                        COL_DOUBLE,
-                        COL_ADDRESS};
+                        COL_DOUBLE};
                 this.Rows.Add(rowRANDOM_TENPCTRow);
                 return rowRANDOM_TENPCTRow;
             }
@@ -749,7 +740,6 @@ namespace AS3AP.BenchMark.Generator {
                 this.columnCOL_FLOAT = this.Columns["COL_FLOAT"];
                 this.columnCOL_SIGNED = this.Columns["COL_SIGNED"];
                 this.columnCOL_DOUBLE = this.Columns["COL_DOUBLE"];
-                this.columnCOL_ADDRESS = this.Columns["COL_ADDRESS"];
             }
             
             private void InitClass() {
@@ -761,14 +751,10 @@ namespace AS3AP.BenchMark.Generator {
                 this.Columns.Add(this.columnCOL_SIGNED);
                 this.columnCOL_DOUBLE = new DataColumn("COL_DOUBLE", typeof(System.Double), null, System.Data.MappingType.Element);
                 this.Columns.Add(this.columnCOL_DOUBLE);
-                this.columnCOL_ADDRESS = new DataColumn("COL_ADDRESS", typeof(string), null, System.Data.MappingType.Element);
-                this.Columns.Add(this.columnCOL_ADDRESS);
                 this.columnCOL_KEY.AllowDBNull = false;
                 this.columnCOL_FLOAT.AllowDBNull = false;
                 this.columnCOL_SIGNED.AllowDBNull = false;
                 this.columnCOL_DOUBLE.AllowDBNull = false;
-                this.columnCOL_ADDRESS.AllowDBNull = false;
-                this.columnCOL_ADDRESS.MaxLength = 80;
             }
             
             public RANDOM_TENPCTRow NewRANDOM_TENPCTRow() {
@@ -859,15 +845,6 @@ namespace AS3AP.BenchMark.Generator {
                 }
                 set {
                     this[this.tableRANDOM_TENPCT.COL_DOUBLEColumn] = value;
-                }
-            }
-            
-            public string COL_ADDRESS {
-                get {
-                    return ((string)(this[this.tableRANDOM_TENPCT.COL_ADDRESSColumn]));
-                }
-                set {
-                    this[this.tableRANDOM_TENPCT.COL_ADDRESSColumn] = value;
                 }
             }
         }

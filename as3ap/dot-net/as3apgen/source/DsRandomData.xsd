@@ -54,13 +54,6 @@
 							<xs:element name="COL_FLOAT" type="xs:float" />
 							<xs:element name="COL_SIGNED" type="xs:int" />
 							<xs:element name="COL_DOUBLE" type="xs:double" />
-							<xs:element name="COL_ADDRESS">
-								<xs:simpleType>
-									<xs:restriction base="xs:string">
-										<xs:maxLength value="80" />
-									</xs:restriction>
-								</xs:simpleType>
-							</xs:element>
 						</xs:sequence>
 					</xs:complexType>
 				</xs:element>
