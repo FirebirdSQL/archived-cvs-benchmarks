@@ -57,22 +57,8 @@
                         <Location value="{X=176,Y=104}" />
                       </System.Windows.Forms.Label>
                       <System.Windows.Forms.CheckBox>
-                        <Name value="chkHashIndexes" />
-                        <Location value="{X=16,Y=160}" />
-                        <Size value="{Width=160, Height=16}" />
-                        <Text value="Supports hash indexes" />
-                        <TabIndex value="11" />
-                      </System.Windows.Forms.CheckBox>
-                      <System.Windows.Forms.CheckBox>
-                        <Name value="chkClusterIndexes" />
-                        <Location value="{X=16,Y=136}" />
-                        <Size value="{Width=160, Height=16}" />
-                        <Text value="Supports clustered indexes" />
-                        <TabIndex value="10" />
-                      </System.Windows.Forms.CheckBox>
-                      <System.Windows.Forms.CheckBox>
                         <Name value="chkCreateIndexes" />
-                        <Location value="{X=8,Y=104}" />
+                        <Location value="{X=8,Y=32}" />
                         <Size value="{Width=104, Height=16}" />
                         <Text value="Create indexes" />
                         <TabIndex value="9" />
@@ -93,8 +79,8 @@
                         <Location value="{X=176,Y=16}" />
                       </System.Windows.Forms.Label>
                       <System.Windows.Forms.CheckBox>
-                        <Name value="checkBox" />
-                        <Location value="{X=8,Y=16}" />
+                        <Name value="chkCreateDB" />
+                        <Location value="{X=8,Y=8}" />
                         <Size value="{Width=144, Height=24}" />
                         <Text value="Create database tables" />
                         <TabIndex value="6" />
@@ -102,7 +88,7 @@
                       <System.Windows.Forms.TextBox>
                         <Name value="txtUserNumber" />
                         <TabIndex value="4" />
-                        <Location value="{X=8,Y=68}" />
+                        <Location value="{X=8,Y=72}" />
                         <Text value="" />
                       </System.Windows.Forms.TextBox>
                       <System.Windows.Forms.Label>
@@ -110,7 +96,7 @@
                         <Text value="User number" />
                         <TabIndex value="3" />
                         <Size value="{Width=80, Height=16}" />
-                        <Location value="{X=8,Y=48}" />
+                        <Location value="{X=8,Y=56}" />
                       </System.Windows.Forms.Label>
                     </Controls>
                   </System.Windows.Forms.TabPage>
@@ -211,6 +197,164 @@
                       </System.Windows.Forms.TextBox>
                     </Controls>
                   </System.Windows.Forms.TabPage>
+                  <System.Windows.Forms.TabPage>
+                    <Name value="tabRDBMS" />
+                    <DockPadding value="" />
+                    <Text value="RDBMS" />
+                    <Size value="{Width=448, Height=222}" />
+                    <Location value="{X=4,Y=22}" />
+                    <Controls>
+                      <System.Windows.Forms.GroupBox>
+                        <Name value="grbDataTypes" />
+                        <TabIndex value="21" />
+                        <Location value="{X=8,Y=112}" />
+                        <Size value="{Width=432, Height=100}" />
+                        <Text value="Data Type names" />
+                        <Controls>
+                          <System.Windows.Forms.TextBox>
+                            <Name value="txtVarchar" />
+                            <TabIndex value="26" />
+                            <Location value="{X=296,Y=64}" />
+                            <Size value="{Width=112, Height=20}" />
+                            <Text value="" />
+                          </System.Windows.Forms.TextBox>
+                          <System.Windows.Forms.Label>
+                            <Name value="lblVarchar" />
+                            <Text value="Varchar" />
+                            <TabIndex value="25" />
+                            <Size value="{Width=72, Height=16}" />
+                            <Location value="{X=224,Y=66}" />
+                          </System.Windows.Forms.Label>
+                          <System.Windows.Forms.TextBox>
+                            <Name value="txtChar" />
+                            <TabIndex value="24" />
+                            <Location value="{X=296,Y=40}" />
+                            <Size value="{Width=112, Height=20}" />
+                            <Text value="" />
+                          </System.Windows.Forms.TextBox>
+                          <System.Windows.Forms.Label>
+                            <Name value="lblChar" />
+                            <Text value="Char" />
+                            <TabIndex value="23" />
+                            <Size value="{Width=72, Height=16}" />
+                            <Location value="{X=224,Y=42}" />
+                          </System.Windows.Forms.Label>
+                          <System.Windows.Forms.TextBox>
+                            <Name value="txtDecimal" />
+                            <TabIndex value="22" />
+                            <Location value="{X=296,Y=16}" />
+                            <Size value="{Width=112, Height=20}" />
+                            <Text value="" />
+                          </System.Windows.Forms.TextBox>
+                          <System.Windows.Forms.Label>
+                            <Name value="lblDecimal" />
+                            <Text value="Decimal" />
+                            <TabIndex value="21" />
+                            <Size value="{Width=72, Height=16}" />
+                            <Location value="{X=224,Y=18}" />
+                          </System.Windows.Forms.Label>
+                          <System.Windows.Forms.TextBox>
+                            <Name value="txtDouble" />
+                            <TabIndex value="20" />
+                            <Location value="{X=80,Y=64}" />
+                            <Size value="{Width=112, Height=20}" />
+                            <Text value="" />
+                          </System.Windows.Forms.TextBox>
+                          <System.Windows.Forms.Label>
+                            <Name value="lblDouble" />
+                            <Text value="Double" />
+                            <TabIndex value="19" />
+                            <Size value="{Width=72, Height=16}" />
+                            <Location value="{X=8,Y=66}" />
+                          </System.Windows.Forms.Label>
+                          <System.Windows.Forms.TextBox>
+                            <Name value="txtFloat" />
+                            <TabIndex value="18" />
+                            <Location value="{X=80,Y=40}" />
+                            <Size value="{Width=112, Height=20}" />
+                            <Text value="" />
+                          </System.Windows.Forms.TextBox>
+                          <System.Windows.Forms.Label>
+                            <Name value="lblFloat" />
+                            <Text value="Float" />
+                            <TabIndex value="17" />
+                            <Size value="{Width=72, Height=16}" />
+                            <Location value="{X=8,Y=42}" />
+                          </System.Windows.Forms.Label>
+                          <System.Windows.Forms.TextBox>
+                            <Name value="txtInteger" />
+                            <TabIndex value="16" />
+                            <Location value="{X=80,Y=16}" />
+                            <Size value="{Width=112, Height=20}" />
+                            <Text value="" />
+                          </System.Windows.Forms.TextBox>
+                          <System.Windows.Forms.Label>
+                            <Name value="lblInteger" />
+                            <Text value="Integer" />
+                            <TabIndex value="15" />
+                            <Size value="{Width=72, Height=16}" />
+                            <Location value="{X=8,Y=18}" />
+                          </System.Windows.Forms.Label>
+                        </Controls>
+                      </System.Windows.Forms.GroupBox>
+                      <System.Windows.Forms.CheckBox>
+                        <Name value="chkHashIndexes" />
+                        <Location value="{X=176,Y=8}" />
+                        <Size value="{Width=160, Height=16}" />
+                        <Text value="Supports hash indexes" />
+                        <TabIndex value="20" />
+                      </System.Windows.Forms.CheckBox>
+                      <System.Windows.Forms.CheckBox>
+                        <Name value="chkClusterIndexes" />
+                        <Location value="{X=16,Y=8}" />
+                        <Size value="{Width=160, Height=16}" />
+                        <Text value="Supports clustered indexes" />
+                        <TabIndex value="19" />
+                      </System.Windows.Forms.CheckBox>
+                      <System.Windows.Forms.TextBox>
+                        <Name value="txtHashIndex" />
+                        <TabIndex value="18" />
+                        <Location value="{X=80,Y=80}" />
+                        <Size value="{Width=360, Height=20}" />
+                        <Text value="" />
+                      </System.Windows.Forms.TextBox>
+                      <System.Windows.Forms.Label>
+                        <Name value="lblHashIndex" />
+                        <Text value="Hash Index" />
+                        <TabIndex value="17" />
+                        <Size value="{Width=72, Height=16}" />
+                        <Location value="{X=8,Y=80}" />
+                      </System.Windows.Forms.Label>
+                      <System.Windows.Forms.TextBox>
+                        <Name value="txtClusterIndex" />
+                        <TabIndex value="16" />
+                        <Location value="{X=80,Y=56}" />
+                        <Size value="{Width=360, Height=20}" />
+                        <Text value="" />
+                      </System.Windows.Forms.TextBox>
+                      <System.Windows.Forms.Label>
+                        <Name value="lblClusterIndex" />
+                        <Text value="Cluster Index" />
+                        <TabIndex value="15" />
+                        <Size value="{Width=72, Height=16}" />
+                        <Location value="{X=8,Y=56}" />
+                      </System.Windows.Forms.Label>
+                      <System.Windows.Forms.TextBox>
+                        <Name value="txtBTreeIndex" />
+                        <TabIndex value="14" />
+                        <Location value="{X=80,Y=32}" />
+                        <Size value="{Width=360, Height=20}" />
+                        <Text value="" />
+                      </System.Windows.Forms.TextBox>
+                      <System.Windows.Forms.Label>
+                        <Name value="lblBtreeIndex" />
+                        <Text value="BTree Index" />
+                        <TabIndex value="13" />
+                        <Size value="{Width=72, Height=16}" />
+                        <Location value="{X=8,Y=32}" />
+                      </System.Windows.Forms.Label>
+                    </Controls>
+                  </System.Windows.Forms.TabPage>
                 </TabPages>
               </System.Windows.Forms.TabControl>
               <System.Windows.Forms.Button>
@@ -273,6 +417,18 @@
     </Controls>
   </System.Windows.Forms.Form>
   <System.Windows.Forms.ColumnHeader>
+    <Name value="columnHeader10" />
+    <Text value="Test Result" />
+  </System.Windows.Forms.ColumnHeader>
+  <System.Windows.Forms.ColumnHeader>
+    <Name value="columnHeader11" />
+    <Text value="Test time" />
+  </System.Windows.Forms.ColumnHeader>
+  <System.Windows.Forms.ColumnHeader>
+    <Name value="columnHeader9" />
+    <Text value="Test time" />
+  </System.Windows.Forms.ColumnHeader>
+  <System.Windows.Forms.ColumnHeader>
     <Name value="colTestTime" />
     <Text value="Test time" />
   </System.Windows.Forms.ColumnHeader>
@@ -285,12 +441,32 @@
     <Text value="Test name" />
   </System.Windows.Forms.ColumnHeader>
   <System.Windows.Forms.ColumnHeader>
+    <Name value="columnHeader6" />
+    <Text value="Test Result" />
+  </System.Windows.Forms.ColumnHeader>
+  <System.Windows.Forms.ColumnHeader>
+    <Name value="columnHeader5" />
+    <Text value="Test Result" />
+  </System.Windows.Forms.ColumnHeader>
+  <System.Windows.Forms.ColumnHeader>
+    <Name value="columnHeader4" />
+    <Text value="Test Failed" />
+  </System.Windows.Forms.ColumnHeader>
+  <System.Windows.Forms.ColumnHeader>
+    <Name value="columnHeader8" />
+    <Text value="Test name" />
+  </System.Windows.Forms.ColumnHeader>
+  <System.Windows.Forms.ColumnHeader>
     <Name value="colTestFailed" />
     <Text value="Test Failed" />
   </System.Windows.Forms.ColumnHeader>
   <System.Windows.Forms.ColumnHeader>
     <Name value="columnHeader3" />
-    <Text value="Test Result" />
+    <Text value="Test name" />
+  </System.Windows.Forms.ColumnHeader>
+  <System.Windows.Forms.ColumnHeader>
+    <Name value="columnHeader7" />
+    <Text value="Test Failed" />
   </System.Windows.Forms.ColumnHeader>
   <System.Windows.Forms.ColumnHeader>
     <Name value="colTestResult" />
