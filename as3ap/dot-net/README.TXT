@@ -46,7 +46,13 @@ Build with Microsoft .Net Framework:
 		1.- Change the Html Help Compiler Path, 
 		2.- Change the NUnit Path.
 
-	For build it you only need to exececute nant on the same directory as the build file.
+	- Change :
+
+	    <property name="FirebirdSql.Data.Firebird.dir" value=""/>    
+
+	in the nant build file to the directory that contains the FirebirdSql.Data.Firebird.dll file.
+
+	- Exec nant in the command line in the directory that contains the build file.
 
 
 Build with Mono:: platform:
