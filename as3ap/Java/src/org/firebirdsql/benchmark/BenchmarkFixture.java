@@ -56,6 +56,7 @@ public class BenchmarkFixture {
         
         manager.executeDDL(BenchmarkDDL.CREATE_UPDATES_TABLE);
         manager.executeDDL(BenchmarkDDL.CREATE_HUNDRED_TABLE);
+        manager.executeDDL(BenchmarkDDL.CREATE_HUNDRED_FOREIGN_KEY);
         manager.executeDDL(BenchmarkDDL.CREATE_TEN_PCT_TABLE);
         manager.executeDDL(BenchmarkDDL.CREATE_UNIQUES_TABLE);
         manager.executeDDL(BenchmarkDDL.CREATE_TINY_TABLE);
@@ -78,13 +79,15 @@ public class BenchmarkFixture {
      * @throws SQLException if something went wrong.
      */    
     public void recreateUpdates() throws SQLException {
-        /* 
+        /*
         // this causes "object in use error", so we will simply delete content
+        manager.executeDDL(BenchmarkDDL.DROP_HUNDRED_FOREIGN_KEY);
         manager.executeDDL(BenchmarkDDL.DROP_UPDATES_TABLE);
         manager.executeDDL(BenchmarkDDL.CREATE_UPDATES_TABLE);
+        manager.executeDDL(BenchmarkDDL.CREATE_HUNDRED_FOREIGN_KEY);
         */
         
-        manager.executeDDL("DELETE FROM " + BenchmarkDDL.UPDATES_TABLE);
+        // manager.executeDDL("DELETE FROM " + BenchmarkDDL.UPDATES_TABLE);
     }
     
     /**
@@ -117,60 +120,60 @@ public class BenchmarkFixture {
     public void loadFile(File file, String insertSql) 
         throws SQLException, IOException 
     {
+        Connection connection = manager.getConnection();
+        connection.setAutoCommit(false);
+        
+        try {
+            loadFile(file, connection, insertSql);
+            connection.commit();
+        } catch(SQLException ex) {
+            connection.rollback();
+        } finally {
+            connection.close();
+        }
+    }
+        
+    public void loadFile(File file, Connection connection, String insertSql)
+        throws SQLException, IOException 
+    {
         System.out.println("Loading file " + file.getName());
 
         LineNumberReader in = new LineNumberReader(
             new InputStreamReader(new FileInputStream(file)));
 
-        Connection connection = manager.getConnection();
+
+        PreparedStatement stmt = null;
 
         try {
-            connection.setAutoCommit(false);
+            stmt = connection.prepareStatement(insertSql);
 
-            PreparedStatement stmt = null;
+            int rowCount = 0;
+            String line = null;
+            while((line = in.readLine()) != null) {
 
-            try {
-                stmt = connection.prepareStatement(insertSql);
+                StringTokenizer st = new StringTokenizer(line, ",");
 
-                int rowCount = 0;
-                String line = null;
-                while((line = in.readLine()) != null) {
-
-                    StringTokenizer st = new StringTokenizer(line, ",");
-
-                    int counter = 1;
-                    while(st.hasMoreTokens()) {
-                        if (counter != 7)
-                            stmt.setString(counter++, st.nextToken());
-                        else {
-                            Date date = new Date(st.nextToken());
-                            Timestamp timestamp = new Timestamp(date.getTime());
-                            stmt.setTimestamp(counter++, timestamp);
-                        }
+                int counter = 1;
+                while(st.hasMoreTokens()) {
+                    if (counter != 7)
+                        stmt.setString(counter++, st.nextToken());
+                    else {
+                        Date date = new Date(st.nextToken());
+                        Timestamp timestamp = new Timestamp(date.getTime());
+                        stmt.setTimestamp(counter++, timestamp);
                     }
-                    
-                    if (rowCount != 0 && rowCount % 1000 == 0)
-                        System.out.println("Inserted " + rowCount + " rows");
-
-                    stmt.executeUpdate();
-                    rowCount++;
-
                 }
+                
+                if (rowCount != 0 && rowCount % 1000 == 0)
+                    System.out.println("Inserted " + rowCount + " rows");
 
-                connection.commit();
+                stmt.executeUpdate();
+                rowCount++;
 
-            } catch(SQLException ex) {
-
-                connection.rollback();
-
-                throw ex;
-
-            } finally {
-                if (stmt != null)
-                    stmt.close();
             }
         } finally {
-            connection.close();
+            if (stmt != null)
+                stmt.close();
         }
     }
     
