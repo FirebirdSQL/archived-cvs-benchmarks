@@ -1,6 +1,12 @@
 AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems.
 =============================================================================================
 
+2003-11-20 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+
+	* source/Sql92TestSuite.cs:
+
+		- Added spaces separators to sql queryes definitions.
+
 
 2003-08-07 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
