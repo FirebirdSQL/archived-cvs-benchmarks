@@ -75,7 +75,7 @@ namespace AS3AP.BenchMark
 				this.logPath += Path.DirectorySeparatorChar;
 			}
 
-			string logName = logPath + "as3ap_"			+
+			string logName = this.logPath + "as3ap_"	+
 				System.DateTime.Now.Year.ToString()		+
 				System.DateTime.Now.Month.ToString()	+
 				System.DateTime.Now.Day.ToString()		+
