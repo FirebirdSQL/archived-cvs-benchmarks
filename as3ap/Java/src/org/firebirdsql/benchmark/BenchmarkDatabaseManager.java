@@ -27,6 +27,7 @@ import org.firebirdsql.jdbc.FBSQLException;
 import org.firebirdsql.jdbc.FBSimpleDataSource;
 import org.firebirdsql.pool.FBConnectionPoolConfiguration;
 import org.firebirdsql.pool.FBConnectionPoolDataSource;
+import org.firebirdsql.pool.GenericConnectionPoolConfiguration;
 import org.firebirdsql.pool.SimpleDataSource;
 import org.firebirdsql.jdbc.FBWrappingDataSource;
 
@@ -114,18 +115,34 @@ public class BenchmarkDatabaseManager {
         }
     }
     
-    protected DataSource getStatementPoolingDataSource() throws SQLException {
-        FBConnectionPoolConfiguration config = new FBConnectionPoolConfiguration();
-        config.setJdbcUrl("jdbc:firebirdsql:" + getConfig().getDatabasePath());
+    protected FBConnectionPoolConfiguration getConfiguration() throws SQLException {
+        
+        FBConnectionPoolConfiguration config;
+        if (getConfig().getDriverClassName() != null) {
+            config = new GenericConnectionPoolConfiguration(
+                getConfig().getDriverClassName());
+                
+            config.setJdbcUrl(getConfig().getJdbcUrl());
+        } else {
+             config = new FBConnectionPoolConfiguration();
+             config.setJdbcUrl("jdbc:firebirdsql:" + getConfig().getDatabasePath());
+            config.setProperty(
+                "tpb_mapping",
+                getConfig().getTpbMapping()
+            );
+        }
+        
         config.setProperty("user", getConfig().getUserName());
         config.setProperty("password", getConfig().getPassword());
-        config.setProperty(
-            "tpb_mapping",
-            getConfig().getTpbMapping()
-        );
         config.setMaxConnections(getConfig().getMaxConnections());
         
-        FBConnectionPoolDataSource pool = new FBConnectionPoolDataSource(config);
+        return config;
+    }
+    
+    protected DataSource getStatementPoolingDataSource() throws SQLException {
+        
+        FBConnectionPoolDataSource pool = 
+            new FBConnectionPoolDataSource(getConfiguration());
         pool.start();
         
         return new SimpleDataSource(pool);

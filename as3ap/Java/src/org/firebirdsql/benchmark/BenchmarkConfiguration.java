@@ -45,6 +45,7 @@ public class BenchmarkConfiguration {
     public static final String STATEMENT_POOLING_STR = "statement";
     
     public static final String MAX_CONNECTIONS = "maxConnections";
+    public static final String USER_COUNT = "userCount";
     
     public static final int UNKNOWN_POOLING = 0;
     public static final int NO_POOLING = 1;
@@ -55,6 +56,9 @@ public class BenchmarkConfiguration {
     public static final String MEASURMENT_TEST_DURARION = "perfDuration";
     
     public static final String RECREATE_TABLE_AS_CLEANUP = "recreateTable";
+    
+    public static final String JDBC_DRIVER_CLASS_NAME = "jdbcDriver";
+    public static final String JDBC_DRIVER_URL = "jdbcUrl";
     
     private static final Properties RES = new Properties();
     static {
@@ -118,7 +122,7 @@ public class BenchmarkConfiguration {
     }
     
     private int getIntProperty(String key, int defaultValue) {
-        String strValue = RES.getProperty(BACKGROUND_TEST_DURATION);
+        String strValue = RES.getProperty(key);
         
         if (strValue == null)
             return defaultValue;
@@ -126,7 +130,7 @@ public class BenchmarkConfiguration {
         try {
             int value = Integer.parseInt(strValue);
             
-            return value * 1000;
+            return value;
         } catch(NumberFormatException ex) {
             return defaultValue;
         }
@@ -146,11 +150,11 @@ public class BenchmarkConfiguration {
     }
     
     public int getBackgroundTestDuration() {
-        return getIntProperty(BACKGROUND_TEST_DURATION, 15 * 60 * 1000);
+        return getIntProperty(BACKGROUND_TEST_DURATION, 15 * 60)  * 1000;
     }
     
     public int getPerformanceDuration() {
-        return getIntProperty(MEASURMENT_TEST_DURARION, 5 * 60 * 1000);
+        return getIntProperty(MEASURMENT_TEST_DURARION, 5 * 60)  * 1000;
     }
     
     public int getMaxConnections() {
@@ -164,5 +168,17 @@ public class BenchmarkConfiguration {
     
     public boolean isRecreateTableAsCleanup() {
         return getBooleanProperty(RECREATE_TABLE_AS_CLEANUP, false);
+    }
+    
+    public int getUserCount() {
+        return getIntProperty(USER_COUNT, 1);
+    }
+    
+    public String getDriverClassName() {
+        return RES.getProperty(JDBC_DRIVER_CLASS_NAME);
+    }
+    
+    public String getJdbcUrl() {
+        return RES.getProperty(JDBC_DRIVER_URL);
     }
 }
