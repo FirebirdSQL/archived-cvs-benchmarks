@@ -20,15 +20,21 @@
 package org.firebirdsql.benchmark;
 
 import java.sql.*;
+
+import javax.resource.ResourceException;
+
 import org.firebirdsql.gds.*;
 import org.firebirdsql.jdbc.FBSQLException;
 import org.firebirdsql.jdbc.FBSimpleDataSource;
+import org.firebirdsql.jdbc.FBWrappingDataSource;
 
 /**
  * This class is responsible for database management.
  * 
  */
 public class BenchmarkDatabaseManager {
+    
+    private static final boolean USE_POOLING = true;
     
     private String database;
     private String userName;
@@ -62,10 +68,25 @@ public class BenchmarkDatabaseManager {
         if (create)
             createDatabase();
             
-        dataSource = new FBSimpleDataSource();
+        if (USE_POOLING)
+            try {
+				dataSource = new FBWrappingDataSource();
+			} catch (ResourceException e) {
+				throw new FBSQLException(e);
+			}
+        else
+            dataSource = new FBSimpleDataSource();
+            
         dataSource.setDatabase(database);
         dataSource.setUserName(userName);
         dataSource.setPassword(password);
+        
+        if (USE_POOLING) {
+            FBWrappingDataSource pool = (FBWrappingDataSource)dataSource;
+            
+            pool.setPooling(true);
+            pool.setMaxSize(20);
+        }
     }
     
     /**
