@@ -468,8 +468,8 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch (Exception ex)
 			{
-				TransactionRollback();
 				if (log != null) log.Error("load failed {0}", ex.Message);
+				TransactionRollback();				
 				throw ex;
 			}
 		}
