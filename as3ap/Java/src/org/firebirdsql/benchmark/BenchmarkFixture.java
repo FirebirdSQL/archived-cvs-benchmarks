@@ -81,6 +81,18 @@ public class BenchmarkFixture {
         manager.executeDDL(BenchmarkDDL.DROP_UPDATES_TABLE);
         manager.executeDDL(BenchmarkDDL.CREATE_UPDATES_TABLE);
     }
+    
+    /**
+     * Recreate temporary updates tables. 
+     * 
+     * @throws SQLException if something went wrong.
+     */
+    public void recreateTempUpdates() throws SQLException {
+        manager.executeDDL(BenchmarkDDL.DROP_SEL_100_SEQ_TABLE);
+        manager.executeDDL(BenchmarkDDL.DROP_SEL_100_RND_TABLE);
+        manager.executeDDL(BenchmarkDDL.CREATE_SEL_100_SEQ_TABLE);
+        manager.executeDDL(BenchmarkDDL.CREATE_SEL_100_RND_TABLE);
+    }
 
     /**
      * Load data in CSV format from the specified file using the specified

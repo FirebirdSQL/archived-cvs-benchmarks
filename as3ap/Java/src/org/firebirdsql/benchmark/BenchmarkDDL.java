@@ -151,6 +151,14 @@ public abstract class BenchmarkDDL extends TestCase {
     public static final String DROP_UPDATES_TABLE = ""
         + "DROP TABLE " + UPDATES_TABLE
         ;
+        
+    public static final String DROP_SEL_100_SEQ_TABLE = ""
+        + "DROP TABLE " + SEL_100_SEQ_TABLE
+        ;
+        
+    public static final String DROP_SEL_100_RND_TABLE = ""
+        + "DROP TABLE " + SEL_100_RND_TABLE
+        ;
 
     public BenchmarkDDL(String string) {
         super(string);

@@ -18,6 +18,7 @@
  */
 package org.firebirdsql.benchmark;
 
+import sun.security.action.GetBooleanAction;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
@@ -40,8 +41,7 @@ public class MultiUserSuite extends BenchmarkSuite {
      * Fill this test suite.
      */
     public void fillSuite() {
-        // TODO Auto-generated method stub
-
+        addTest(new Suite("testMultiUser"));
     }
     
     private class Suite extends TestCase {
@@ -53,6 +53,9 @@ public class MultiUserSuite extends BenchmarkSuite {
             
             TestResult testResult = new TestResult();
             
+            // Step 1
+            
+            // Step 2
             ActiveBenchmarkSuite bgIrTests = new ActiveBenchmarkSuite(0, getUserCount());
             bgIrTests.addTest(new MultiUserTest("testIrSelect", KEY_RANGE));
             
@@ -60,6 +63,7 @@ public class MultiUserSuite extends BenchmarkSuite {
             
             Thread.sleep(1 * 60 * 1000);
             
+            // Step 3            
             ActiveBenchmarkSuite perfIrTest = new ActiveBenchmarkSuite();
             perfIrTest.setDuration(1 * 60 * 1000);
             perfIrTest.addTest(new MultiUserTest("testIrSelect", KEY_RANGE));
@@ -67,13 +71,49 @@ public class MultiUserSuite extends BenchmarkSuite {
             perfIrTest.run(testResult);
             perfIrTest.waitSuiteCompletion();
             
+            // Step 4
             Thread victim = (Thread)bgIrTests.getThreads().get(0);
             victim.interrupt();
             
             victim.join();
             
-            TestSuite crossSectionTests = getCrossSectionSuite();
-            crossSectionTests.run(testResult);
+            getCrossSectionSuite().run(testResult);
+            
+            // Step 5
+            bgIrTests.stop();
+            
+            getCheckSuite().run(testResult);
+            
+            // Step 6
+            new LoadTest("testRecoverUpdates").run(testResult);
+            
+            // Step 7
+            getFixture().recreateTempUpdates();
+            
+            // Step 8
+            ActiveBenchmarkSuite bgOltpTests = new ActiveBenchmarkSuite(0, getUserCount());
+            bgOltpTests.addTest(new MultiUserTest("testOltpUpdate", KEY_RANGE));
+            
+            bgOltpTests.run(testResult);
+            
+            Thread.sleep(1 * 60 * 1000);
+            
+            // Step 9
+            perfIrTest.run(testResult);
+            perfIrTest.waitSuiteCompletion();
+            
+            // Step 10
+            victim = (Thread)bgOltpTests.getThreads().get(0);
+            victim.interrupt();
+            
+            victim.join();
+            
+            getCrossSectionSuite().run(testResult);
+            
+            // Step 12
+            bgOltpTests.stop();
+            
+            getCheckSuite().run(testResult);
         }
     }
     
@@ -90,6 +130,15 @@ public class MultiUserSuite extends BenchmarkSuite {
         suite.addTest(new MultiUserTest("testModify100Random"));
         suite.addTest(new MultiUserTest("testUnmodify100Sequence"));
         suite.addTest(new MultiUserTest("testUnmodify100Random"));
+        
+        return suite;
+    }
+    
+    private TestSuite getCheckSuite() {
+        TestSuite suite = new TestSuite();
+        
+        suite.addTest(new MultiUserTest("testCheck100Random"));
+        suite.addTest(new MultiUserTest("testCheck100Sequence"));
         
         return suite;
     }
