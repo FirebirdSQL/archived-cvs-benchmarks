@@ -217,7 +217,7 @@ public abstract class MultiUserTest extends BenchmarkTest {
                 + SIGNED_COL + ", " + NAME_COL + " "
                 + "FROM " + UPDATES_TABLE + " "
                 + "WHERE " + KEY_COL + " = ?",
-                new Object[]{ new Integer(rnd.nextInt(keyRange))}
+                new Object[]{ new Integer(rnd.nextInt(keyRange) + 1)}
             );
             
             Fetcher f = new Fetcher(new String[]{
