@@ -40,11 +40,11 @@ Build with Microsoft .Net Framework:
 
 	- You need the Microsoft .Net Platform.
 
-	- The provider sources have a build file for NAnt ( http://nant.sourceforge.net/ ), AS3AP.BenchMark.build,
-	before build the sources using Nant you need to change two things on it:
+	- The last version of he Firebird .Net Data Provider ( at this moment CVS version is needed ).
 
-		1.- Change the Html Help Compiler Path, 
-		2.- Change the NUnit Path.
+	- The sources have a build file for NAnt ( http://nant.sourceforge.net/ ), AS3AP.BenchMark.build
+
+	Before launch the build you need to change two things in the nant build file:
 
 	- Change :
 
@@ -54,12 +54,16 @@ Build with Microsoft .Net Framework:
 
 	- Exec nant in the command line in the directory that contains the build file.
 
+	- You will need to change the DataPath key of the Configuration file to the directory that have the as3ap 
+	data files.
+
+
 
 Build with Mono:: platform:
 
 	- You nedd Mono:: ( www.go-mono.com ), version > 0.16 ( at this moment CVS Sources ).
 
-	- The provider sources have a build file, makefile, for build the sources ( this script file needs Cygwin ).
+	- The sources have a build file called makefile, for build the sources ( this script file needs Cygwin ).
 
 	Note : You can build it using NAnt too, for this you need to modify the NAnt script changing the build 
 	file for allow it.
@@ -70,7 +74,7 @@ Requirements for build the sources on Linux
 
 Build with Mono:: platform:
 
-	- You nedd Mono:: ( www.go-mono.com ), version > 0.16 ( at this moment CVS Sources ).
+	- You need Mono:: ( www.go-mono.com ), version > 0.16 ( at this moment CVS Sources ).
 
-	- The provider sources have a build file, makefile, for build the sources, you only need to execute make on the same
-	directory as the script.
+	- The sources have a build file called makefile, for build the sources, you need to modify the directory of 
+	the Firebird .Net Provider dll and run make in the directory that contains the makefile.
