@@ -1,3 +1,94 @@
+2003-11-27  carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt:
+	* as3ap/dot-net/as3ap.BenchMark.build:
+	* as3ap/dot-net/assemblys/Common.Data.Helper.dll:
+	* as3ap/dot-net/assemblys/FirebirdSql.Data.Firebird.dll:
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
+	* as3ap/dot-net/source/GUI/As3apGui.cs:
+		2003-11-27 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* source/AS3AP.cs:
+			* source/BaseTestSuite.cs:
+			* source/BenchmarkConfiguration.cs:
+		
+				- Added changes for make use of the Common.Data.Helper assembly.
+		
+			* source/GUI/AS3APGui.cs:
+		
+				- Added changes for make use of the Common.Data.Helper assembly.
+		
+				- Reworked the Page control.
+
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+		2003-11-27 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* source/BaseTestSuite.cs:
+		
+				- Improved transaction handling in loadFile method starting a new transaction when
+				a new block of 1000 rows has been inserted.
+
+	* as3ap/dot-net/source/GUI/As3apGui.cs:
+		- Added some improvements to exception handling.
+
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated CHANGELOG.TXT
+
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated changelog.txt
+
+	* as3ap/dot-net/assemblys/Common.Data.Helper.dll:
+	* as3ap/dot-net/assemblys/FirebirdSql.Data.Firebird.dll:
+		Updated assemblys
+
+	* as3ap/dot-net/Build.NET.bat:
+	* as3ap/dot-net/build.bat:
+		Renamed filed Build.Net.bat to build.bat
+
+2003-11-22  carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt:
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/GUI/As3apGui.cs:
+		2003-11-22 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* source/AS3AP.cs:
+			* source/GUI/AS3APGui.cs:
+		
+				- Save logs in executable directory.
+
+	* as3ap/dot-net/source/AS3AP.cs:
+		Fixed typo in latest commit
+
+2003-11-21  carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
+	* as3ap/dot-net/source/GUI/As3apGui.cs:
+		2003-11-20 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* Added minor improvement to exception handling.
+		
+			* Added result messages for data file loading.
+
+2003-11-19  carlosga_fb
+	* as3ap/dot-net/source/Sql92TestSuite.cs:
+		2003-11-20 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* source/Sql92TestSuite.cs:
+		
+				- Added spaces separators to sql queryes definitions.
+
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated changelog.txt
+
+	* as3ap/dot-net/source/Sql87TestSuite.cs:
+		Minor change
+
+2003-11-14  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDatabaseManager.java:
+		updated to the current CVS version of JayBird
+
 2003-10-04  carlosga_fb
 	* as3ap/dot-net/source/BaseTestSuite.cs:
 	* as3ap/dot-net/source/GUI/As3apGui.cs:
@@ -95,6 +186,10 @@
 	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
 		fixed hardcoded value of concurrent threads
 
+2003-05-04  carlosga_fb
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+		Added some bugfixes
+
 2003-05-04  rrokytskyy
 	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkConfiguration.java:
 	* as3ap/Java/src/org/firebirdsql/benchmark/benchmarkSuite.properties:
@@ -131,10 +226,6 @@
 		modified testRestoreUpdates() to avoid "object in use" or "
 		foreign key violation" errors
 
-2003-05-04  carlosga_fb
-	* as3ap/dot-net/source/BaseTestSuite.cs:
-		Added some bugfixes
-
 2003-05-03  rrokytskyy
 	* as3ap/Java/src/org/firebirdsql/benchmark/BackgroundMultiUserTest.java:
 	* as3ap/Java/src/org/firebirdsql/benchmark/MainstreamMultiUserTest.java:
@@ -145,15 +236,6 @@
 
 	* as3ap/Java/src/org/firebirdsql/benchmark/ActiveBenchmarkSuite.java:
 		simplified suite significantly
-
-2003-04-29  rrokytskyy
-	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDatabaseManager.java:
-		added possibility to use connection pooling
-
-	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkListener.java:
-	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
-	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserTest.java:
-		added possibility to group test results
 
 2003-04-29  carlosga_fb
 	* as3ap/dot-net/CHANGELOG.txt:
@@ -168,6 +250,15 @@
 	* as3ap/dot-net/source/Sql87TestSuite.cs:
 	* as3ap/dot-net/source/Sql92TestSuite.cs:
 		BAckend class is no more needed
+
+2003-04-29  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDatabaseManager.java:
+		added possibility to use connection pooling
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkListener.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserTest.java:
+		added possibility to group test results
 
 2003-04-28  rrokytskyy
 	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
