@@ -35,6 +35,8 @@ public class BackgroundMultiUserTest extends MultiUserTest {
     protected void setUp() throws Exception {
         super.setUp();
         
+        getConnection().setAutoCommit(true);
+        
         stopped = false;
     }
 
