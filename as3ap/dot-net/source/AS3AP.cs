@@ -85,13 +85,47 @@ namespace AS3AP.BenchMark
 		#endregion
 	}
 
+	public class ProgressMessageEventArgs : EventArgs
+	{
+		#region FIELDS
+
+		private string	message	= String.Empty;
+
+		#endregion
+
+		#region PROPERTIES
+
+		public string Message
+		{
+			get { return message; }
+			set { message = value; }
+		}
+
+		#endregion
+
+		#region CONSTRUCTORS
+
+		public ProgressMessageEventArgs(string message)
+		{
+			this.message = message;
+		}
+
+		#endregion
+	}
+
+	#region DELEGATES
+
 	public delegate void TestResultEventHandler(object sender, TestResultEventArgs e);
+	public delegate void ProgressMessageEventHandler(object sender, ProgressMessageEventArgs e);
+
+	#endregion
 
 	public class AS3AP
 	{	
 		#region EVENTS
 
-		public event TestResultEventHandler TestResult;
+		public event TestResultEventHandler			TestResult;
+		public event ProgressMessageEventHandler	ProgressMessage;
 
 		#endregion
 
@@ -147,7 +181,11 @@ namespace AS3AP.BenchMark
 
 			if (configuration.RunCreate) 
 			{
-				Console.WriteLine("Creating tables and loading data {0}.", DateTime.Now);
+				if (ProgressMessage != null)
+				{
+					ProgressMessage(this, 
+						new ProgressMessageEventArgs("Creating tables and loading data " + DateTime.Now.ToString()));
+				}
 				timeIt("createDataBase");
 			}			
 			else
@@ -182,7 +220,11 @@ namespace AS3AP.BenchMark
 						case "SQL87":
 						case "SQL92":
 						{
-							Console.WriteLine("Running tests using {0} syntax", testType[j]);
+							if (ProgressMessage != null)
+							{
+								ProgressMessage(this, 
+									new ProgressMessageEventArgs("Running tests using " + testType[j] + " syntax"));
+							}
 						
 							testSuite.CloseBackendLogger();
 							testSuite = TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
@@ -195,13 +237,21 @@ namespace AS3AP.BenchMark
 						case "SINGLEUSER":
 						{
 							/* Start of the single user test */
-							Console.WriteLine("Preparing single-user test");
+							if (ProgressMessage != null)
+							{
+								ProgressMessage(this, 
+									new ProgressMessageEventArgs("Preparing single-user test"));
+							}
 							if (singleUserCount != 0)
 							{
 								setup_database();
 							}
 
-							Console.WriteLine("Starting single-user test");
+							if (ProgressMessage != null)
+							{
+								ProgressMessage(this, 
+									new ProgressMessageEventArgs("Starting single-user test"));
+							}
 							currentTest = "Preparing single user test";
 							clocks		= DateTime.Now.Ticks;
 							runSingleUserTests();
@@ -226,7 +276,11 @@ namespace AS3AP.BenchMark
 							else
 							{
 								testSuite.Backend.DatabaseDisconnect();
-								Console.WriteLine("Starting multi-user test");
+								if (ProgressMessage != null)
+								{
+									ProgressMessage(this, 
+										new ProgressMessageEventArgs("Starting multi-user test"));
+								}
 				
 								clocks = DateTime.Now.Ticks;
 								runMultiUserTests(configuration.UserNumber == 0 ? (int)(dbSize / 4) : configuration.UserNumber);
@@ -241,6 +295,12 @@ namespace AS3AP.BenchMark
 						break;
 					}
 				}
+			}
+
+			if (ProgressMessage != null)
+			{
+				ProgressMessage(this, 
+					new ProgressMessageEventArgs("!!! Finished !!!"));
 			}
 		}
 
@@ -353,7 +413,11 @@ namespace AS3AP.BenchMark
 			 */
 			
 			/* Step 2 -- Run IR (Mix 1) test for 15 minutes.	*/
-			Console.WriteLine("Run IR (Mix 1) test for 15 minutes ({0}).", DateTime.Now);
+			if (ProgressMessage != null)
+			{
+				ProgressMessage(this, 
+					new ProgressMessageEventArgs("Run IR (Mix 1) test for 15 minutes (" + DateTime.Now.ToString() + ")."));
+			}
 			iters		= 0;
 			timeToRun	= 15;
 			for (int i = 0; i < nInstances; i++) 
@@ -370,7 +434,11 @@ namespace AS3AP.BenchMark
 			}
 						
 			/* Step 3 -- Measure throughput in IR test for five minutes.	*/
-			Console.WriteLine("Run Measure throughput in IR test for five minutes ({0}).", DateTime.Now);
+			if (ProgressMessage != null)
+			{
+				ProgressMessage(this, 
+					new ProgressMessageEventArgs("Run Measure throughput in IR test for five minutes (" + DateTime.Now.ToString() + ")."));
+			}
 			iters		= 0;
 			startTime	= DateTime.Now;
 			timeToRun	= 5;
@@ -397,7 +465,11 @@ namespace AS3AP.BenchMark
 			 * section of ten update and retrieval queries, and all the others 
 			 * execute the same IR query as in the second test.
 			 */
-			Console.WriteLine("Run Mixed Workload IR test (Mix 3). ({0}).", DateTime.Now);
+			if (ProgressMessage != null)
+			{
+				ProgressMessage(this, 
+					new ProgressMessageEventArgs("Run Mixed Workload IR test (Mix 3) (" + DateTime.Now.ToString() + ")."));
+			}
 			currentTest		= "Mixed IR";
 			process[0]		= new Thread(new ThreadStart(crossSectionTests));
 			process[0].Name = "User " + 0.ToString();
@@ -420,7 +492,11 @@ namespace AS3AP.BenchMark
 			/* Step 5 -- Run queries to check correctness of the sequential 
 			 * and random bulk updates.
 			 */
-			Console.WriteLine("Check correctness of the sequential and random bulk updates ({0}).", DateTime.Now);
+			if (ProgressMessage != null)
+			{
+				ProgressMessage(this, 
+					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
+			}
 			testSuite.Backend.DatabaseConnect();
 			timeIt("mu_checkmod_100_seq");
 			timeIt("mu_checkmod_100_rand");
@@ -435,7 +511,11 @@ namespace AS3AP.BenchMark
 			 * checkmod_100_rand. Remove temporary tables: sel100seq and 
 			 * sel100rand.
 			 */
-			Console.WriteLine("Check correctness of the sequential and random bulk updates ({0}).", DateTime.Now);
+			if (ProgressMessage != null)
+			{
+				ProgressMessage(this, 
+					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
+			}
 			testSuite.Backend.DatabaseConnect();
 			timeIt("mu_checkmod_100_seq");
 			timeIt("mu_checkmod_100_rand");
@@ -445,7 +525,11 @@ namespace AS3AP.BenchMark
 			testSuite.Backend.DatabaseDisconnect();
 
 			/* Step 8 - Run OLTP test for 15 minutes.	*/
-			Console.WriteLine("Run OLTP test for 15 minutes ({0}).", DateTime.Now);
+			if (ProgressMessage != null)
+			{
+				ProgressMessage(this, 
+					new ProgressMessageEventArgs("Run OLTP test for 15 minutes (" + DateTime.Now.ToString() + ")."));
+			}
 			timeToRun = 15;
 			for (int i = 0; i < nInstances; i++) 
 			{
@@ -461,7 +545,11 @@ namespace AS3AP.BenchMark
 			}
 
 			/* Step 9 -- Measure throughput in IR test for five minutes.	*/
-			Console.WriteLine("Run Measure throughput in IR test for five minutes ({0}).", DateTime.Now);
+			if (ProgressMessage != null)
+			{
+				ProgressMessage(this, 
+					new ProgressMessageEventArgs("Run Measure throughput in IR test for five minutes (" + DateTime.Now.ToString() + ")."));
+			}
 			iters		= 0;
 			startTime	= DateTime.Now;
 			timeToRun	= 5;
@@ -488,7 +576,11 @@ namespace AS3AP.BenchMark
 			 * section script. This is the Mixed Workload OLTP test (Mix 4). 
 			 * This step is variable length.
 			 */
-			Console.WriteLine("Run Mixed Workload OLTP test (Mix 4) ({0}).", DateTime.Now);
+			if (ProgressMessage != null)
+			{
+				ProgressMessage(this, 
+					new ProgressMessageEventArgs("Run Mixed Workload OLTP test (Mix 4) (" + DateTime.Now.ToString() + ")."));
+			}
 			currentTest		= "Mixed OLTP";
 			process[0]		= new Thread(new ThreadStart(crossSectionTests));
 			process[0].Name = "User " + 0.ToString();
@@ -512,7 +604,11 @@ namespace AS3AP.BenchMark
 			 * checkmod_100_rand. Remove temporary tables: sel100seq and 
 			 * sel100rand.
 			 */
-			Console.WriteLine("Check correctness of the sequential and random bulk updates ({0}).", DateTime.Now);
+			if (ProgressMessage != null)
+			{
+				ProgressMessage(this, 
+					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
+			}
 			testSuite.Backend.DatabaseConnect();
 			timeIt("mu_checkmod_100_seq");			
 			timeIt("mu_checkmod_100_rand");
