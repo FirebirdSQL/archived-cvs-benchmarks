@@ -20,6 +20,9 @@
 package org.firebirdsql.benchmark;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * This class implements data load tests from AS3AP test suite.
@@ -64,10 +67,39 @@ public class LoadTest extends BenchmarkTest {
     
     public void testRestoreUpdates() throws Exception {
         BenchmarkFixture fixture = getFixture();
+        BenchmarkDatabaseManager manager = getDatabaseManager();
         
-        fixture.recreateUpdates();
-        fixture.loadFile(new File(fixture.getDataPath(), UPDATES_FILE), 
-            BenchmarkInsertSQL.INSERT_UPDATES);
+        Connection con = getConnection();
+        try {
+            // manager.executeDDL(DROP_HUNDRED_FOREIGN_KEY);
+            
+            con.setAutoCommit(false);
+        
+            Statement stmt = con.createStatement();
+            
+            //stmt.executeUpdate(DROP_HUNDRED_FOREIGN_KEY);
+            //con.commit();
+            
+            stmt.executeUpdate("DELETE FROM " + HUNDRED_TABLE);
+            stmt.executeUpdate("DELETE FROM " + UPDATES_TABLE);
+            
+            fixture.loadFile(new File(fixture.getDataPath(), UPDATES_FILE), 
+               con, BenchmarkInsertSQL.INSERT_UPDATES);
+               
+            fixture.loadFile(new File(fixture.getDataPath(), HUNDRED_FILE), 
+                con, BenchmarkInsertSQL.INSERT_HUNDRED);
+               
+            con.commit();
+            
+            //stmt.executeUpdate(CREATE_HUNDRED_FOREIGN_KEY);
+            //con.commit();
+            // manager.executeDDL(CREATE_HUNDRED_FOREIGN_KEY);
+            
+        } catch(SQLException ex) {
+            con.rollback();
+            
+            throw ex;
+        } 
     }
     
 }
