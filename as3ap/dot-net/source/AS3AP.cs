@@ -26,6 +26,7 @@
 
 using System;
 using System.Data;
+using System.Text;
 using System.Threading;
 using System.Reflection;
 using System.Configuration;
@@ -40,7 +41,7 @@ namespace AS3AP.BenchMark
 
 		private	Logger		log;
 		private	long		ticksPerSecond	= TimeSpan.TicksPerSecond;		
-		private CallableSql callableSql;
+		private ITestSuite	testSuite;
 		private string		currentTest		= String.Empty;
 
 		private string		backendName		= String.Empty;
@@ -55,6 +56,8 @@ namespace AS3AP.BenchMark
 		private long		dataSize		= 0;
 
 		private string		runSequence		= String.Empty;
+
+		private string		testSuiteType	= "SQL87";
 
 		#endregion
 
@@ -74,7 +77,7 @@ namespace AS3AP.BenchMark
 			log	= new Logger(GetType(), logName, Mode.OVERWRITE);
 			getConfiguration();
 
-			callableSql	= new CallableSql(backendName);
+			testSuite = TestSuiteFactory.GetTestSuite(testSuiteType, backendName);
 		}
 
 		#endregion
@@ -93,6 +96,15 @@ namespace AS3AP.BenchMark
 			dataSize		= Int64.Parse(ConfigurationSettings.AppSettings["DataSize"]);			
 
 			runSequence		= ConfigurationSettings.AppSettings["RunSequence"];
+
+			if (ConfigurationSettings.AppSettings["TestSuiteType"] != null)
+			{
+				if (ConfigurationSettings.AppSettings["TestSuiteType"] == "SQL87" ||
+					ConfigurationSettings.AppSettings["TestSuiteType"] == "SQL92")
+				{
+					testSuiteType = ConfigurationSettings.AppSettings["TestSuiteType"];
+				}
+			}
 		}
 
 		public void Run()
@@ -107,30 +119,24 @@ namespace AS3AP.BenchMark
 
 			log.Simple("Starting as3ap benchmark at: {0}", DateTime.Now);
 
-			/* Start of database table creation */
 			if (runCreate) 
 			{
-				callableSql.Backend.DatabaseCreate("AS3AP");
-
-				/* Database data generation should go here */
 				Console.WriteLine("Creating tables and loading data {0}.", DateTime.Now);
-				timeIt("populateDataBase()", "populateDataBase");
+				timeIt("createDataBase");
 			}			
 
 			currentTest = "Counting tuples";
-			callableSql.Backend.DatabaseConnect();
-			if ((callableSql.TupleCount = callableSql.Backend.CountTuples("updates")) == 0)
+			testSuite.Backend.DatabaseConnect();
+			if ((testSuite.TupleCount = testSuite.CountTuples("updates")) == 0)
 			{
 				log.Simple("empty database -- empty results");
 				return;
 			}		
-			dbSize = (4 * callableSql.TupleCount * 100)/1000000;
-			/* dbSize: 4 relations, N tuples/relation, 100 bytes/tuple */
-			log.Simple("");
-			log.Simple("\"Logical database size {0}MB\"", dbSize);
-			log.Simple("");
-			log.Simple("");
-			callableSql.Backend.DatabaseDisconnect();
+			dbSize = (4 * testSuite.TupleCount * 100)/1000000;
+			
+			log.Simple("\r\n\"Logical database size {0}MB\"\r\n", dbSize);
+
+			testSuite.Backend.DatabaseDisconnect();
 
 			string[] testSequence = runSequence.Split(';');
 
@@ -145,47 +151,44 @@ namespace AS3AP.BenchMark
 						case "singleuser":
 						{
 							/* Start of the single user test */
-							if (runSingleUser)
+							Console.WriteLine("Preparing single-user test");
+							if (singleUserCount != 0)
 							{
-								Console.WriteLine("Preparing single-user test");
-								if (singleUserCount != 0)
-								{
-									setup_database();
-								}
-
-								Console.WriteLine("Starting single-user test");
-								currentTest = "Preparing single user test";
-								clocks		= DateTime.Now.Ticks;
-								singleUserTests();
-								elapsed		= elapsedTime(clocks = (DateTime.Now.Ticks - clocks));
-				
-								log.Simple("\r\n\"Single User Test\"\t{0} seconds\t({1})\r\n\r\n",
-											(double)clocks / TimeSpan.TicksPerSecond, elapsed);
-
-								singleUserCount++;
+								setup_database();
 							}
+
+							Console.WriteLine("Starting single-user test");
+							currentTest = "Preparing single user test";
+							clocks		= DateTime.Now.Ticks;
+							singleUserTests();
+							elapsed	= new TimeSpan(clocks = (DateTime.Now.Ticks - clocks));
+			
+							log.Simple("\r\n\"Single user test\"\t{0} seconds\t({1})\r\n\r\n",
+										(double)clocks / TimeSpan.TicksPerSecond, elapsed);
+
+							singleUserCount++;
 						}
 						break;
 
 						case "multiuser":
 						{
 							/* Start of the multi-user test */
-							if (runMultiUser)
+							currentTest = "Preparing multi-user test";
+							testSuite.Backend.DatabaseConnect();
+							if (testSuite.TupleCount != testSuite.CountTuples("updates")) 
 							{
-								currentTest = "Preparing multi-user test";
-								callableSql.Backend.DatabaseConnect();
-								if (callableSql.TupleCount != callableSql.Backend.CountTuples("updates")) 
-								{
-									log.Simple("data corrupted; skipping multi-user test");					
-								}
-								callableSql.Backend.DatabaseDisconnect();
+								log.Simple("Invalid data ( skipping multi-user test )");
+							}
+							else
+							{
+								testSuite.Backend.DatabaseDisconnect();
 								Console.WriteLine("Starting multi-user test");
 				
 								clocks = DateTime.Now.Ticks;
 								multiUserTests(userNumber == 0 ? (int)(dbSize / 4) : userNumber);
-								elapsed = elapsedTime(clocks = (DateTime.Now.Ticks - clocks));
+								elapsed = new TimeSpan(clocks = (DateTime.Now.Ticks - clocks));
 
-								log.Simple("\r\n\"Multi-User Test\"\t{0} seconds\t({1})\r\n\r\n",
+								log.Simple("\r\n\"Multi user test\"\t{0} seconds\t({1})\r\n\r\n",
 											(double)clocks / TimeSpan.TicksPerSecond, elapsed);
 
 								multiUserCount++;
@@ -198,38 +201,34 @@ namespace AS3AP.BenchMark
 		}
 
 
-		private TimeSpan elapsedTime(long ticks)
+		private int createDataBase() 
 		{
-			return new TimeSpan(ticks);
-		}
+			testSuite.Backend.DatabaseCreate("AS3AP");
 
-
-		private int populateDataBase() 
-		{
-			callableSql.Backend.DatabaseConnect();
-			timeIt("create_tables()"				, "create_tables");
-			timeIt("load()"							, "load", dataSize);
-			timeIt("create_idx_uniques_key_bt()"	, "create_idx_uniques_key_bt");
-			timeIt("create_idx_updates_key_bt()"	, "create_idx_updates_key_bt");
-			timeIt("create_idx_hundred_key_bt()"	, "create_idx_hundred_key_bt");
-			timeIt("create_idx_tenpct_key_bt()"		, "create_idx_tenpct_key_bt");
-			timeIt("create_idx_tenpct_key_code_bt()", "create_idx_tenpct_key_code_bt");
-			timeIt("create_idx_tiny_key_bt()"		, "create_idx_tiny_key_bt");
-			timeIt("create_idx_tenpct_int_bt()"		, "create_idx_tenpct_int_bt");
-			timeIt("create_idx_tenpct_signed_bt()"	, "create_idx_tenpct_signed_bt");
-			timeIt("create_idx_uniques_code_h()"	, "create_idx_uniques_code_h");
-			timeIt("create_idx_tenpct_double_bt()"	, "create_idx_tenpct_double_bt");
-			timeIt("create_idx_updates_decim_bt()"	, "create_idx_updates_decim_bt");
-			timeIt("create_idx_tenpct_float_bt()"	, "create_idx_tenpct_float_bt");
-			timeIt("create_idx_updates_int_bt()"	, "create_idx_updates_int_bt");
-			timeIt("create_idx_tenpct_decim_bt()"	, "create_idx_tenpct_decim_bt");
-			timeIt("create_idx_hundred_code_h()"	, "create_idx_hundred_code_h");
-			timeIt("create_idx_tenpct_name_h()"		, "create_idx_tenpct_name_h");
-			timeIt("create_idx_updates_code_h()"	, "create_idx_updates_code_h");
-			timeIt("create_idx_tenpct_code_h()"		, "create_idx_tenpct_code_h");
-			timeIt("create_idx_updates_double_bt()"	, "create_idx_updates_double_bt");
-			timeIt("create_idx_hundred_foreign()"	, "create_idx_hundred_foreign");
-			callableSql.Backend.DatabaseDisconnect();
+			testSuite.Backend.DatabaseConnect();
+			timeIt("create_tables");
+			timeIt("load", dataSize);
+			timeIt("create_idx_uniques_key_bt");
+			timeIt("create_idx_updates_key_bt");
+			timeIt("create_idx_hundred_key_bt");
+			timeIt("create_idx_tenpct_key_bt");
+			timeIt("create_idx_tenpct_key_code_bt");
+			timeIt("create_idx_tiny_key_bt");
+			timeIt("create_idx_tenpct_int_bt");
+			timeIt("create_idx_tenpct_signed_bt");
+			timeIt("create_idx_uniques_code_h");
+			timeIt("create_idx_tenpct_double_bt");
+			timeIt("create_idx_updates_decim_bt");
+			timeIt("create_idx_tenpct_float_bt");
+			timeIt("create_idx_updates_int_bt");
+			timeIt("create_idx_tenpct_decim_bt");
+			timeIt("create_idx_hundred_code_h");
+			timeIt("create_idx_tenpct_name_h");
+			timeIt("create_idx_updates_code_h");
+			timeIt("create_idx_tenpct_code_h");
+			timeIt("create_idx_updates_double_bt");
+			timeIt("create_idx_hundred_foreign");
+			testSuite.Backend.DatabaseDisconnect();
 			
 			return 0;
 		}
@@ -237,64 +236,64 @@ namespace AS3AP.BenchMark
 
 		private void setup_database()
 		{
-			callableSql.Backend.DatabaseConnect();
-			callableSql.setup_database();
-			callableSql.Backend.DatabaseDisconnect();
+			testSuite.Backend.DatabaseConnect();
+			testSuite.setup_database();
+			testSuite.Backend.DatabaseDisconnect();
 		}
 
 
 		private void singleUserTests() 
 		{
-			callableSql.Backend.DatabaseConnect();
+			testSuite.Backend.DatabaseConnect();
 			
-			timeIt("sel_1_cl()"					, "sel_1_cl");
-			timeIt("join_3_cl()"				, "join_3_cl");
-			timeIt("sel_100_ncl()"				, "sel_100_ncl");
-			timeIt("table_scan()"				, "table_scan");
-			timeIt("agg_func()"					, "agg_func");
-			timeIt("agg_scal()"					, "agg_scal");
-			timeIt("sel_100_cl()"				, "sel_100_cl");
-			timeIt("join_3_ncl()"				, "join_3_ncl");
-			timeIt("sel_10pct_ncl()"			, "sel_10pct_ncl");
-			timeIt("agg_simple_report()"		, "agg_simple_report");
-			timeIt("agg_info_retrieval()"		, "agg_info_retrieval");
-			timeIt("agg_create_view()"			, "agg_create_view");
-			timeIt("agg_subtotal_report()"		, "agg_subtotal_report");
-			timeIt("agg_total_report()"			, "agg_total_report");
-			timeIt("join_2_cl()"				, "join_2_cl");
-			timeIt("join_2()"					, "join_2");
-			timeIt("sel_variable_select_low()"	, "sel_variable_select_low");
-			timeIt("sel_variable_select_high()"	, "sel_variable_select_high");
-			timeIt("join_4_cl()"				, "join_4_cl");
-			timeIt("proj_100()"					, "proj_100");
-			timeIt("join_4_ncl()"				, "join_4_ncl");
-			timeIt("proj_10pct()"				, "proj_10pct");
-			timeIt("sel_1_ncl()"				, "sel_1_ncl", IsolationLevel.ReadCommitted);
-			timeIt("join_2_ncl()"				, "join_2_ncl");
-			timeIt("integrity_test()"			, "integrity_test");
-			timeIt("drop_updates_keys()"		, "drop_updates_keys");
-			timeIt("bulk_save()"				, "bulk_save");
-			timeIt("bulk_modify()"				, "bulk_modify");
-			timeIt("upd_append_duplicate()"		, "upd_append_duplicate");
-			timeIt("upd_remove_duplicate()"		, "upd_remove_duplicate");
-			timeIt("upd_app_t_mid()"			, "upd_app_t_mid");
-			timeIt("upd_mod_t_mid()"			, "upd_mod_t_mid");
-			timeIt("upd_del_t_mid()"			, "upd_del_t_mid");
-			timeIt("upd_app_t_end()"			, "upd_app_t_end");
-			timeIt("upd_mod_t_end()"			, "upd_mod_t_end");
-			timeIt("upd_del_t_end()"			, "upd_del_t_end");
-			timeIt("create_idx_updates_code_h()", "create_idx_updates_code_h");
-			timeIt("upd_app_t_mid()"			, "upd_app_t_mid");
-			timeIt("upd_mod_t_cod()"			, "upd_mod_t_cod");
-			timeIt("upd_del_t_mid()"			, "upd_del_t_mid");
-			timeIt("create_idx_updates_int_bt()", "create_idx_updates_int_bt");
-			timeIt("upd_app_t_mid()"			, "upd_app_t_mid");
-			timeIt("upd_mod_t_int()"			, "upd_mod_t_int");
-			timeIt("upd_del_t_mid()"			, "upd_del_t_mid");
-			timeIt("bulk_append()"				, "bulk_append");
-			timeIt("bulk_delete()"				, "bulk_delete");
+			timeIt("sel_1_cl");
+			timeIt("join_3_cl");
+			timeIt("sel_100_ncl");
+			timeIt("table_scan");
+			timeIt("agg_func");
+			timeIt("agg_scal");
+			timeIt("sel_100_cl");
+			timeIt("join_3_ncl");
+			timeIt("sel_10pct_ncl");
+			timeIt("agg_simple_report");
+			timeIt("agg_info_retrieval");
+			timeIt("agg_create_view");
+			timeIt("agg_subtotal_report");
+			timeIt("agg_total_report");
+			timeIt("join_2_cl");
+			timeIt("join_2");
+			timeIt("sel_variable_select_low");
+			timeIt("sel_variable_select_high");
+			timeIt("join_4_cl");
+			timeIt("proj_100");
+			timeIt("join_4_ncl");
+			timeIt("proj_10pct");
+			timeIt("sel_1_ncl", IsolationLevel.ReadCommitted);
+			timeIt("join_2_ncl");
+			timeIt("integrity_test");
+			timeIt("drop_updates_keys");
+			timeIt("bulk_save");
+			timeIt("bulk_modify");
+			timeIt("upd_append_duplicate");
+			timeIt("upd_remove_duplicate");
+			timeIt("upd_app_t_mid");
+			timeIt("upd_mod_t_mid");
+			timeIt("upd_del_t_mid");
+			timeIt("upd_app_t_end");
+			timeIt("upd_mod_t_end");
+			timeIt("upd_del_t_end");
+			timeIt("create_idx_updates_code_h");
+			timeIt("upd_app_t_mid");
+			timeIt("upd_mod_t_cod");
+			timeIt("upd_del_t_mid");
+			timeIt("create_idx_updates_int_bt");
+			timeIt("upd_app_t_mid");
+			timeIt("upd_mod_t_int");
+			timeIt("upd_del_t_mid");
+			timeIt("bulk_append");
+			timeIt("bulk_delete");
 
-			callableSql.Backend.DatabaseDisconnect();
+			testSuite.Backend.DatabaseDisconnect();
 		}
 
 
@@ -382,10 +381,10 @@ namespace AS3AP.BenchMark
 			 * and random bulk updates.
 			 */
 			Console.WriteLine("Check correctness of the sequential and random bulk updates ({0}).", DateTime.Now);
-			callableSql.Backend.DatabaseConnect();
-			timeIt("mu_checkmod_100_seq()"	, "mu_checkmod_100_seq");
-			timeIt("mu_checkmod_100_rand()"	, "mu_checkmod_100_rand");
-			callableSql.Backend.DatabaseDisconnect();
+			testSuite.Backend.DatabaseConnect();
+			timeIt("mu_checkmod_100_seq");
+			timeIt("mu_checkmod_100_rand");
+			testSuite.Backend.DatabaseDisconnect();
 
 			/* Step 6 - Recover updates relation from backup tape (Step 1) 
 			 * and log (from Steps 2, 3, 4, and 5).	
@@ -397,13 +396,13 @@ namespace AS3AP.BenchMark
 			 * sel100rand.
 			 */
 			Console.WriteLine("Check correctness of the sequential and random bulk updates ({0}).", DateTime.Now);
-			callableSql.Backend.DatabaseConnect();
-			timeIt("mu_checkmod_100_seq()"	, "mu_checkmod_100_seq");
-			timeIt("mu_checkmod_100_rand()"	, "mu_checkmod_100_rand");
+			testSuite.Backend.DatabaseConnect();
+			timeIt("mu_checkmod_100_seq");
+			timeIt("mu_checkmod_100_rand");
 
-			timeIt("mu_drop_sel100_seq()"	, "mu_drop_sel100_seq");
-			timeIt("mu_drop_sel100_rand()"	, "mu_drop_sel100_rand");
-			callableSql.Backend.DatabaseDisconnect();
+			timeIt("mu_drop_sel100_seq");
+			timeIt("mu_drop_sel100_rand");
+			testSuite.Backend.DatabaseDisconnect();
 
 			/* Step 8 - Run OLTP test for 15 minutes.	*/
 			Console.WriteLine("Run OLTP test for 15 minutes ({0}).", DateTime.Now);
@@ -474,13 +473,13 @@ namespace AS3AP.BenchMark
 			 * sel100rand.
 			 */
 			Console.WriteLine("Check correctness of the sequential and random bulk updates ({0}).", DateTime.Now);
-			callableSql.Backend.DatabaseConnect();
-			timeIt("mu_checkmod_100_seq()"	, "mu_checkmod_100_seq");			
-			timeIt("mu_checkmod_100_rand()"	, "mu_checkmod_100_rand");
+			testSuite.Backend.DatabaseConnect();
+			timeIt("mu_checkmod_100_seq");			
+			timeIt("mu_checkmod_100_rand");
 			
-			timeIt("mu_drop_sel100_seq()"	, "mu_drop_sel100_seq");
-			timeIt("mu_drop_sel100_rand()"	, "mu_drop_sel100_rand");
-			callableSql.Backend.DatabaseDisconnect();
+			timeIt("mu_drop_sel100_seq");
+			timeIt("mu_drop_sel100_rand");
+			testSuite.Backend.DatabaseDisconnect();
 		}
 
 
@@ -489,99 +488,99 @@ namespace AS3AP.BenchMark
 			long	startTime;
 			string	currentTest = this.currentTest;
 
-			callableSql.Backend.DatabaseConnect();
+			testSuite.Backend.DatabaseConnect();
 
 			startTime = DateTime.Now.Ticks;
 
-			timeIt("o_mode_tiny()"		, "o_mode_tiny"			, IsolationLevel.RepeatableRead);
-			timeIt("o_mode_100k()"		, "o_mode_100k"			, IsolationLevel.RepeatableRead);
-			timeIt("sel_1_ncl()"		, "sel_1_ncl"			, IsolationLevel.ReadUncommitted);
-			timeIt("sel_1_ncl()"		, "sel_1_ncl"			, IsolationLevel.ReadCommitted);
-			timeIt("sel_1_ncl()"		, "sel_1_ncl"			, IsolationLevel.RepeatableRead);
-			timeIt("agg_simple_report()", "agg_simple_report");
-			timeIt("mu_sel_100_seq()"	, "mu_sel_100_seq"		, IsolationLevel.RepeatableRead);
-			timeIt("mu_sel_100_rand()"	, "mu_sel_100_rand"		, IsolationLevel.RepeatableRead);
-			timeIt("mu_mod_100_seq()"	, "mu_mod_100_seq"		, IsolationLevel.RepeatableRead);
-			timeIt("mu_mod_100_rand()"	, "mu_mod_100_rand"		, IsolationLevel.RepeatableRead);
-			timeIt("mu_unmod_100_seq()"	, "mu_unmod_100_seq"	, IsolationLevel.RepeatableRead);
-			timeIt("mu_unmod_100_rand()", "mu_unmod_100_rand"	, IsolationLevel.RepeatableRead);
+			timeIt("o_mode_tiny"		, IsolationLevel.RepeatableRead);
+			timeIt("o_mode_100k"		, IsolationLevel.RepeatableRead);
+			timeIt("sel_1_ncl"			, IsolationLevel.ReadUncommitted);
+			timeIt("sel_1_ncl"			, IsolationLevel.ReadCommitted);
+			timeIt("sel_1_ncl"			, IsolationLevel.RepeatableRead);
+			timeIt("agg_simple_report");
+			timeIt("mu_sel_100_seq"		, IsolationLevel.RepeatableRead);
+			timeIt("mu_sel_100_rand"	, IsolationLevel.RepeatableRead);
+			timeIt("mu_mod_100_seq"		, IsolationLevel.RepeatableRead);
+			timeIt("mu_mod_100_rand"	, IsolationLevel.RepeatableRead);
+			timeIt("mu_unmod_100_seq"	, IsolationLevel.RepeatableRead);
+			timeIt("mu_unmod_100_rand"	, IsolationLevel.RepeatableRead);
 
-			callableSql.Backend.DatabaseDisconnect();
+			testSuite.Backend.DatabaseDisconnect();
 
 			startTime = DateTime.Now.Ticks - startTime;
 
-			log.Simple("crossSectionTests({0})\t{1}", currentTest, 
+			log.Simple("CrossSectionTests({0})\t{1}", currentTest, 
 						Math.Round((double)startTime / ticksPerSecond, 4));
 		}
 
 
 		private void ir_select()
 		{
-			DateTime	endTime		= DateTime.Now;
-			CallableSql callUser	= new CallableSql(backendName);
+			DateTime	endTime	= DateTime.Now;
+			ITestSuite	test	= TestSuiteFactory.GetTestSuite(testSuiteType, backendName);
 
-			callUser.TupleCount = callableSql.TupleCount;
+			test.TupleCount = testSuite.TupleCount;
 
-			callUser.Backend.DatabaseConnect();			
+			test.Backend.DatabaseConnect();			
 
 			if (timeToRun > 0)
 			{
 				endTime = DateTime.Now.AddMinutes(timeToRun);
 				while (endTime >= DateTime.Now)
 				{					
-					callUser.mu_ir_select();
+					test.mu_ir_select();
 					iters++;
 				}
 			}
 			else
 			{
-				callUser.mu_ir_select();
+				test.mu_ir_select();
 			}
 
-			callUser.Backend.DatabaseDisconnect();
+			test.Backend.DatabaseDisconnect();
 		}
 
 		
 		private void oltp_update()
 		{
-			DateTime	endTime		= DateTime.Now;
-			CallableSql callUser	= new CallableSql(backendName);
+			DateTime	endTime	= DateTime.Now;
+			ITestSuite	test	= TestSuiteFactory.GetTestSuite(testSuiteType, backendName);
 
-			lock (callUser.Backend)
+			lock (test.Backend)
 			{
-				callUser.TupleCount = callableSql.TupleCount;
+				test.TupleCount = testSuite.TupleCount;
 
-				callUser.Backend.DatabaseConnect();
+				test.Backend.DatabaseConnect();
 				
 				if (timeToRun > 0)
 				{
 					endTime = DateTime.Now.AddMinutes(timeToRun);
 					while (endTime >= DateTime.Now)
 					{
-						callUser.mu_oltp_update();
+						test.mu_oltp_update();
 					}
 				}
 				else
 				{
-					callUser.mu_oltp_update();
+					test.mu_oltp_update();
 				}
 
-				callUser.Backend.DatabaseDisconnect();
+				test.Backend.DatabaseDisconnect();
 			}			
 		}
 
 
-		private void timeIt(string rtnName, string methodName, params object[] parameters) 
+		private void timeIt(string methodName, params object[] parameters) 
 		{
 			MethodInfo	method		= null;
 			MethodInfo	thisMethod	= null;
 			long		clocks;
 			int			retval;
 
-			currentTest				= rtnName;
-			callableSql.TestFailed	= false;
+			currentTest				= methodName;
+			testSuite.TestFailed	= false;
 
-			method = callableSql.GetType().GetMethod(methodName);			
+			method = testSuite.GetType().GetMethod(methodName);			
 			if (method == null)
 			{
 				thisMethod = this.GetType().GetMethod(methodName, BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.DeclaredOnly);
@@ -590,36 +589,40 @@ namespace AS3AP.BenchMark
 
 			if (method != null)
 			{
-				retval = (int)method.Invoke(callableSql, parameters);
+				method.Invoke(testSuite, parameters);
 			}
 			else
 			{
-				retval = (int)thisMethod.Invoke(this, parameters);
+				thisMethod.Invoke(this, parameters);
 			}
+			retval = testSuite.TestResult;
 
 			clocks		= DateTime.Now.Ticks - clocks;
 
-			int length = 40 - rtnName.Length;
+			int length = 40 - methodName.Length;
 			for (int i = 0; i < length; i++)
 			{
-				rtnName = " " + rtnName;
+				methodName = " " + methodName;
 			}
 
-			if (callableSql.TestFailed)
+			StringBuilder logMessage = new StringBuilder();
+
+			if (testSuite.TestFailed)
 			{
-				log.Simple("{0}\tfailed\t{0}\t{1}\t{2}"					,
-							rtnName										,
-							Math.Round((double)clocks/ticksPerSecond)	,
-							retval);
+				log.Simple("--------------> {0}\tfailed <--------------",
+							methodName + "()");
 			}
 			else
 			{
-				log.Simple("{0}\t{1} seconds\treturn value = {2} \t\t with {3}",
-							rtnName										,
+				logMessage.AppendFormat(
+							"{0}\t{1} seconds\treturn value = {2} \t\t with {3}",
+							methodName + "()"							,
 							Math.Round((double)clocks/ticksPerSecond, 4),
 							retval										,
-					parameters.Length > 0 ? parameters[0] : "nothing");
+							parameters.Length > 0 ? parameters[0] : "nothing");
 			}
+
+			log.Simple(logMessage.ToString());
 		}
 
 		#endregion
