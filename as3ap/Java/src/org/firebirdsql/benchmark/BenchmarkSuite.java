@@ -256,5 +256,6 @@ public class BenchmarkSuite extends TestSuite {
     public static void main(String[] args) {
         BenchmarkListener listener = new BenchmarkListener();
         TestRunner.run(new BenchmarkSuite().suite(), listener);
+        listener.printStatistics(System.out);
     }
 }
