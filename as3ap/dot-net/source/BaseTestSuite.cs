@@ -3068,6 +3068,7 @@ namespace AS3AP.BenchMark
 			try
 			{
 				this.transaction.Commit();
+				this.transaction = null;
 			}
 			catch (Exception ex)
 			{					
@@ -3084,6 +3085,7 @@ namespace AS3AP.BenchMark
 			try
 			{
 				this.transaction.Rollback();
+				this.transaction = null;
 			}
 			catch (Exception ex)
 			{
