@@ -27,7 +27,7 @@ import java.io.FileOutputStream;
 /**
  * This class implements output tests from the AS3AP test suite.
  */
-public abstract class OutputTest extends BenchmarkTest {
+public class OutputTest extends BenchmarkTest {
     
     public static final String O_MODE_TINY_SQL = ""
         + "SELECT * FROM " + TINY_TABLE
