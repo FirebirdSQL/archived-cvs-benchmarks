@@ -137,6 +137,36 @@
     </zip>
   </target>
 
+
+  <target name="run" depends="init">
+
+    <java classname="${className}">
+      <classpath refid="javac.classpath"/>
+      <classpath>
+        <pathelement location="${build.lib}/firebird_as3ap.jar"/>
+      </classpath>
+    </java>
+  </target>
+
+  <target name="run_load">
+    <antcall target="run">
+      <param name="className" value="org.firebirdsql.benchmark.LoadDataSuite"/>
+    </antcall>
+  </target>
+
+  <target name="run_single">
+    <antcall target="run">
+      <param name="className" value="org.firebirdsql.benchmark.SingleUserSuite"/>
+    </antcall>
+  </target>
+
+  <target name="run_multi">
+    <antcall target="run">
+      <param name="className" value="org.firebirdsql.benchmark.MultiUserSuite"/>
+    </antcall>
+  </target>
+
+
 </project>
 
 
