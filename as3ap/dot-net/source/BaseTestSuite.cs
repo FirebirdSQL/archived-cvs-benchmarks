@@ -37,12 +37,16 @@ using Common.Data.Helper;
 
 namespace AS3AP.BenchMark
 {
+	#region Enumerations
+
 	public enum IndexType
 	{
 		Btree,
 		Clustered,
 		Hash
 	}
+
+	#endregion
 
 	#region DELEGATES
 
@@ -2783,6 +2787,7 @@ namespace AS3AP.BenchMark
 			string	charset		= "NONE";
 			bool	ssl			= false;
 			int		serverType	= 0;
+			string	isecurity	= "SSPI";
 
 			Regex			search	 = new Regex(@"([\w\s\d]*)\s*=\s*([^;]*)");
 			MatchCollection	elements = search.Matches(this.configuration.ConnectionString);
@@ -2792,6 +2797,7 @@ namespace AS3AP.BenchMark
 				switch (element.Groups[1].Value.Trim().ToLower())
 				{
 					case "datasource":
+					case "data source":
 					case "server":
 					case "host":
 						dataSource = element.Groups[2].Value.Trim();
@@ -2833,22 +2839,27 @@ namespace AS3AP.BenchMark
 					case "server type":
 						serverType = Int32.Parse(element.Groups[2].Value.Trim());
 						break;
+
+					case "Integrated Security":
+						isecurity = element.Groups[2].Value.Trim();
+						break;
 				}
 			}
 
 			Hashtable values = new Hashtable();
 
-			values.Add("DataSource"	, dataSource);
-			values.Add("Port"		, port);
-			values.Add("Database"	, database);
-			values.Add("User"		, user);
-			values.Add("Password"	, password);
-			values.Add("Dialect"	, dialect);
-			values.Add("ForcedWrites", forcedWrite);
-			values.Add("PageSize"	, pageSize);
-			values.Add("Charset"	, charset);
-			values.Add("ServerType"	, serverType);
-			values.Add("SSL"		, ssl);
+			values.Add("DataSource"			, dataSource);
+			values.Add("Port"				, port);
+			values.Add("Database"			, database);
+			values.Add("User"				, user);
+			values.Add("Password"			, password);
+			values.Add("Dialect"			, dialect);
+			values.Add("ForcedWrites"		, forcedWrite);
+			values.Add("PageSize"			, pageSize);
+			values.Add("Charset"			, charset);
+			values.Add("ServerType"			, serverType);
+			values.Add("SSL"				, ssl);
+			values.Add("Integrated Security", isecurity);
 
 			dataHelper.CreateDatabase(values);
 		}
@@ -3028,16 +3039,16 @@ namespace AS3AP.BenchMark
 			command = getCommand(commandText.ToString());
 			
 			/* Add parameters	*/
-			command.Parameters.Add(dataHelper.CreateParameter("@col_key", null));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_int", null));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_signed", null));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_float", null));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_double", null));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_decim", null));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_date", null));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_code", null));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_name", null));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_address", null));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_key", DbType.Int32, 4, "col_key"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_int", DbType.Int32, 4, "col_int"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_signed", DbType.Int32, 4, "col_signed"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_float", DbType.Single, 4, "col_float"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_double", DbType.Double, 8, "col_double"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_decim", DbType.Single, 18, 2, "col_decim"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_date", DbType.StringFixedLength, 20, "col_date"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_code", DbType.StringFixedLength, 10, "col_code"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_name", DbType.StringFixedLength, 20, "col_name"));
+			command.Parameters.Add(dataHelper.CreateParameter("@col_address", DbType.String, 80, "col_address"));
 
 			string path = Path.GetFullPath(configuration.DataPath);
 			if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
@@ -3120,7 +3131,8 @@ namespace AS3AP.BenchMark
 			command = getCommand(commandText.ToString());
 
 			/* Add parameters	*/
-			command.Parameters.Add(dataHelper.CreateParameter("@col_key", null));
+			IDbDataParameter p = dataHelper.CreateParameter("@col_key", DbType.Int32, 4, "col_key");
+			command.Parameters.Add(p);
 
 			/* Prepare command execution	*/
 			command.Prepare();

@@ -6,6 +6,9 @@ AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 
 	* source/BaseTestSuite.cs:
 
+		- Added changes for allow the test suite to run using
+		different data providers (like the SqlClient one).
+
 		- Added changes for allow the test suite to run using the
 		1.6 version of the .NET Data provider.
 
