@@ -18,9 +18,7 @@
  */
 package org.firebirdsql.benchmark;
 
-import junit.framework.TestCase;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
+import junit.framework.*;
 
 
 /**
@@ -30,7 +28,9 @@ import junit.framework.TestSuite;
  */
 public class MultiUserSuite extends BenchmarkSuite {
     
-    public static final int KEY_RANGE = 1000 * 1000 * 1000;
+    public static final int KEY_RANGE = 10 * 1000;
+    public static final int BG_TEST_DURATION = 1 * 10 * 1000;
+    public static final int IR_TEST_DURATION = 1 * 10 * 1000;
     
     private BenchmarkListener listener;
     
@@ -44,6 +44,10 @@ public class MultiUserSuite extends BenchmarkSuite {
     
     protected int getUserCount() {
         return 2;
+    }
+    
+    protected int getKeyRange() {
+        return KEY_RANGE;
     }
     
     /** 
@@ -69,92 +73,113 @@ public class MultiUserSuite extends BenchmarkSuite {
             
             // Step 1
             
+            System.out.println("step 1 completed");
+            
             // Step 2
-            ActiveBenchmarkSuite bgIrTests = new ActiveBenchmarkSuite(0, getUserCount());
-            bgIrTests.addTest(new MultiUserTest("testBgIrSelect", KEY_RANGE));
             
-            bgIrTests.run(testResult);
+            BackgroundMultiUserTest[] bgTests = 
+                new BackgroundMultiUserTest[getUserCount()];
+                
+            for (int i = 0; i < bgTests.length; i++) {
+                bgTests[i] = new BackgroundMultiUserTest("testIrSelect", getKeyRange());
+            }
             
-            Thread.sleep(1 * 60 * 1000);
             
-            // Step 3            
-            ActiveBenchmarkSuite perfIrTest = new ActiveBenchmarkSuite();
-            perfIrTest.setDuration(1 * 60 * 1000);
-            perfIrTest.addTest(new MultiUserTest("testIrSelect", KEY_RANGE));
+            ActiveBenchmarkSuite bgIrSuite = new ActiveBenchmarkSuite();
+            for (int i = 0; i < bgTests.length; i++) {
+                bgIrSuite.addTest(bgTests[i]);
+            }
+            
+            bgIrSuite.run(testResult);
+            
+            Thread.sleep(BG_TEST_DURATION);
+            
+            System.out.println("step 2 completed");
+            
+            // Step 3          
+            
+            MainstreamMultiUserTest perfIrTest = 
+                new MainstreamMultiUserTest("testIrSelect", getKeyRange(), IR_TEST_DURATION);
             
             perfIrTest.run(testResult);
-            perfIrTest.waitSuiteCompletion();
+            
+            System.out.println("step 3 completed: " + perfIrTest.getThroughput() + " fetches");
             
             // Step 4
-            Thread victim = (Thread)bgIrTests.getThreads().get(0);
-            victim.interrupt();
+            bgTests[0].stop();
             
-            victim.join();
+            Test crossSectionTest = 
+                new MainstreamMultiUserTest("testCrossSection", getKeyRange(), 0);
+            crossSectionTest.run(testResult);
             
-            getCrossSectionSuite().run(testResult);
+            System.out.println("step 4 completed");
             
             // Step 5
-            bgIrTests.stop();
+            for (int i = 0; i < bgTests.length; i++) {
+                bgTests[i].stop();
+            }
             
-            getCheckSuite().run(testResult);
+            bgIrSuite.waitSuiteCompletion();
+            
+            System.out.println("background suite stopped.");
+            
+            Test checkTest = 
+                new MainstreamMultiUserTest("testCheck", 0, 0);
+            checkTest.run(testResult);
+            
+            System.out.println("step 5 completed");
             
             // Step 6
             new LoadTest("testRestoreUpdates").run(testResult);
             
+            System.out.println("step 6 completed");
+            
             // Step 7
             getFixture().recreateTempUpdates();
             
+            System.out.println("step 7 completed");
+            
             // Step 8
-            ActiveBenchmarkSuite bgOltpTests = new ActiveBenchmarkSuite(0, getUserCount());
-            bgOltpTests.addTest(new MultiUserTest("testBgOltpUpdate", KEY_RANGE));
             
-            bgOltpTests.run(testResult);
+            for (int i = 0; i < bgTests.length; i++) {
+                bgTests[i] = new BackgroundMultiUserTest("testOltpUpdate", getKeyRange());
+            }
             
-            Thread.sleep(1 * 60 * 1000);
+            ActiveBenchmarkSuite bgOltpSuite = new ActiveBenchmarkSuite();
+            for (int i = 0; i < bgTests.length; i++) {
+                bgOltpSuite.addTest(bgTests[i]);
+            }
+            
+            bgOltpSuite.run(testResult);
+            
+            Thread.sleep(BG_TEST_DURATION);
+            
+            System.out.println("step 8 completed");
             
             // Step 9
             perfIrTest.run(testResult);
-            perfIrTest.waitSuiteCompletion();
+            
+            System.out.println("step 9 completed: " + perfIrTest.getThroughput());
             
             // Step 10
-            victim = (Thread)bgOltpTests.getThreads().get(0);
-            victim.interrupt();
+            bgTests[0].stop();;
             
-            victim.join();
+            crossSectionTest.run(testResult);
             
-            getCrossSectionSuite().run(testResult);
+            System.out.println("step 10 completed");
             
-            // Step 12
-            bgOltpTests.stop();
+            // Step 11
             
-            getCheckSuite().run(testResult);
+            for (int i = 0; i < bgTests.length; i++) {
+                bgTests[i].stop();
+            }
+            
+            bgOltpSuite.waitSuiteCompletion();
+            
+            checkTest.run(testResult);
+            
+            System.out.println("step 11 completed");
         }
-    }
-    
-    private TestSuite getCrossSectionSuite() {
-        TestSuite suite = new TestSuite();
-        
-        suite.addTest(new MultiUserTest("testModeTiny"));
-        suite.addTest(new MultiUserTest("testMode100k"));
-        suite.addTest(new MultiUserTest("testSelect1NonClustered"));
-        suite.addTest(new MultiUserTest("testSimpleReport"));
-        suite.addTest(new MultiUserTest("testSelect100Sequence"));
-        suite.addTest(new MultiUserTest("testSelect100Random"));
-        suite.addTest(new MultiUserTest("testModify100Sequence"));
-        suite.addTest(new MultiUserTest("testModify100Random"));
-        suite.addTest(new MultiUserTest("testUnmodify100Sequence"));
-        suite.addTest(new MultiUserTest("testUnmodify100Random"));
-        
-        return suite;
-    }
-    
-    private TestSuite getCheckSuite() {
-        TestSuite suite = new TestSuite();
-        
-        suite.addTest(new MultiUserTest("testCheck100Random"));
-        suite.addTest(new MultiUserTest("testCheck100Sequence"));
-        
-        return suite;
     }
     
     /**

@@ -29,9 +29,9 @@ import java.util.Random;
  * 
  * @author <a href="mailto:rrokytskyy@users.sourceforge.net">Roman Rokytskyy</a>
  */
-public class MultiUserTest extends BenchmarkTest {
+public abstract class MultiUserTest extends BenchmarkTest {
     
-    public static final int DEFAULT_KEY_RANGE = 1000 * 1000 * 1000;
+    public static final int DEFAULT_KEY_RANGE = 10 * 1000;
 
     
     public static final String UPDATES_KEY_COL = UPDATES_TABLE + "." + KEY_COL;
@@ -85,15 +85,7 @@ public class MultiUserTest extends BenchmarkTest {
         super.tearDown();
     }
     
-    public void testBgOltpUpdate() throws Exception {
-        doOltpUpdate();
-    }
-    
-    public void testOltpUpdate() throws Exception {
-        doOltpUpdate();
-    }
-    
-    public void doOltpUpdate() throws Exception {
+    protected void doOltpUpdate() throws Exception {
         stmt.executeUpdate(""
             + "UPDATE " + UPDATES_TABLE + " "
             + "SET " + SIGNED_COL + " = " + SIGNED_COL + " + 1"
@@ -101,15 +93,7 @@ public class MultiUserTest extends BenchmarkTest {
         );
     }
     
-    public void testBgIrSelect() throws Exception {
-        doIrSelect();
-    }
-    
-    public void testIrSelect() throws Exception {
-        doIrSelect();
-    }
-    
-    public void doIrSelect() throws Exception {
+    protected int doIrSelect() throws Exception {
         ResultSet rs = stmt.executeQuery(""
             + "SELECT " 
             + KEY_COL + ", " + CODE_COL + ", " + DATE_COL + ", "
@@ -122,12 +106,14 @@ public class MultiUserTest extends BenchmarkTest {
             KEY_COL, CODE_COL, DATE_COL, SIGNED_COL, NAME_COL
         });
         
-        f.fetchResultSet(rs);
+        int result = f.fetchResultSet(rs);
         
         rs.close();
+        
+        return result;
     }
     
-    public void testModeTiny() throws Exception {
+    protected void doModeTiny() throws Exception {
         ResultSet rs = stmt.executeQuery(""
             + "SELECT " + KEY_COL + " "
             + "FROM " + TINY_TABLE
@@ -141,7 +127,7 @@ public class MultiUserTest extends BenchmarkTest {
         rs.close();
     }
     
-    public void testMode100k() throws Exception {
+    protected void doMode100k() throws Exception {
         
         getConnection().setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         
@@ -156,7 +142,7 @@ public class MultiUserTest extends BenchmarkTest {
         rs.close();
     }
     
-    public void testSelect1NonClustered() throws Exception {
+    protected void doSelect1NonClustered() throws Exception {
         String sql = ""
             + "SELECT " 
             + KEY_COL + ", " + INT_COL + ", " + SIGNED_COL + ", "
@@ -184,7 +170,7 @@ public class MultiUserTest extends BenchmarkTest {
         rs.close();
     }
     
-    public void testSimpleReport() throws Exception {
+    protected void doSimpleReport() throws Exception {
         
         getConnection().setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         
@@ -206,7 +192,7 @@ public class MultiUserTest extends BenchmarkTest {
         rs.close();
     }
     
-    public void testSelect100Sequence() throws Exception {
+    protected void doSelect100Sequence() throws Exception {
         stmt.executeUpdate(""
             + "INSERT INTO " + SEL_100_SEQ_TABLE + " "
             + "SELECT * FROM " + UPDATES_TABLE + " "
@@ -214,7 +200,7 @@ public class MultiUserTest extends BenchmarkTest {
         );
     }
     
-    public void testSelect100Random() throws Exception {
+    protected void doSelect100Random() throws Exception {
         stmt.executeUpdate(""
             + "INSERT INTO " + SEL_100_RND_TABLE + " "
             + "SELECT * FROM " + UPDATES_TABLE + " "
@@ -232,7 +218,7 @@ public class MultiUserTest extends BenchmarkTest {
         stmt.executeUpdate(sql);
     }
     
-    public void testModify100Sequence() throws Exception {
+    protected void doModify100Sequence() throws Exception {
         
         Connection connection = getConnection();
         
@@ -244,19 +230,19 @@ public class MultiUserTest extends BenchmarkTest {
         connection.rollback();
     }
     
-    public void testModify100Random() throws Exception {
+    protected void doModify100Random() throws Exception {
         updateUpdates(INT_COL, true);
     }
     
-    public void testUnmodify100Sequence() throws Exception {
+    protected void doUnmodify100Sequence() throws Exception {
         updateUpdates(KEY_COL, false);
     }
     
-    public void testUnmodify100Random() throws Exception {
+    protected void doUnmodify100Random() throws Exception {
         updateUpdates(INT_COL, false);
     }
     
-    public void testCheck100Sequence() throws Exception {
+    protected void doCheck100Sequence() throws Exception {
         ResultSet rs = stmt.executeQuery(""
             + "SELECT count(*) "
             + "FROM " + UPDATES_TABLE + ", " + SEL_100_SEQ_TABLE + " "
@@ -272,7 +258,7 @@ public class MultiUserTest extends BenchmarkTest {
             rowCount == 0);
     }
     
-    public void testCheck100Random() throws Exception {
+    protected void doCheck100Random() throws Exception {
         ResultSet rs = stmt.executeQuery(""
             + "SELECT count(*) "
             + "FROM " + UPDATES_TABLE + ", " + SEL_100_RND_TABLE + " "
