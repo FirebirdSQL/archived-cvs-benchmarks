@@ -780,10 +780,10 @@ namespace AS3AP.BenchMark
 					"select count(col_key) "									+
 					"from tenpct "												+
 					"where col_name = 'THE+ASAP+BENCHMARKS+' "					+
-						"and col_int <= 100000000 "									+
-						"and col_signed between 1 and 99999999 "					+
-						"and not (col_float between -450000000 and 450000000) "		+
-						"and col_double > 600000000 "								+
+						"and col_int <= 100000000 "								+
+						"and col_signed between 1 and 99999999 "				+
+						"and not (col_float between -450000000 and 450000000) "	+
+						"and col_double > 600000000 "							+
 						"and col_decim < -600000000");
 			}
 			catch(Exception)
