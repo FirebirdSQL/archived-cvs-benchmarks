@@ -125,12 +125,6 @@ namespace AS3AP.BenchMark
 			
 			log				= new Logger(logName, Mode.OVERWRITE);		
 			configuration	= BenchMarkConfiguration.Load(configFileName);
-
-			/*
-			configuration.ConnectionString = @"Database=D:\DESARROLLO\FIREBIRDPROJECT\BENCHMARKS\AS3AP\DOT-NET\BIN\DEBUG\AS3AP.FDB;User=SYSDBA;Password=fb_2559568632;Server=localhost;Port=3050;Dialect=3;Charset=NONE;Role=;Connection Lifetime=15;Pooling=true";
-			configuration.DataPath = @"..\..\data\data-4mb\";
-			configuration.Save("as3ap.config");
-			*/
 	
 			testSuite		= TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
 		}
