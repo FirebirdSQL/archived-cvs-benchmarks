@@ -539,8 +539,6 @@ namespace AS3AP.BenchMark.Backends
 			string[] hundred_unique_name	= new string[100];
 			string name						= String.Empty;
 
-			float  col_float;
-			float  hundred_float;
 			float[] hundred_unique_float = new float[100];
 			float  uniform100_dense;
 			float  uniform100_float;
@@ -551,25 +549,22 @@ namespace AS3AP.BenchMark.Backends
 			
 			long i;
 			long rec;
-			long col_key;
-			long col_signed;
 			long date_random;
 			long dense_key;
 			long hundred_key;			
 			long randomizer = 0;
+			long r10pct_key = 0;
 			long sparse_key;
 			long sparse_signed;
 			long sparse_key_spread;
 			long sparse_signed_spread;
 			long tenpct;
-			long tenpct_key;
 		        
 			double col_double;
 			double double_normal;
-			double hundred_double;
 			double[] hundred_unique_double = new double[100];
 			
-			DateTime		tm			= new DateTime();			
+			DateTime		col_date	= new DateTime();						
 			StringBuilder	sqlCommand	= new StringBuilder();
 			Random			randNumber	= new Random();
 		
@@ -583,32 +578,32 @@ namespace AS3AP.BenchMark.Backends
 		    
 			int Nlen;				
 
-			/* For our Zipfian distributions, we'll generate values that occur
-			 * most often at Zipf[0], and decay across an asymptotic curve to
-			 * the value at zipf[RANKS_zipfian-1].  (If someone has a better
-			 * algorithm for generating better distributions, please submit it!)
-			 */
-			for (i = 0; i < 10; i++)
-			{
-				zipf10[i] = Convert.ToSingle(randNumber.Next(-5*(HUNDREDMILLION), 5*(HUNDREDMILLION)));
-			}
-			for (i = 0; i < 100; i++)
-			{
-				zipf100[i] = Convert.ToSingle(randNumber.Next(-5*(HUNDREDMILLION), 5*(HUNDREDMILLION)));
-			}
-		
-			tenpct = dataSize/10;
-			if ((sparse_key_spread = (THOUSANDMILLION)/dataSize) < 1)
-			{
-				sparse_key_spread = 1;
-			}
-			if ((sparse_signed_spread = (10*(HUNDREDMILLION))/dataSize) < 1)
-			{
-				sparse_signed_spread = 1;
-			}
-		    				
 			try
 			{
+				/* For our Zipfian distributions, we'll generate values that occur
+				 * most often at Zipf[0], and decay across an asymptotic curve to
+				 * the value at zipf[RANKS_zipfian-1].  (If someone has a better
+				 * algorithm for generating better distributions, please submit it!)
+				 */
+				for (i = 0; i < 10; i++)
+				{
+					zipf10[i] = Convert.ToSingle(randNumber.Next(-5*(HUNDREDMILLION), 5*(HUNDREDMILLION)));
+				}
+				for (i = 0; i < 100; i++)
+				{
+					zipf100[i] = Convert.ToSingle(randNumber.Next(-5*(HUNDREDMILLION), 5*(HUNDREDMILLION)));
+				}
+		
+				tenpct = dataSize/10;
+				if ((sparse_key_spread = (THOUSANDMILLION)/dataSize) < 1)
+				{
+					sparse_key_spread = 1;
+				}
+				if ((sparse_signed_spread = (10*(HUNDREDMILLION))/dataSize) < 1)
+				{
+					sparse_signed_spread = 1;
+				}
+		    				
 				CreateTable(
 					"random_data",
 					" randomizer int not null,"					+
@@ -620,394 +615,515 @@ namespace AS3AP.BenchMark.Backends
 					" zipf100_float float not null,"			+
 					" uniform100_float float not null,"			+
 					" double_normal double precision not null,"	+
+					" r10pct_key integer not null,"				+
+					" col_date date not null,"					+
 					" code char(10) not null,"					+
 					" name char(20) not null,"					+
 					" address varchar(800) not null", null);
-		    		
+		    	
 				CreateTable(
 					"random_tenpct"									,
 					" col_key 		int not null,"					+
-					" col_float		int not null,"					+
+					" col_float		float not null,"				+
 					" col_signed 	int not null,"					+
 					" col_double 	double precision not null," 	+
 					" col_address	varchar(800) not null", null);
-			}
-			catch(Exception)
-			{
-			}
 			
-			TransactionBegin();
-			for (rec = 1; rec <= dataSize; rec++)
-			{
-				int Drec;
+				TransactionBegin();
+
+				FbCommand cmdRandomData = new FbCommand();
+
+				cmdRandomData.CommandText = "INSERT INTO random_data ("												+
+					" randomizer, sparse_key, dense_key, sparse_signed, uniform100_dense,"+
+					" zipf10_float, zipf100_float, uniform100_float, double_normal,"	+
+					" r10pct_key, col_date, code, name, address)"						+
+					" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			
+				cmdRandomData.Connection	= connection;
+				cmdRandomData.Transaction	= transaction;
+
+				cmdRandomData.Parameters.Add("@randomizer", FbType.Integer);
+				cmdRandomData.Parameters.Add("@sparse_key", FbType.Integer);
+				cmdRandomData.Parameters.Add("@dense_key", FbType.Integer);
+				cmdRandomData.Parameters.Add("@sparse_signed", FbType.Integer);
+				cmdRandomData.Parameters.Add("@uniform100_dense", FbType.Float);
+				cmdRandomData.Parameters.Add("@zipf10_float", FbType.Float);
+				cmdRandomData.Parameters.Add("@zipf100_float", FbType.Float);
+				cmdRandomData.Parameters.Add("@uniform100_float", FbType.Float);
+				cmdRandomData.Parameters.Add("@double_normal", FbType.Double);
+				cmdRandomData.Parameters.Add("@r10pct_key", FbType.Integer);
+				cmdRandomData.Parameters.Add("@col_date", FbType.Date);
+				cmdRandomData.Parameters.Add("@col_code", FbType.VarChar);
+				cmdRandomData.Parameters.Add("@col_name", FbType.VarChar);
+				cmdRandomData.Parameters.Add("@col_address", FbType.VarChar);
+
+				cmdRandomData.Prepare();
+
+				for (rec = 1; rec <= dataSize; rec++)
+				{
+					int Drec;
 		    	
-				randomizer 			= randNumber.Next(0, THOUSANDMILLION);
-				dense_key  			= (rec == 1) ? 0 : rec;       
-				sparse_key 			= dense_key * sparse_key_spread;
-				sparse_signed 		= (-5*(HUNDREDMILLION)) + ((dense_key) * sparse_signed_spread);
-				uniform100_dense 	= 100 + (rec % 100);
-				zipf10_float 		= zipf10[randNumber.Next(0, (int)(rec % 10))];
-				zipf100_float 		= zipf100[randNumber.Next(0, (int)(rec % 100))];
-				uniform100_float 	= 100 + (float)((rec % 100));
-				double_normal 		= (double)randNumber.Next(-(THOUSANDMILLION), (THOUSANDMILLION));
+					randomizer 			= randNumber.Next(0, THOUSANDMILLION);
+					dense_key  			= (rec == 1) ? 0 : rec;       
+					sparse_key 			= dense_key * sparse_key_spread;
+					sparse_signed 		= (-5*(HUNDREDMILLION)) + ((dense_key) * sparse_signed_spread);
+					uniform100_dense 	= 100 + (rec % 100);
+					zipf10_float 		= zipf10[randNumber.Next(0, (int)(rec % 10))];
+					zipf100_float 		= zipf100[randNumber.Next(0, (int)(rec % 100))];
+					uniform100_float 	= 100 + (float)((rec % 100));
+					double_normal 		= (double)randNumber.Next(-(THOUSANDMILLION), (THOUSANDMILLION));
 
-				/* To ensure uniqueness, we'll start by generating the record number
-				 * in base (Ncsv_safe_chars), followed by "_". We'll then fill out
-				 * the field with additional randomly selected characters. (By writing
-				 * the digits backwards, we should help to keep the data disorderly :)
-				 */
-				Drec = (int)rec;
-				col_code = String.Empty;
-				col_name = String.Empty;
-				col_address = String.Empty;
-				while (Drec > 0) 
-				{
-					col_code	+= csv_safe_chars[Drec % csv_safe_chars.Length];
-					Drec		/= csv_safe_chars.Length;
-				}
-				col_code += '_';
-				for (i = col_code.Length; i < 10; i++)
-				{
-					col_code += csv_safe_chars[randNumber.Next(0, csv_safe_chars.Length)];
-				}
-				col_name = col_code;
-				for (i = col_code.Length; i < 20; i++)
-				{
-					col_name += csv_safe_chars[randNumber.Next(0, csv_safe_chars.Length)];
-				} 
-				col_address = col_code;
-				Nlen = randNumber.Next(2, (int)(6 + (25 * (rec & 3))));
-				for (i = col_code.Length; i < Nlen; i++)
-				{
-					col_address += csv_safe_chars[randNumber.Next(0, csv_safe_chars.Length)];
-				}
+					/* To ensure uniqueness, we'll start by generating the record number
+					 * in base (Ncsv_safe_chars), followed by "_". We'll then fill out
+					 * the field with additional randomly selected characters. (By writing
+					 * the digits backwards, we should help to keep the data disorderly :)
+					 */
+					Drec = (int)rec;
+					col_code = String.Empty;
+					col_name = String.Empty;
+					col_address = String.Empty;
+					while (Drec > 0) 
+					{
+						col_code	+= csv_safe_chars[Drec % csv_safe_chars.Length];
+						Drec		/= csv_safe_chars.Length;
+					}
+					col_code += '_';
+					for (i = col_code.Length; i < 10; i++)
+					{
+						col_code += csv_safe_chars[randNumber.Next(0, csv_safe_chars.Length)];
+					}
+					col_name = col_code;
+					for (i = col_code.Length; i < 20; i++)
+					{
+						col_name += csv_safe_chars[randNumber.Next(0, csv_safe_chars.Length)];
+					} 
+					col_address = col_code;
+					Nlen = randNumber.Next(2, (int)(6 + (25 * (rec & 3))));
+					for (i = col_code.Length; i < Nlen; i++)
+					{
+						col_address += csv_safe_chars[randNumber.Next(0, csv_safe_chars.Length)];
+					}
+					if (++r10pct_key > tenpct)
+					{
+						r10pct_key = 0;
+					} 
+					else if (r10pct_key == 1) 
+					{
+						r10pct_key++;
+					} 
+					try
+					{
+						/* roughly 36,835 days from 1/1/1900-12/1/2000 */
+						date_random = dense_key % 36835;
+						/* ignore leap year considerations */
+						col_date.AddYears((int)(date_random / 365));
+						date_random = (date_random % 365) + 1;
+						if (date_random <= 31) 
+						{
+							col_date.AddMonths(0);
+							col_date.AddDays(date_random);
+						} 
+						else if ((date_random -= 31) <= 28) 
+						{
+							col_date.AddMonths(1);
+							col_date.AddDays(date_random);
+						} 
+						else if ((date_random -= 28) <= 31) 
+						{
+							col_date.AddMonths(2);
+							col_date.AddDays(date_random);
+						} 
+						else if ((date_random -= 31) <= 30) 
+						{
+							col_date.AddMonths(3);
+							col_date.AddDays(date_random);
+						} 
+						else if ((date_random -= 30) <= 31) 
+						{
+							col_date.AddMonths(4);
+							col_date.AddDays(date_random);
+						} 
+						else if ((date_random -= 31) <= 30) 
+						{
+							col_date.AddMonths(5);
+							col_date.AddDays(date_random);
+						} 
+						else if ((date_random -= 30) <= 31) 
+						{
+							col_date.AddMonths(6);
+							col_date.AddDays(date_random);
+						} 
+						else if ((date_random -= 31) <= 31) 
+						{
+							col_date.AddMonths(7);
+							col_date.AddDays(date_random);
+						} 
+						else if ((date_random -= 31) <= 30) 
+						{
+							col_date.AddMonths(8);
+							col_date.AddDays(date_random);
+						} 
+						else if ((date_random -= 30) <= 31) 
+						{
+							col_date.AddMonths(9);
+							col_date.AddDays(date_random);
+						} 
+						else if ((date_random -= 31) <= 30) 
+						{
+							col_date.AddMonths(10);
+							col_date.AddDays(date_random);
+						} 
+						else 
+						{
+							col_date.AddMonths(11);
+							col_date.AddDays(date_random);
+						}
+					}
+					catch (Exception ex)
+					{
+						log.Error("random date error {0}", ex.Message);
+					}
 				
-				sqlCommand = new StringBuilder();
-				sqlCommand.AppendFormat(
-					numberFormat,
-					"INSERT INTO random_data ("												+
-						" randomizer, sparse_key, dense_key, sparse_signed, uniform100_dense,"+
-						" zipf10_float, zipf100_float, uniform100_float, double_normal,"	+
-						" code, name, address)"												+
-					" VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8},'{9}','{10}','{11}')",
-						randomizer, sparse_key, dense_key, sparse_signed, uniform100_dense,
-						zipf10_float, zipf100_float, uniform100_float, double_normal,
-						col_code, col_name, col_address);				
+					cmdRandomData.Parameters[0].Value = randomizer;
+					cmdRandomData.Parameters[1].Value = sparse_key;
+					cmdRandomData.Parameters[2].Value = dense_key;
+					cmdRandomData.Parameters[3].Value = sparse_signed;
+					cmdRandomData.Parameters[4].Value = uniform100_dense;
+					cmdRandomData.Parameters[5].Value = zipf10_float;
+					cmdRandomData.Parameters[6].Value = zipf100_float;
+					cmdRandomData.Parameters[7].Value = uniform100_float;
+					cmdRandomData.Parameters[8].Value = double_normal;
+					cmdRandomData.Parameters[9].Value = r10pct_key;				
+					cmdRandomData.Parameters[10].Value = col_date;
+					cmdRandomData.Parameters[11].Value = col_code;
+					cmdRandomData.Parameters[12].Value = col_name;
+					cmdRandomData.Parameters[13].Value = col_address;
 
-				ExecuteStatement(sqlCommand.ToString());
-			}
-			TransactionCommit();
-		    
-			TransactionBegin();
-			ExecuteStatement(
-				"update random_data set"			+
-				" address='SILICON VALLEY' where "	+
-				" randomizer = " + randomizer.ToString());
-			TransactionCommit();
-		
-			/* Now generate a table with 10% of some of the fields */
-			TransactionBegin();
-			command = new FbCommand(
-				"SELECT FIRST " + tenpct.ToString()			+
-				" sparse_signed, double_normal, address"	+
-				" FROM random_data"							+
-				" ORDER BY randomizer", connection, transaction);
-			adapter = new FbDataAdapter(command);
+					cmdRandomData.ExecuteNonQuery();
+				}
 			
-			dataset = new DataSet("RANDOM_DATA");
-			adapter.Fill(dataset, "RANDOM_DATA");
-
-			rec = 1;
-			foreach (DataRow row in dataset.Tables["RANDOM_DATA"].Rows)
-			{
-				sqlCommand = new StringBuilder();
-
-				col_key		= (rec == 1) ? 0 : rec;
-				col_signed	= Convert.ToInt64(row["sparse_signed"]);
-				col_double  = Convert.ToDouble(row["double_normal"]);
-				col_address = Convert.ToString(row["address"]);
-				col_float 	= Convert.ToSingle(col_double / 2.0);
+				cmdRandomData.Dispose();			
+				TransactionCommit();
 		    
-				sqlCommand.AppendFormat(
-					numberFormat,
+				TransactionBegin();
+				ExecuteStatement(
+					"update random_data set"			+
+					" address='SILICON VALLEY' where "	+
+					" randomizer = " + randomizer.ToString());
+				TransactionCommit();
+		
+				/* Now generate a table with 10% of some of the fields */
+				TransactionBegin();
+				command = new FbCommand(
+					"SELECT FIRST " + tenpct.ToString()			+
+					" sparse_signed, double_normal, address"	+
+					" FROM random_data"							+
+					" ORDER BY randomizer", connection, transaction);
+				adapter = new FbDataAdapter(command);
+			
+				dataset = new DataSet("RANDOM_DATA");
+				adapter.Fill(dataset, "RANDOM_DATA");
+
+				FbCommand cmdRandomTenpct = new FbCommand();
+
+				cmdRandomTenpct.CommandText = 
 					"INSERT INTO random_tenpct ("	+
-						" col_key, col_signed, col_float, col_double, col_address)" +
-					" VALUES ({0}, {1}, {2}, {3}, '{4}')",
-						col_key, col_signed, col_float, col_double, col_address);
+					" col_key, col_signed, col_float, col_double, col_address)" +
+					" VALUES (?, ?, ?, ?, ?)";
+			
+				cmdRandomTenpct.Connection	= connection;
+				cmdRandomTenpct.Transaction	= transaction;
 
-				ExecuteStatement(sqlCommand.ToString());
+				cmdRandomTenpct.Parameters.Add("@col_key", FbType.Integer);
+				cmdRandomTenpct.Parameters.Add("@col_signed", FbType.Integer);
+				cmdRandomTenpct.Parameters.Add("@col_float", FbType.Float);
+				cmdRandomTenpct.Parameters.Add("@col_double", FbType.Double);
+				cmdRandomTenpct.Parameters.Add("@col_address", FbType.VarChar);
 
-				rec++;
-			}
-			TransactionCommit();
-			command.Dispose();
-			adapter.Dispose();
-			dataset.Dispose();
+				cmdRandomTenpct.Prepare();
 
-			TransactionBegin();
-			ExecuteStatement("create index random10_ix on random_tenpct(col_key)");
-			TransactionCommit();
+				rec = 1;
+				foreach (DataRow row in dataset.Tables["RANDOM_DATA"].Rows)
+				{	    
+					cmdRandomTenpct.Parameters[0].Value = (rec == 1) ? 0 : rec;
+					cmdRandomTenpct.Parameters[1].Value = Convert.ToInt64(row["sparse_signed"]);
+					cmdRandomTenpct.Parameters[2].Value = Convert.ToSingle(Convert.ToDouble(row["double_normal"]) / 2.0);
+					cmdRandomTenpct.Parameters[3].Value = Convert.ToDouble(row["double_normal"]);
+					cmdRandomTenpct.Parameters[4].Value = Convert.ToString(row["address"]);
+
+					cmdRandomTenpct.ExecuteNonQuery();
+
+					rec++;
+				}
+				cmdRandomTenpct.Dispose();
+				command.Dispose();
+				adapter.Dispose();
+				dataset.Dispose();
+				TransactionCommit();
+
+				TransactionBegin();
+				ExecuteStatement("create index random10_ix on random_tenpct(col_key)");
+				TransactionCommit();
 		    
-			/* Now generate a table with only 100 tuples of interesting data */
-			TransactionBegin();
-			CursorOpen(
-				"SELECT FIRST 100"										+
+				/* Now generate a table with only 100 tuples of interesting data */
+				TransactionBegin();
+				CursorOpen(
+					"SELECT FIRST 100"										+
 					" uniform100_float, double_normal, name, address"	+
-				" FROM random_data"										+
+					" FROM random_data"										+
 					" ORDER BY randomizer");
 	
-			i = 0;
-			while (CursorFetch())
-			{
-				col_float	= Convert.ToSingle(Cursor["uniform100_float"]);
-				col_double	= Convert.ToDouble(Cursor["double_normal"]);
-				col_name	= Convert.ToString(Cursor["name"]);
-				col_address	= Convert.ToString(Cursor["address"]);
-		        
-				hundred_unique_float[i]		= Convert.ToSingle(col_double / 2);
-				hundred_unique_double[i]	= col_double;
-				hundred_unique_name[i]		= col_name;
-				hundred_unique_address[i]	= col_address;
+				i = 0;
+				while (CursorFetch())
+				{	        
+					hundred_unique_float[i]		= Convert.ToSingle(Convert.ToDouble(Cursor["double_normal"]) / 2);
+					hundred_unique_double[i]	= Convert.ToDouble(Cursor["double_normal"]);
+					hundred_unique_name[i]		= Convert.ToString(Cursor["name"]);
+					hundred_unique_address[i]	= Convert.ToString(Cursor["address"]);
 
-				i++;
-			}
-			i = randNumber.Next(0, 10);
-			CursorClose();
-			TransactionCommit();
-
-			col_double = hundred_unique_double[i];
-			TransactionBegin();
-			ExecuteStatement("update random_data"	+
-				" set code = 'BENCHMARKS', name = 'THE+ASAP+BENCHMARKS+' where" +
-				" double_normal = " + col_double.ToString());
-			TransactionCommit();
-
-			hundred_unique_name[i] = "THE+ASAP+BENCHMARKS+";
-		    
-			/* Now generate our testing tables */
-			hundred_key	= 0;
-			tenpct_key	= 0;
-		    
-			TransactionBegin();
-
-			command = new FbCommand(
-				"SELECT randomizer, sparse_key, dense_key, sparse_signed,"	+
-				" uniform100_dense, zipf10_float, zipf100_float,"			+
-				" uniform100_float, double_normal,"							+
-				" code, name, address"										+
-				" FROM random_data"											+
-				" ORDER BY randomizer", connection, transaction);
-			
-			adapter = new FbDataAdapter(command);
-			
-			dataset = new DataSet("RANDOM_DATA");
-			adapter.Fill(dataset, "RANDOM_DATA");
-
-			foreach (DataRow row in dataset.Tables["RANDOM_DATA"].Rows)
-			{
-				randomizer			= Convert.ToInt64(row["randomizer"]);
-				sparse_key			= Convert.ToInt64(row["sparse_key"]);
-				dense_key			= Convert.ToInt64(row["dense_key"]);
-				sparse_signed       = Convert.ToInt64(row["sparse_signed"]);
-				uniform100_dense	= Convert.ToSingle(row["uniform100_dense"]);
-				zipf10_float		= Convert.ToSingle(row["zipf10_float"]);
-				zipf100_float       = Convert.ToSingle(row["zipf100_float"]);
-				uniform100_float	= Convert.ToSingle(row["uniform100_float"]);
-				double_normal		= Convert.ToDouble(row["double_normal"]);
-				col_code			= Convert.ToString(row["code"]);
-				col_name			= Convert.ToString(row["name"]);
-				col_address			= Convert.ToString(row["address"]);
-
-				try
-				{
-					/* roughly 36,835 days from 1/1/1900-12/1/2000 */
-					date_random = dense_key % 36835;
-					/* ignore leap year considerations */
-					tm.AddYears((int)(date_random / 365));
-					date_random = (date_random % 365) + 1;
-					if (date_random <= 31) 
-					{
-						tm.AddMonths(0);
-						tm.AddDays(date_random);
-					} 
-					else if ((date_random -= 31) <= 28) 
-					{
-						tm.AddMonths(1);
-						tm.AddDays(date_random);
-					} 
-					else if ((date_random -= 28) <= 31) 
-					{
-						tm.AddMonths(2);
-						tm.AddDays(date_random);
-					} 
-					else if ((date_random -= 31) <= 30) 
-					{
-						tm.AddMonths(3);
-						tm.AddDays(date_random);
-					} 
-					else if ((date_random -= 30) <= 31) 
-					{
-						tm.AddMonths(4);
-						tm.AddDays(date_random);
-					} 
-					else if ((date_random -= 31) <= 30) 
-					{
-						tm.AddMonths(5);
-						tm.AddDays(date_random);
-					} 
-					else if ((date_random -= 30) <= 31) 
-					{
-						tm.AddMonths(6);
-						tm.AddDays(date_random);
-					} 
-					else if ((date_random -= 31) <= 31) 
-					{
-						tm.AddMonths(7);
-						tm.AddDays(date_random);
-					} 
-					else if ((date_random -= 31) <= 30) 
-					{
-						tm.AddMonths(8);
-						tm.AddDays(date_random);
-					} 
-					else if ((date_random -= 30) <= 31) 
-					{
-						tm.AddMonths(9);
-						tm.AddDays(date_random);
-					} 
-					else if ((date_random -= 31) <= 30) 
-					{
-						tm.AddMonths(10);
-						tm.AddDays(date_random);
-					} 
-					else 
-					{
-						tm.AddMonths(11);
-						tm.AddDays(date_random);
-					}
+					i++;
 				}
-				catch (Exception ex)
-				{
-					log.Error("random date error {0}", ex.Message);
-				}
+				i = randNumber.Next(0, 10);
+				CursorClose();
+				TransactionCommit();
 
-				sqlCommand = new StringBuilder();
-				sqlCommand.AppendFormat(
-					numberFormat,
-					"INSERT INTO uniques ("									+
-						" col_key, col_int, col_signed,"					+
-						" col_float, col_double, col_decim,"				+
-						" col_date, col_code, col_name, col_address)"		+
-					" VALUES ({0},{1},{2},{3},{4},{5},'{6}','{7}','{8}','{9}')",
-						sparse_key, sparse_key, sparse_signed,
-						zipf100_float, double_normal, double_normal,
-						tm, col_code, col_name, col_address);
+				col_double = hundred_unique_double[i];
+				TransactionBegin();
+				ExecuteStatement("update random_data"	+
+					" set code = 'BENCHMARKS', name = 'THE+ASAP+BENCHMARKS+' where" +
+					" double_normal = " + col_double.ToString());
+				TransactionCommit();
 
-				ExecuteStatement(sqlCommand.ToString());
+				hundred_unique_name[i] = "THE+ASAP+BENCHMARKS+";
+		    
+				/* Now generate our testing tables */
+				hundred_key	= 0;
+					    
+				TransactionBegin();
 
-				sqlCommand = new StringBuilder();
-				sqlCommand.AppendFormat(
-					numberFormat,
+				command = new FbCommand(
+					"SELECT randomizer, sparse_key, dense_key, sparse_signed,"	+
+					" uniform100_dense, zipf10_float, zipf100_float,"			+
+					" uniform100_float, double_normal,"							+
+					" col_date, code, name, address"										+
+					" FROM random_data"											+
+					" ORDER BY randomizer", connection, transaction);
+			
+				adapter = new FbDataAdapter(command);
+			
+				dataset = new DataSet("RANDOM_DATA");
+				adapter.Fill(dataset, "RANDOM_DATA");
+
+				FbCommand cmdUpdates = new FbCommand();
+				FbCommand cmdUniques = new FbCommand();
+				FbCommand cmdHundred = new FbCommand();
+
+				/* Configure Uniques statement	*/
+				cmdUniques.Connection	= connection;
+				cmdUniques.Transaction	= transaction;
+				cmdUniques.CommandText	= 
+					"INSERT INTO uniques ("								+
+					" col_key, col_int, col_signed,"					+
+					" col_float, col_double, col_decim,"				+
+					" col_date, col_code, col_name, col_address)"		+
+					" VALUES (?,?,?,?,?,?,?,?,?,?)";
+
+				cmdUniques.Parameters.Add("@col_key", FbType.Integer);
+				cmdUniques.Parameters.Add("@col_int", FbType.Integer);
+				cmdUniques.Parameters.Add("@col_signed", FbType.Integer);
+				cmdUniques.Parameters.Add("@col_float", FbType.Float);
+				cmdUniques.Parameters.Add("@col_double", FbType.Double);
+				cmdUniques.Parameters.Add("@col_decim", FbType.Decimal);
+				cmdUniques.Parameters.Add("@col_date", FbType.VarChar);
+				cmdUniques.Parameters.Add("@col_code", FbType.VarChar);
+				cmdUniques.Parameters.Add("@col_name", FbType.VarChar);
+				cmdUniques.Parameters.Add("@col_address", FbType.VarChar);
+
+				cmdUniques.Prepare();
+
+				/* Configure Updates statement	*/
+				cmdUpdates.Connection	= connection;
+				cmdUpdates.Transaction	= transaction;
+				cmdUpdates.CommandText	= 
 					"INSERT INTO updates ("								+
-						" col_key, col_int, col_signed,"				+
-						" col_float, col_double, col_decim,"			+
-						" col_date, col_code, col_name, col_address)"	+
-					" VALUES ({0},{1},{2},{3},{4},{5},'{6}','{7}','{8}','{9}')",
-						dense_key, dense_key, sparse_signed,
-						zipf10_float, double_normal, double_normal,
-						tm, col_code, col_name, col_address);
-		            
-				ExecuteStatement(sqlCommand.ToString());
+					" col_key, col_int, col_signed,"				+
+					" col_float, col_double, col_decim,"			+
+					" col_date, col_code, col_name, col_address)"	+
+					" VALUES (?,?,?,?,?,?,?,?,?,?)";
+
+				cmdUpdates.Parameters.Add("@col_key", FbType.Integer);
+				cmdUpdates.Parameters.Add("@col_int", FbType.Integer);
+				cmdUpdates.Parameters.Add("@col_signed", FbType.Integer);
+				cmdUpdates.Parameters.Add("@col_float", FbType.Float);
+				cmdUpdates.Parameters.Add("@col_double", FbType.Double);
+				cmdUpdates.Parameters.Add("@col_decim", FbType.Decimal);
+				cmdUpdates.Parameters.Add("@col_date", FbType.VarChar);
+				cmdUpdates.Parameters.Add("@col_code", FbType.VarChar);
+				cmdUpdates.Parameters.Add("@col_name", FbType.VarChar);
+				cmdUpdates.Parameters.Add("@col_address", FbType.VarChar);
+
+				cmdUpdates.Prepare();
+
+				/* Configure Uniques statement	*/
+				cmdHundred.Connection	= connection;
+				cmdHundred.Transaction	= transaction;
+				cmdHundred.CommandText	= 
+					"INSERT INTO hundred ("								+
+					" col_key, col_int, col_signed,"					+
+					" col_float, col_double, col_decim,"				+
+					" col_date, col_code, col_name, col_address)"		+
+					" VALUES (?,?,?,?,?,?,?,?,?,?)";
+
+				cmdHundred.Parameters.Add("@col_key", FbType.Integer);
+				cmdHundred.Parameters.Add("@col_int", FbType.Integer);
+				cmdHundred.Parameters.Add("@col_signed", FbType.Integer);
+				cmdHundred.Parameters.Add("@col_float", FbType.Float);
+				cmdHundred.Parameters.Add("@col_double", FbType.Double);
+				cmdHundred.Parameters.Add("@col_decim", FbType.Decimal);
+				cmdHundred.Parameters.Add("@col_date", FbType.VarChar);
+				cmdHundred.Parameters.Add("@col_code", FbType.VarChar);
+				cmdHundred.Parameters.Add("@col_name", FbType.VarChar);
+				cmdHundred.Parameters.Add("@col_address", FbType.VarChar);
+
+				cmdHundred.Prepare();
+
+				foreach (DataRow row in dataset.Tables["RANDOM_DATA"].Rows)
+				{
+					/* Insert into Uniques	*/
+					cmdUniques.Parameters[0].Value = Convert.ToInt64(row["sparse_key"]);
+					cmdUniques.Parameters[1].Value = Convert.ToInt64(row["sparse_key"]);
+					cmdUniques.Parameters[2].Value = Convert.ToInt64(row["sparse_signed"]);
+					cmdUniques.Parameters[3].Value = Convert.ToSingle(row["zipf10_float"]);
+					cmdUniques.Parameters[4].Value = Convert.ToDouble(row["double_normal"]);
+					cmdUniques.Parameters[5].Value = Convert.ToDouble(row["double_normal"]);
+					cmdUniques.Parameters[6].Value = Convert.ToString(row["col_date"]);
+					cmdUniques.Parameters[7].Value = Convert.ToString(row["code"]);
+					cmdUniques.Parameters[8].Value = Convert.ToString(row["name"]);
+					cmdUniques.Parameters[9].Value = Convert.ToString(row["address"]);
+
+					cmdUniques.ExecuteNonQuery();
+
+					/* Insert into Updates	*/
+					cmdUpdates.Parameters[0].Value = Convert.ToSingle(row["dense_key"]);
+					cmdUpdates.Parameters[1].Value = Convert.ToSingle(row["dense_key"]);
+					cmdUpdates.Parameters[2].Value = Convert.ToSingle(row["sparse_signed"]);
+					cmdUpdates.Parameters[3].Value = Convert.ToSingle(row["zipf10_float"]);
+					cmdUpdates.Parameters[4].Value = Convert.ToDouble(row["double_normal"]);
+					cmdUpdates.Parameters[5].Value = Convert.ToDouble(row["double_normal"]);
+					cmdUpdates.Parameters[6].Value = Convert.ToString(row["col_date"]);
+					cmdUpdates.Parameters[7].Value = Convert.ToString(row["code"]);
+					cmdUpdates.Parameters[8].Value = Convert.ToString(row["name"]);
+					cmdUpdates.Parameters[9].Value = Convert.ToString(row["address"]);
+
+					cmdUpdates.ExecuteNonQuery();
 			
-				if (++hundred_key >= 100)
-				{
-					hundred_key = 0;
-				}
-				hundred_float	= hundred_unique_float[hundred_key];
-				hundred_double	= hundred_unique_double[hundred_key];
-				hundred_name	= hundred_unique_name[hundred_key];
-				if (col_address.Trim() == "SILICON VALLEY")
-				{
-					hundred_address	= col_address;
-				}
-				else
-				{
-					hundred_address	= hundred_unique_address[hundred_key];
-				}
-
-				sqlCommand = new StringBuilder();
-				sqlCommand.AppendFormat(
-					numberFormat,
-					"INSERT INTO hundred ("										+
-						" col_key, col_int, col_signed,"						+
-						" col_float, col_double, col_decim,"					+
-						" col_date, col_code, col_name, col_address)"			+
-					" VALUES ({0},{1},{2},{3},{4},{5},'{6}','{7}','{8}','{9}')",
-						dense_key, sparse_key, uniform100_dense,
-						hundred_float, hundred_double, hundred_double,
-						tm, col_code, hundred_name, hundred_address);
-
-				ExecuteStatement(sqlCommand.ToString());
-
-				if (++tenpct_key > tenpct) 
-				{
-					tenpct_key = 0;
-				} 
-				else 
-				{
-					if (tenpct_key == 1) 
+					if (++hundred_key >= 100)
 					{
-						tenpct_key = 2;
+						hundred_key = 0;
 					}
+
+					/* Insert into Hundred	*/
+					cmdHundred.Parameters[0].Value = Convert.ToString(row["dense_key"]);
+					cmdHundred.Parameters[1].Value = Convert.ToString(row["dense_key"]);
+					cmdHundred.Parameters[2].Value = Convert.ToString(row["uniform100_dense"]);
+					cmdHundred.Parameters[3].Value = hundred_unique_float[hundred_key];
+					cmdHundred.Parameters[4].Value = hundred_unique_double[hundred_key];
+					cmdHundred.Parameters[5].Value = hundred_unique_double[hundred_key];
+					cmdHundred.Parameters[6].Value = Convert.ToString(row["col_date"]);
+					cmdHundred.Parameters[7].Value = Convert.ToString(row["code"]);
+					cmdHundred.Parameters[8].Value = hundred_unique_name[hundred_key];
+					cmdHundred.Parameters[9].Value = hundred_unique_address[hundred_key];
+
+					cmdHundred.ExecuteNonQuery();
 				}
+				cmdUpdates.Dispose();
+				cmdUniques.Dispose();
+				cmdHundred.Dispose();
 
-				CursorOpen(
-					"SELECT col_signed, col_float, col_double, col_address"	+
-					" FROM random_tenpct"									+
-					" WHERE col_key = " + tenpct_key.ToString());
+				command.Dispose();
+				adapter.Dispose();
+				dataset.Dispose();
+				TransactionCommit();
 
-				if (CursorFetch())
-				{
-					col_signed		= Convert.ToInt64(Cursor["col_signed"]);
-					col_float		= Convert.ToSingle(Cursor["col_float"]);
-					col_double		= Convert.ToDouble(Cursor["col_double"]);
-					col_address		= Convert.ToString(Cursor["col_address"]);
-
-					CursorClose();
-
-					col_name = hundred_unique_name[hundred_key % 10];
-
-					sqlCommand = new StringBuilder();
-					sqlCommand.AppendFormat(
-						numberFormat,
-						"INSERT INTO tenpct ("								+
-							" col_key, col_int, col_signed,"				+
-							" col_float, col_double, col_decim,"			+
-							" col_date, col_code, col_name, col_address)"	+
-						" VALUES ({0},{1},{2},{3},{4},{5},'{6}','{7}','{8}','{9}')",
-							sparse_key, sparse_key, col_signed,
-							col_float, col_double, col_double,
-							tm, col_code, col_name, col_address);
-
-					ExecuteStatement(sqlCommand.ToString());
-				}
-				else
-				{
-					CursorClose();
-				}
-			}
-			command.Dispose();
-			adapter.Dispose();
-			dataset.Dispose();
+				/* now create tenpct here */
+				TransactionBegin();
+				command = new FbCommand(
+					"SELECT random_data.sparse_key, random_tenpct.col_signed,"					+
+					"random_tenpct.col_float, random_tenpct.col_double, random_data.col_date,"	+
+					"random_data.code, random_data.name, random_tenpct.col_address "			+
+					"FROM  random_data, random_tenpct "											+
+					"WHERE random_data.r10pct_key = random_tenpct.col_key", 
+					connection, transaction);
 			
-			ExecuteStatement("INSERT INTO tiny values(0)" );
+				adapter = new FbDataAdapter(command);
+			
+				dataset = new DataSet("RANDOM_TENPCT");
+				adapter.Fill(dataset, "RANDOM_TENPCT");
 
-			TransactionCommit();
+				FbCommand cmdTenPct = new FbCommand();
 
-			TransactionBegin();
-			ExecuteStatement("drop table random_data");
-			ExecuteStatement("drop table random_tenpct");
-			TransactionCommit();
+				cmdTenPct.Connection	= connection;
+				cmdTenPct.Transaction	= transaction;
+				cmdTenPct.CommandText	=
+					"INSERT INTO tenpct ("								+
+					" col_key, col_int, col_signed,"					+
+					" col_float, col_double, col_decim,"				+
+					" col_date, col_code, col_name, col_address)"		+
+					" VALUES (?,?,?,?,?,?,?,?,?,?)";
+
+				cmdTenPct.Parameters.Add("@col_key", FbType.Integer);
+				cmdTenPct.Parameters.Add("@col_int", FbType.Integer);
+				cmdTenPct.Parameters.Add("@col_signed", FbType.Integer);
+				cmdTenPct.Parameters.Add("@col_float", FbType.Float);
+				cmdTenPct.Parameters.Add("@col_double", FbType.Double);
+				cmdTenPct.Parameters.Add("@col_decim", FbType.Decimal);
+				cmdTenPct.Parameters.Add("@col_date", FbType.VarChar);
+				cmdTenPct.Parameters.Add("@col_code", FbType.VarChar);
+				cmdTenPct.Parameters.Add("@col_name", FbType.VarChar);
+				cmdTenPct.Parameters.Add("@col_address", FbType.VarChar);
+
+				cmdTenPct.Prepare();
+
+				foreach (DataRow row in dataset.Tables["RANDOM_TENPCT"].Rows)
+				{
+					/* Insert into TenPct	*/
+					cmdTenPct.Parameters[0].Value = Convert.ToInt64(row["sparse_key"]);
+					cmdTenPct.Parameters[1].Value = Convert.ToInt64(row["sparse_key"]);
+					cmdTenPct.Parameters[2].Value = Convert.ToInt64(row["col_signed"]);
+					cmdTenPct.Parameters[3].Value = Convert.ToSingle(row["col_float"]);
+					cmdTenPct.Parameters[4].Value = Convert.ToDouble(row["col_double"]);
+					cmdTenPct.Parameters[5].Value = Convert.ToDouble(row["col_double"]);
+					cmdTenPct.Parameters[6].Value = Convert.ToString(row["col_date"]);
+					cmdTenPct.Parameters[7].Value = Convert.ToString(row["code"]);;
+					cmdTenPct.Parameters[8].Value = Convert.ToString(row["name"]);
+					cmdTenPct.Parameters[9].Value = Convert.ToString(row["col_address"]);
+
+					cmdTenPct.ExecuteNonQuery();
+				}
+
+				cmdTenPct.Dispose();
+
+				command.Dispose();
+				adapter.Dispose();
+				dataset.Dispose();
+				TransactionCommit();
+
+				/* now create tiny here */
+
+				TransactionBegin();			
+				ExecuteStatement("INSERT INTO tiny values(0)" );
+				TransactionCommit();
+
+				TransactionBegin();
+				ExecuteStatement("drop table random_data");
+				ExecuteStatement("drop table random_tenpct");
+				TransactionCommit();
+			}
+			catch (Exception ex)
+			{
+				TransactionRollback();
+				log.Error("load failed {0}", ex.Message);
+			}
 		}
 
 		#endregion
