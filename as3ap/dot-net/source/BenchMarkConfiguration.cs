@@ -44,7 +44,7 @@ namespace AS3AP.BenchMark
 		private bool	enableLogging		= true;
 		private bool	enableErrorLogging	= true;
 
-		private string	connectionString	= "AS3AP.FDB;User=SYSDBA;Password=masterkey;Server=localhost;Port=3050;Dialect=3;Charset=NONE;Role=;Connection Lifetime=15;Pooling=true";
+		private string	connectionString	= "Database=AS3AP.FDB;User=SYSDBA;Password=masterkey;Server=localhost;Port=3050;Dialect=3;Charset=NONE;Role=;Connection Lifetime=15;Pooling=true";
 
 		private string	providerAssembly	= "FirebirdSql.Data.Firebird";
 		private bool	supportsClusteredIndexes = false;
