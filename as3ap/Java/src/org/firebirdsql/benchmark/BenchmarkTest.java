@@ -44,7 +44,12 @@ public class BenchmarkTest extends BenchmarkDDL {
     }
 
     protected void tearDown() throws Exception {
-        databaseManager.releaseConnection(connection);
+        try {
+            databaseManager.releaseConnection(connection);
+        } finally {
+            connection = null;
+            fixture = null;
+        }
     }
     
     protected BenchmarkFixture getFixture() {

@@ -30,7 +30,7 @@ public class LoadDataSuite extends BenchmarkSuite {
      * Fill this test suite.
 	 */
 	public void fillSuite() {
-		addTest(new LoadTest("testLoadData"));
+		addTest(getFixture().createLoadTest("testLoadData"));
 
 	}
 

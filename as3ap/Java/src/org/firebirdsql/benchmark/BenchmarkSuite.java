@@ -22,6 +22,8 @@ package org.firebirdsql.benchmark;
 import junit.framework.*;
 import junit.extensions.TestSetup;
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 
 /**
@@ -44,7 +46,7 @@ public abstract class BenchmarkSuite extends TestSuite {
     }
     
     protected BenchmarkDatabaseManager createDatabaseManager() throws SQLException {
-        return new BenchmarkDatabaseManager(isCreateDatabase());
+        return getFixture().createDatabaseManager();
     }
     
     /**
@@ -54,56 +56,66 @@ public abstract class BenchmarkSuite extends TestSuite {
      */
     public Test suite() {
         
-        fillSuite();
-        
         TestSetup setup = new TestSetup(this) {
             
             protected void setUp() throws Exception {
+                fixture = createFixture(databaseManager);
+                fixture.setUp(isCreateDatabase());
+
                 databaseManager = createDatabaseManager();
-                    
-                fixture = 
-                    new BenchmarkFixture(databaseManager, 
-                        new File(databaseManager.getConfig().getDataPath()));
-                    
-                if (isCreateDatabase())
-                    fixture.createDatabase();
+                fillSuite();
             }
 
             protected void tearDown() throws Exception {
-                // do nothing, we disconnect automatically
+                fixture.tearDown(false);
             }
             
         };
-        
+
         return setup;
     }
     
+    public BenchmarkFixture createFixture(BenchmarkDatabaseManager databaseManager) 
+        throws ClassNotFoundException, NoSuchMethodException, 
+        InvocationTargetException, InstantiationException, IllegalAccessException 
+    {
+        String className = BenchmarkConfiguration.getConfiguration().getFixtureClassName();
+        
+        Class fixtureClass = Class.forName(className);
+        Constructor constructor = fixtureClass.getConstructor(
+                new Class[]{File.class});
+        
+        return (BenchmarkFixture)constructor.newInstance(new Object[]{
+                new File(BenchmarkConfiguration.getConfiguration().getDataPath())});
+        
+    }
+    
     protected Test createOutputTest(String name) {
-        return new OutputTest(name);
+        return getFixture().createOutputTest(name);
     }
     
     protected Test createSelectTest(String name) {
-        return new SelectTest(name);
+        return getFixture().createSelectTest(name);
     }
     
     protected Test createJoinTest(String name) {
-        return new JoinTest(name);
+        return getFixture().createJoinTest(name);
     }
     
     protected Test createProjectionTest(String name) {
-        return new ProjectionTest(name);
+        return getFixture().createProjectionTest(name);
     }
     
     protected Test createAggregateTest(String name) {
-        return new AggregateTest(name);
+        return getFixture().createAggregateTest(name);
     }
 
     protected Test createIndexTest(String name) {
-        return new IndexTest(name);
+        return getFixture().createIndexTest(name);
     }
     
     protected Test createUpdateTest(String name) {
-        return new UpdateTest(name);
+        return getFixture().createUpdateTest(name);
     }
     
     protected boolean isCreateDatabase() {

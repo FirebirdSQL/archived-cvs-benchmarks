@@ -46,13 +46,17 @@ public class ActiveBenchmarkSuite extends ActiveTestSuite {
         while (fActiveTestDeathCount < testCount()) {
             try {
                 wait();
+                
+                System.out.println("" + (testCount() - fActiveTestDeathCount) + 
+                        " threads are still running.");
+                
             } catch (InterruptedException e) {
                 return; // ignore
             }
         }
     }
 
-    synchronized public void runFinished(Test test) {
+    public synchronized void runFinished(Test test) {
         fActiveTestDeathCount++;
         notifyAll();
     }

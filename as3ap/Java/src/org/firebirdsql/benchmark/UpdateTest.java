@@ -89,7 +89,7 @@ public class UpdateTest extends BenchmarkTest {
         executeUpdate(""
             + "INSERT INTO " + UPDATES_TABLE + " VALUES ("
             + "5005, 5005, 50005, 50005.00, 50005.00, "
-            + "500005.00, '1-jan-1988', 'CONTROLLER', "
+            + "500005.00, '1-01-1988', 'CONTROLLER', "
             + "'ALICE IN WONDERLAND', 'UNIVERSITY OF ILLINOIS IN CHICAGO'"
             + ")"
         );
@@ -117,7 +117,7 @@ public class UpdateTest extends BenchmarkTest {
         executeUpdate(""
             + "INSERT INTO " + UPDATES_TABLE + " VALUES ("
             + "1000000001, 50005, 50005, 50005.00, 50005.00, "
-            + "50005.00, '1-jan-1988', 'CONTROLLER', "
+            + "50005.00, '1-01-1988', 'CONTROLLER', "
             + "'ALICE IN WONDERLAND', 'UNIVERSITY OF ILLINOIS AT CHICAGO'"
             + ")"
         );

@@ -25,7 +25,7 @@ import junit.framework.TestSuite;
  * 
  * @author <a href="mailto:rrokytskyy@users.sourceforge.net">Roman Rokytskyy</a>
  */
-public class SingleUserSuite extends BenchmarkSuite {
+public final class SingleUserSuite extends BenchmarkSuite {
 
     /**
      * Do we create database?

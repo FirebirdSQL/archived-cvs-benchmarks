@@ -61,6 +61,10 @@ public class BenchmarkConfiguration {
     public static final String JDBC_DRIVER_CLASS_NAME = "jdbcDriver";
     public static final String JDBC_DRIVER_URL = "jdbcUrl";
     
+    public static final String FIXTURE_CLASS_NAME = "fixtureClassName";
+    
+    public static final String CUSTOM_PROPERTY = "custom";
+    
     private static final Properties RES = new Properties();
     static {
         
@@ -87,28 +91,37 @@ public class BenchmarkConfiguration {
         // empty
     }
     
+    private String getProperty(String propertyName) {
+        return getProperty(propertyName, null);
+    }
+    
+    private String getProperty(String propertyName, String defaultValue) {
+        String systemProperty = System.getProperty(propertyName);
+        
+        if (systemProperty != null)
+            return systemProperty;
+        
+        return RES.getProperty(propertyName, defaultValue);
+    }
+    
     public static BenchmarkConfiguration getConfiguration() {
         return config;
     }
     
     public String getDataPath() {
-        return RES.getProperty(DATA_PATH_PROPERTY, ".");
-    }
-    
-    public String getDatabasePath() {
-        return RES.getProperty(DATABASE_PATH_PROPERTY, "localhost/3050:as3ap.gdb");
+        return getProperty(DATA_PATH_PROPERTY, ".");
     }
     
     public String getUserName() {
-        return RES.getProperty(USER_NAME_PROPERTY, "SYSDBA");
+        return getProperty(USER_NAME_PROPERTY, "SYSDBA");
     }
     
     public String getPassword() {
-        return RES.getProperty(PASSWORD_PROPERTY, "masterkey");
+        return getProperty(PASSWORD_PROPERTY, "masterkey");
     }
     
     public int getPoolingType() {
-        String poolingType = RES.getProperty(POOLING_PROPERTY, null);
+        String poolingType = getProperty(POOLING_PROPERTY, null);
         
         if(NO_POOLING_STR.equals(poolingType))
             return NO_POOLING;
@@ -123,7 +136,7 @@ public class BenchmarkConfiguration {
     }
     
     private int getIntProperty(String key, int defaultValue) {
-        String strValue = RES.getProperty(key);
+        String strValue = getProperty(key);
         
         if (strValue == null)
             return defaultValue;
@@ -139,7 +152,7 @@ public class BenchmarkConfiguration {
     }
     
     private boolean getBooleanProperty(String key, boolean defaultValue) {
-        String strValue = RES.getProperty(key);
+        String strValue = getProperty(key);
         
         if ("true".equals(strValue))
             return true;
@@ -162,11 +175,6 @@ public class BenchmarkConfiguration {
         return getIntProperty(MAX_CONNECTIONS, 20);
     }
     
-    public String getTpbMapping() {
-        return RES.getProperty(TPB_MAPPING_PROPERTY, 
-            "isc_tpb_mapping.properties");
-    }
-    
     public boolean isRecreateTableAsCleanup() {
         return getBooleanProperty(RECREATE_TABLE_AS_CLEANUP, false);
     }
@@ -176,14 +184,34 @@ public class BenchmarkConfiguration {
     }
     
     public String getDriverClassName() {
-        return RES.getProperty(JDBC_DRIVER_CLASS_NAME);
+        return getProperty(JDBC_DRIVER_CLASS_NAME);
     }
     
     public String getJdbcUrl() {
-        return RES.getProperty(JDBC_DRIVER_URL);
+        return getProperty(JDBC_DRIVER_URL);
     }
     
     public int getSleepDuration() {
         return getIntProperty(SLEEP_DURATION, 0);
+    }
+    
+    public String getFixtureClassName() {
+        return getProperty(FIXTURE_CLASS_NAME, BenchmarkFixture.class.getName());
+    }
+    
+    public String getCustomProperty(String property) {
+        return getCustomProperty(property, null);
+    }
+    
+    public String getCustomProperty(String property, String defaultValue) {
+        return getProperty(CUSTOM_PROPERTY + "." + property, defaultValue);
+    }
+    
+    public int getCustomIntProperty(String property, int defaultValue) {
+        return getIntProperty(CUSTOM_PROPERTY + "." + property, defaultValue);
+    }
+    
+    public boolean getCustomBooleanProperty(String property, boolean defaultValue) {
+        return getBooleanProperty(CUSTOM_PROPERTY + "." + property, defaultValue);
     }
 }

@@ -49,23 +49,29 @@ public class BackgroundMultiUserTest extends MultiUserTest {
         notifyAll();
     }
         
-    public synchronized void testOltpUpdate() throws Exception {
+    public void testOltpUpdate() throws Exception {
         while(!stopped) {
             doOltpUpdate();
             
             int sleepDuration = getDatabaseManager().getConfig().getSleepDuration();
             if (sleepDuration > 0)
-                wait(sleepDuration);
+                synchronized(this) {
+                    wait(sleepDuration);
+                }
         }
+        
+        System.out.println("[" + Thread.currentThread().getName() + "] stopped.");
     }
 
-    public synchronized void testIrSelect() throws Exception {
+    public void testIrSelect() throws Exception {
         while(!stopped) {
             doIrSelect();
             
             int sleepDuration = getDatabaseManager().getConfig().getSleepDuration();
             if (sleepDuration > 0)
-                wait(sleepDuration);
+                synchronized(this) {
+                    wait(sleepDuration);
+                }
         }
         
         System.out.println("[" + Thread.currentThread().getName() + "] stopped.");

@@ -24,17 +24,23 @@ import java.util.StringTokenizer;
 import java.sql.*;
 import java.util.Date;
 
+import junit.framework.Test;
+
 /**
  * This is benchmark suite fixture.
  */
-public class BenchmarkFixture {
+public abstract class BenchmarkFixture {
     
     private BenchmarkDatabaseManager manager;
     private File dataPath;
     
-    public BenchmarkFixture(BenchmarkDatabaseManager manager, File dataPath) {
-        this.manager = manager;
+    public BenchmarkFixture(File dataPath) throws SQLException {
+        this.manager = createDatabaseManager();
         this.dataPath = dataPath;
+    }
+    
+    protected BenchmarkDatabaseManager getManager() {
+        return manager;
     }
     
     /**
@@ -47,13 +53,92 @@ public class BenchmarkFixture {
     }
     
     /**
+     * Set up benchmark suite. This method is called before test suite is
+     * executed once.
+     * 
+     * @param createDatabase <code>true</code> if database has to be recreated.
+     * 
+     * @throws SQLException if database access error occurs.
+     */
+    public void setUp(boolean createDatabase) throws SQLException {
+        if (createDatabase)
+            createDatabase();
+    }
+    
+    /**
+     * Tear down the suite. This method is called once after the suite is
+     * finished.
+     * 
+     * @param dropDatabase <code>true</code> if database must be dropped.
+     * 
+     * @throws SQLException if database access error occurs.
+     */
+    public void tearDown(boolean dropDatabase) throws SQLException {
+        // do nothing here
+    }
+    
+    public BenchmarkConfiguration getConfig() {
+        return BenchmarkConfiguration.getConfiguration();
+    }
+    
+    public abstract BenchmarkDatabaseManager createDatabaseManager() 
+        throws SQLException;
+    
+    /**
+     * Create new data load test. This method can be ovverwritten by the subclass
+     * to provide adapted version of the test case.
+     * 
+     * @param testName name of the test case.
+     * 
+     * @return instance of {@link TestCase}
+     */
+    protected Test createLoadTest(String testName) {
+        return new LoadTest(testName);
+    }
+    
+    protected Test createOutputTest(String name) {
+        return new OutputTest(name);
+    }
+    
+    protected Test createSelectTest(String name) {
+        return new SelectTest(name);
+    }
+    
+    protected Test createJoinTest(String name) {
+        return new JoinTest(name);
+    }
+    
+    protected Test createProjectionTest(String name) {
+        return new ProjectionTest(name);
+    }
+    
+    protected Test createAggregateTest(String name) {
+        return new AggregateTest(name);
+    }
+
+    protected Test createIndexTest(String name) {
+        return new IndexTest(name);
+    }
+    
+    protected Test createUpdateTest(String name) {
+        return new UpdateTest(name);
+    }
+    
+    protected BackgroundMultiUserTest createBackgroundMultiUserTest(String name, int keyRange) {
+        return new BackgroundMultiUserTest(name, keyRange);
+    }
+    
+    protected MainstreamMultiUserTest createMainstreamMultiUserTest(String name, int keyRange, int duration) {
+        return new MainstreamMultiUserTest(name, keyRange, duration);
+    }
+
+    
+    /**
      * Create database and execute all necessary DDL statements.
      * 
      * @throws SQLException if something went wrong.
      */
     public void createDatabase() throws SQLException {
-        manager.createDatabase();
-        
         manager.executeDDL(BenchmarkDDL.CREATE_UPDATES_TABLE);
         manager.executeDDL(BenchmarkDDL.CREATE_HUNDRED_TABLE);
         manager.executeDDL(BenchmarkDDL.CREATE_HUNDRED_FOREIGN_KEY);

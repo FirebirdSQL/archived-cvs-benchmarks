@@ -26,7 +26,7 @@ import junit.framework.*;
  * 
  * @author <a href="mailto:rrokytskyy@users.sourceforge.net">Roman Rokytskyy</a>
  */
-public class MultiUserSuite extends BenchmarkSuite {
+public final class MultiUserSuite extends BenchmarkSuite {
     
     public static final int KEY_RANGE = 100 * 1000;
     
@@ -79,7 +79,7 @@ public class MultiUserSuite extends BenchmarkSuite {
                 new BackgroundMultiUserTest[getUserCount()];
                 
             for (int i = 0; i < bgTests.length; i++) {
-                bgTests[i] = new BackgroundMultiUserTest("testIrSelect", getKeyRange());
+                bgTests[i] = getFixture().createBackgroundMultiUserTest("testIrSelect", getKeyRange());
             }
             
             
@@ -97,7 +97,7 @@ public class MultiUserSuite extends BenchmarkSuite {
             // Step 3          
             
             MainstreamMultiUserTest perfIrTest = 
-                new MainstreamMultiUserTest("testIrSelect", getKeyRange(), 
+                getFixture().createMainstreamMultiUserTest("testIrSelect", getKeyRange(), 
                     getDatabaseManager().getConfig().getPerformanceDuration());
                     
             perfIrTest.run(testResult);
@@ -108,7 +108,7 @@ public class MultiUserSuite extends BenchmarkSuite {
             bgTests[0].stop();
             
             Test crossSectionTest = 
-                new MainstreamMultiUserTest("testCrossSection", getKeyRange(), 0);
+                getFixture().createMainstreamMultiUserTest("testCrossSection", getKeyRange(), 0);
             crossSectionTest.run(testResult);
             
             System.out.println("step 4 completed");
@@ -123,18 +123,18 @@ public class MultiUserSuite extends BenchmarkSuite {
             System.out.println("background suite stopped.");
             
             Test checkTest = 
-                new MainstreamMultiUserTest("testCheck", 0, 0);
+                getFixture().createMainstreamMultiUserTest("testCheck", 0, 0);
             checkTest.run(testResult);
             
             System.out.println("step 5 completed");
             
             // Step 6
-            new LoadTest("testRestoreUpdates").run(testResult);
+            getFixture().createLoadTest("testRestoreUpdates").run(testResult);
             
             System.out.println("step 6 completed");
             
             // Step 7
-            checkTest = new MainstreamMultiUserTest("testCheck", 0, 0);
+            checkTest = getFixture().createMainstreamMultiUserTest("testCheck", 0, 0);
                 
             checkTest.run(testResult);
             
@@ -145,7 +145,7 @@ public class MultiUserSuite extends BenchmarkSuite {
             // Step 8
             
             for (int i = 0; i < bgTests.length; i++) {
-                bgTests[i] = new BackgroundMultiUserTest("testOltpUpdate", getKeyRange());
+                bgTests[i] = getFixture().createBackgroundMultiUserTest("testOltpUpdate", getKeyRange());
             }
             
             ActiveBenchmarkSuite bgOltpSuite = new ActiveBenchmarkSuite();
@@ -160,7 +160,7 @@ public class MultiUserSuite extends BenchmarkSuite {
             System.out.println("step 8 completed");
             
             // Step 9
-            perfIrTest = new MainstreamMultiUserTest("testIrSelect", getKeyRange(), 
+            perfIrTest = getFixture().createMainstreamMultiUserTest("testIrSelect", getKeyRange(), 
                     getDatabaseManager().getConfig().getPerformanceDuration());
 
             perfIrTest.run(testResult);
@@ -168,8 +168,12 @@ public class MultiUserSuite extends BenchmarkSuite {
             System.out.println("step 9 completed: " + perfIrTest.getThroughput());
             
             // Step 10
-            bgTests[0].stop();;
+            bgTests[0].stop();
             
+            System.out.println("One background test stopped.");
+            
+            crossSectionTest = 
+                getFixture().createMainstreamMultiUserTest("testCrossSection", getKeyRange(), 0);
             crossSectionTest.run(testResult);
             
             System.out.println("step 10 completed");
@@ -182,7 +186,7 @@ public class MultiUserSuite extends BenchmarkSuite {
             
             bgOltpSuite.waitSuiteCompletion();
             
-            checkTest = new MainstreamMultiUserTest("testCheck", 0, 0);
+            checkTest = getFixture().createMainstreamMultiUserTest("testCheck", 0, 0);
 
             checkTest.run(testResult);
             

@@ -20,20 +20,12 @@
 package org.firebirdsql.benchmark;
 
 import java.sql.*;
-import javax.sql.DataSource;
-import javax.resource.ResourceException;
-import org.firebirdsql.jdbc.FBSQLException;
-import org.firebirdsql.management.FBManager;
-import org.firebirdsql.pool.*;
-import org.firebirdsql.pool.FBWrappingDataSource;
 
 /**
  * This class is responsible for database management.
  * 
  */
-public class BenchmarkDatabaseManager {
-    
-    private DataSource dataSource;
+public abstract class BenchmarkDatabaseManager {
     
     /**
      * Create instance of this class. 
@@ -42,110 +34,24 @@ public class BenchmarkDatabaseManager {
      * <code>"localhost/3050:/tmp/benchmark/as3ap.gdb"</code>. Note, this is 
      * not JDBC URL.
      * 
-     * @param userName user on behalf of whom test will be executed.
-     * 
-     * @param password password of the user.
-     * 
-     * @param create <code>true</code> if database should be created, otherwise
-     * we assume that database was already created.
-     * 
      * @throws SQLException if database cannot be created.
      */
-    public BenchmarkDatabaseManager(boolean create) throws SQLException 
-    {
-        if (create)
-            createDatabase();
-        
-        switch(getConfig().getPoolingType()) {
-            case BenchmarkConfiguration.NO_POOLING :
-                dataSource = getNoPoolingDataSource();
-                break;
-                
-            case BenchmarkConfiguration.CONNECTION_POOLING :
-                dataSource = getConnectionPoolingDataSource();
-                break;
-                
-            case BenchmarkConfiguration.STATEMENT_POOLING :
-                dataSource = getStatementPoolingDataSource();
-                break;
-                
-            default :
-                throw new SQLException("Pooling type unknown.");
-        }
+    public BenchmarkDatabaseManager() throws SQLException { 
     }
     
     public BenchmarkConfiguration getConfig() {
         return BenchmarkConfiguration.getConfiguration();
     }
-    
-    protected DataSource getNoPoolingDataSource() throws SQLException {
-        FBSimpleDataSource ds = new FBSimpleDataSource();
-        
-        try {
-            ds.setTpbMapping(getConfig().getTpbMapping());
-            ds.setDatabase(getConfig().getDatabasePath());
-            ds.setUserName(getConfig().getUserName());
-            ds.setPassword(getConfig().getPassword());
-        } catch(ResourceException ex) {
-            throw new FBSQLException(ex);
-        }
-        
-        return ds;
-    }
 
-    protected DataSource getConnectionPoolingDataSource() throws SQLException {
-        FBWrappingDataSource ds = new FBWrappingDataSource();
-    
-        ds.setTpbMapping(getConfig().getTpbMapping());
-        ds.setDatabase(getConfig().getDatabasePath());
-        ds.setUserName(getConfig().getUserName());
-        ds.setPassword(getConfig().getPassword());
-        ds.setPooling(true);
-        ds.setMaxSize(getConfig().getMaxConnections());
-    
-        return ds;
-    }
-    
-    protected DataSource getStatementPoolingDataSource() throws SQLException {
-        return getConnectionPoolingDataSource();
-    }
-
-    
     /**
-     * Create database that was specified in a constructor. This method uses
-     * GDS API directly, because FBManager methods throw instances of 
-     * {@link Exception}, not {@link SQLException}.
+     * Get new connection. 
      * 
-     * @throws SQLException
-     */
-    protected void createDatabase() throws SQLException {
-        FBManager manager = new FBManager();
-        manager.setForceCreate(true);
-        
-        try {
-            manager.createDatabase(
-                    getConfig().getDatabasePath(), 
-                    getConfig().getUserName(), 
-                    getConfig().getPassword());
-            
-        } catch(Exception ex) {
-            throw new SQLException(ex.getMessage());
-        }
-    }
-    
-    /**
-     * Get connection to the benchmark database.
-     * 
-     * @return instance of {@link Connection}
+     * @return insance of {@link Connection}
      * 
      * @throws SQLException if connection cannot be obtained.
      */
-    public Connection getConnection() throws SQLException {
-        Connection connection = dataSource.getConnection();
-        setUp(connection);
-        return connection;
-    }
-
+    public abstract Connection getConnection() throws SQLException;
+    
     /**
      * Release JDBC connection that was obtained using {@link #getConnection()}
      * method.
