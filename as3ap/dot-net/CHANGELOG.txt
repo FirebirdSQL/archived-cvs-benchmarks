@@ -2,6 +2,19 @@ AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 =============================================================================================
 
 
+2003-08-07 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+
+	Added changes for run the benchmark using new 1.5 version of the .NET data Provider
+	Prior sources can be accesed using the TAG -> as3ap_dotnet_pre_15
+
+	* Added database creation on the fly.
+	
+	* Fixed problem displaying the result of some lines ( Thanks to Nickolay Samofatov  )
+
+	* Added config file for the GUI APP with configuration for the default config file that will
+	be loaded automatically.
+
+
 2003-04-29 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
 	* Backend class is no more needed.
