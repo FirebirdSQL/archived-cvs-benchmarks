@@ -69,6 +69,8 @@ public class FirebirdDatabaseManager extends BenchmarkDatabaseManager {
         pool.setDatabase(getConfig().getCustomProperty("firebird.databasePath"));
         pool.setUserName(getConfig().getUserName());
         pool.setPassword(getConfig().getPassword());
+        
+        pool.setTpbMapping(getConfig().getCustomProperty("firebird.tpbMapping"));
 
         pool.setType(getConfig().getCustomProperty("firebird.type", "PURE_JAVA"));
         
