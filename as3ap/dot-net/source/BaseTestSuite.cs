@@ -2782,6 +2782,7 @@ namespace AS3AP.BenchMark
 			short	pageSize	= 4096;
 			string	charset		= "NONE";
 			bool	ssl			= false;
+			int		serverType	= 0;
 
 			Regex			search	 = new Regex(@"([\w\s\d]*)\s*=\s*([^;]*)");
 			MatchCollection	elements = search.Matches(this.configuration.ConnectionString);
@@ -2802,6 +2803,8 @@ namespace AS3AP.BenchMark
 
 					case "user name":
 					case "user":
+					case "user id":
+					case "userid":
 						user = element.Groups[2].Value.Trim();
 						break;
 
@@ -2825,6 +2828,11 @@ namespace AS3AP.BenchMark
 					case "charset":
 						charset = element.Groups[2].Value.Trim();
 						break;
+
+					case "servertype":
+					case "server type":
+						serverType = Int32.Parse(element.Groups[2].Value.Trim());
+						break;
 				}
 			}
 
@@ -2839,6 +2847,7 @@ namespace AS3AP.BenchMark
 			values.Add("ForcedWrites", forcedWrite);
 			values.Add("PageSize"	, pageSize);
 			values.Add("Charset"	, charset);
+			values.Add("ServerType"	, serverType);
 			values.Add("SSL"		, ssl);
 
 			dataHelper.CreateDatabase(values);
@@ -3050,11 +3059,9 @@ namespace AS3AP.BenchMark
 				FileAccess.Read			,
 				FileShare.None));
 
-			/* Prepare command execution	*/
-			command.Prepare();
-
 			int		rowCount			= 0;
 			bool	transactionPending	= false;
+			bool	commandPrepared		= false;
 			while (stream.Peek() > -1)
 			{
 				if (rowCount == 0)
@@ -3062,6 +3069,13 @@ namespace AS3AP.BenchMark
 					beginTransaction();
 					transactionPending	= true;
 					command.Transaction = this.transaction;
+
+					/* Prepare command execution	*/
+					if (!commandPrepared)
+					{
+						command.Prepare();
+						commandPrepared = true;
+					}
 				}
 
 				string[] elements = stream.ReadLine().Split(',');
