@@ -1,4 +1,357 @@
+2003-05-17  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/SingleUserSuite.java:
+		fixed the issue with database creation
+
+2003-05-14  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
+		stopped reusing test instances
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BackgroundMultiUserTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkConfiguration.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MainstreamMultiUserTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/benchmarkSuite.properties:
+		added configuration for sleep duration between tests
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserTest.java:
+		fixed incorrect key generation
+
+2003-05-09  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkConfiguration.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDatabaseManager.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/benchmarkSuite.properties:
+		added possibility to use arbitrary drivers
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/ActiveBenchmarkSuite.java:
+		added some logging
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserTest.java:
+		fixed bug when InterClient is used
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
+		fixed hardcoded value of concurrent threads
+
+2003-05-04  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkConfiguration.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/benchmarkSuite.properties:
+		added recreateTable config property
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserTest.java:
+		switched to prepared statements instead of normal ones
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkFixture.java:
+		some refactoring
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDatabaseManager.java:
+		switched to benchmark configuration, added support of various pool
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkConfiguration.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/benchmarkSuite.properties:
+	* as3ap/Java/src/org/firebirdsql/benchmark/benchmarkTpbMapping.properties:
+		initial revision
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkSuite.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
+		switched to benchmark configuration
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/LoadTest.java:
+		added support for recreateTable property
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkListener.java:
+		added code to display failure or exception straightaway
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDDL.java:
+		added statements to add and drop foreing key constraint
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/LoadTest.java:
+		modified testRestoreUpdates() to avoid "object in use" or "
+		foreign key violation" errors
+
+2003-05-04  carlosga_fb
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+		Added some bugfixes
+
+2003-05-03  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/BackgroundMultiUserTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MainstreamMultiUserTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserTest.java:
+		splitted tests into backgroung and mainstream
+		simplified main test execution sequence
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/ActiveBenchmarkSuite.java:
+		simplified suite significantly
+
+2003-04-29  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDatabaseManager.java:
+		added possibility to use connection pooling
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkListener.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserTest.java:
+		added possibility to group test results
+
+2003-04-29  carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated CHANGELOG.TXT
+
+	* as3ap/dot-net/source/Backend.cs:
+		Removed file
+
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/ITestSuite.cs:
+	* as3ap/dot-net/source/Sql87TestSuite.cs:
+	* as3ap/dot-net/source/Sql92TestSuite.cs:
+		BAckend class is no more needed
+
+2003-04-28  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
+		removed unused import
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/LoadDataSuite.java:
+		initial revision
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/SingleUserSuite.java:
+		fixed incorrect checking whether database should be created
+
+2003-04-25  carlosga_fb
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/Backend.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/ITestSuite.cs:
+	* as3ap/dot-net/source/Sql87TestSuite.cs:
+	* as3ap/dot-net/source/Sql92TestSuite.cs:
+		* Fixed serious logging problems.
+		
+		* Little changes on MultiUser tests ( no testsed yet ).
+		
+		* Changes on Transaction* method names.
+
+2003-04-25  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkListener.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkSuite.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
+		added main method to run multi-user test suite
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDatabaseManager.java:
+		fixed bug with incorrect connection releasing
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserTest.java:
+		fixed various bugs
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
+		fixed incorrect test name
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDDL.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkFixture.java:
+		fixed issue with recreating tables (object in use error)
+
+2003-04-23  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/ActiveBenchmarkSuite.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkSuite.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserTest.java:
+		continue working on multi-user tests
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDDL.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkFixture.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
+		initial revision of multi-user tests, should be complete, but
+		not yet tested
+
+2003-04-21  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/ActiveBenchmarkSuite.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDDL.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkFixture.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkListener.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkSuite.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/LoadTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/SingleUserSuite.java:
+		added multi-user tests
+		splitted benchmark suite into single-user and multi-user suites
+
+2003-04-15  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDatabaseManager.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkTest.java:
+		moved connection releasing to database manager
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDDL.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkFixture.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserTest.java:
+		added multiuser tests
+
+2003-04-13  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/AggregateTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDDL.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDatabaseManager.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkFixture.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkSuite.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/IndexTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/JoinTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/TestRunner.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/UpdateTest.java:
+		finished developing test cases, started assembling test suite
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkSuite.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/IndexTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/LoadTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/SelectTest.java:
+		finished single-user test suite
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkListener.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkSuite.java:
+		added test suite execution statistics printing
+
+2003-04-11  carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt:
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated CHANGELOG.TXT
+
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/ITestSuite.cs:
+	* as3ap/dot-net/source/Sql87TestSuite.cs:
+	* as3ap/dot-net/source/Sql92TestSuite.cs:
+		- Added changes on some methods name for use _ ( as in as3ap documentation )
+		
+		- Moved methods from AS3AP.cs to BaseTestSuite.cs
+
+	* as3ap/dot-net/source/AS3AP.cs:
+		Added changes on method names, and log output
+
+2003-04-06  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/AggregateTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/JoinTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/LoadTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/ProjectionTest.java:
+	* as3ap/Java/src/org/firebirdsql/benchmark/SelectTest.java:
+		initial revision
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkTest.java:
+		added Fetcher class and moved load test to separate class
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/TestRunner.java:
+		made junit 3.8 compatible
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkSuite.java:
+		added some more test suites
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDDL.java:
+		fixed column definitions
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/OutputTest.java:
+		now this class is not abstract
+
+2003-04-06  carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated CHANGELOG.TXT
+
+	* as3ap/dot-net/source/GUI/As3apGui.cs:
+		Added license header
+
+2003-04-03  carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated CHANGELOG.TXT
+
+	* as3ap/dot-net/source/Backend.cs:
+		Changed the order of load files
+
+	* as3ap/dot-net/as3apgen/CHANGELOG.txt:
+	* as3ap/dot-net/as3apgen/LICENSE.TXT:
+	* as3ap/dot-net/as3apgen/as3apgen.build:
+	* as3ap/dot-net/as3apgen/source/App.ico:
+	* as3ap/dot-net/as3apgen/source/AssemblyInfo.cs:
+	* as3ap/dot-net/as3apgen/source/DsRandomData.cs:
+	* as3ap/dot-net/as3apgen/source/DsRandomTenpct.cs:
+	* as3ap/dot-net/as3apgen/source/as3apgen.cs:
+	* as3ap/dot-net/as3apgen/source/as3apgen.exe.config:
+		Initial checkin of as3apgen subproject
+
+	* as3ap/dot-net/README.TXT:
+		Updated README.TXT
+
+2003-04-02  carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated Changelog.txt
+
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated CHANGELOG.TXT
+
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
+		Changed clusteredIndexStmt value
+
+	* as3ap/dot-net/source/GUI/As3apGui.cs:
+		Fixed error in showProgressMessage method.
+
+	* as3ap/dot-net/as3ap.BenchMark.build:
+		Updated build file
+
+2003-04-01  carlosga_fb
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/Backend.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/ITestSuite.cs:
+		- Add IDisposable implementation.
+
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated CHANGELOG.TXT
+
+	* as3ap/dot-net/source/GUI/As3apGui.cs:
+		Minor changes
+
+2003-03-31  carlosga_fb
+	* as3ap/dot-net/source/GUI/As3apGui.cs:
+		Added first revison of the AS3AP BenchMark GUI form.
+
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/Backend.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
+	* as3ap/dot-net/source/GUI/As3apGui.cs:
+	* as3ap/dot-net/source/ITestSuite.cs:
+		* Added a thread for benchmark execution.
+		
+		* Added better logging support.
+		
+		* Added support for stop benchmark execution.
+
+	* as3ap/dot-net/source/AS3AP.cs:
+		Added progress message event handler
+
+	* as3ap/dot-net/CHANGELOG.txt:
+	* as3ap/dot-net/CHANGELOG.txt:
+	* as3ap/dot-net/CHANGELOG.txt:
+		Updated CHANGELOG.TXT
+
+	* as3ap/dot-net/source/GUI/As3ApGUI.xfrm:
+		Removed file
+
+	* as3ap/dot-net/source/GUI/As3apGui.cs:
+		Added new label control for show progress message
+
+	* as3ap/dot-net/source/Main.cs:
+		Added changes for work with the new GUI form.
+
+	* as3ap/dot-net/source/AS3AP.cs:
+		Changes in the constructor, now we get an BenchMark
+		configuration object instead of a configuration file name
+
 2003-03-30  carlosga_fb
+	* as3ap/dot-net/source/GUI/As3ApGUI.xfrm:
+		Added SharpDevelop XML form for AS3AP GUI
+
+	* as3ap/dot-net/source/GUI/As3ApGUI.xfrm:
+		Added new tab for configure RDBMS related properties.
+
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/Backend.cs:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
+		Added changes for data creation process
+
 	* as3ap/dot-net/source/AS3AP.cs:
 	* as3ap/dot-net/source/Backend.cs:
 	* as3ap/dot-net/source/BaseTestSuite.cs:
@@ -7,10 +360,8 @@
 		Removed datageneration process this will be placed in othe
 		place for allow generated data to be saved in text files.
 
-	* as3ap/dot-net/source/AS3AP.cs:
-	* as3ap/dot-net/source/Backend.cs:
-	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
-		Added changes for data creation process
+	* as3ap/dot-net/source/GUI/As3ApGUI.xfrm:
+		Added test failed column to listview used for show benchmark results
 
 	* as3ap/dot-net/source/AS3AP.cs:
 	* as3ap/dot-net/source/Backend.cs:
@@ -23,12 +374,47 @@
 	* as3ap/dot-net/source/TestSuiteFactory.cs:
 		Added changes for allow better external benchmark configuration
 
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/Backend.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
+		* Simplify backend configuration.
+
+	* as3ap/dot-net/as3ap.BenchMark.build:
+		Updated build file
+
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/Backend.cs:
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
+		* Added more configuration parameters.
+		* Changed Index creation methods.
+		* Changed table creation method.
+
+	* as3ap/dot-net/source/AS3AP.cs:
+		Removed comments
+
+	* as3ap/dot-net/source/AS3AP.cs:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs:
+		* Added TestResultEventHandler.
+		
+		* Removed DataSize property.
+
+	* as3ap/dot-net/source/AS3AP.BenchMark.exe.config:
+		Removed file
+
+	* as3ap/dot-net/CHANGELOG.txt:
+	* as3ap/dot-net/CHANGELOG.txt:
+	* as3ap/dot-net/CHANGELOG.txt:
+	* as3ap/dot-net/CHANGELOG.txt:
+	* as3ap/dot-net/CHANGELOG.txt:
 	* as3ap/dot-net/CHANGELOG.txt:
 	* as3ap/dot-net/CHANGELOG.txt:
 		Updated CHANGELOG.TXT
 
-	* as3ap/dot-net/source/AS3AP.BenchMark.exe.config:
-		Removed file
+2003-03-30  rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/IndexTest.java:
+		initial revision
 
 2003-03-29  rrokytskyy
 	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDDL.java:
