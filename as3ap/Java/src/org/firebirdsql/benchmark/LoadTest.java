@@ -66,19 +66,21 @@ public class LoadTest extends BenchmarkTest {
     }
     
     public void testRestoreUpdates() throws Exception {
+        if (getDatabaseManager().getConfig().isRecreateTableAsCleanup())
+            restoreUpdatesByDrop();
+        else
+            restoreUpdatesByDelete();
+    }
+    
+    protected void restoreUpdatesByDelete() throws Exception {
         BenchmarkFixture fixture = getFixture();
         BenchmarkDatabaseManager manager = getDatabaseManager();
         
         Connection con = getConnection();
         try {
-            // manager.executeDDL(DROP_HUNDRED_FOREIGN_KEY);
-            
             con.setAutoCommit(false);
         
             Statement stmt = con.createStatement();
-            
-            //stmt.executeUpdate(DROP_HUNDRED_FOREIGN_KEY);
-            //con.commit();
             
             stmt.executeUpdate("DELETE FROM " + HUNDRED_TABLE);
             stmt.executeUpdate("DELETE FROM " + UPDATES_TABLE);
@@ -91,15 +93,41 @@ public class LoadTest extends BenchmarkTest {
                
             con.commit();
             
-            //stmt.executeUpdate(CREATE_HUNDRED_FOREIGN_KEY);
-            //con.commit();
-            // manager.executeDDL(CREATE_HUNDRED_FOREIGN_KEY);
-            
         } catch(SQLException ex) {
             con.rollback();
             
             throw ex;
         } 
+    }
+    
+    protected void restoreUpdatesByDrop() throws Exception {
+        BenchmarkFixture fixture = getFixture();
+        BenchmarkDatabaseManager manager = getDatabaseManager();
+        
+        Connection con = getConnection();
+        try {
+            
+            con.setAutoCommit(false);
+        
+            Statement stmt = con.createStatement();
+            
+            stmt.executeUpdate(DROP_HUNDRED_FOREIGN_KEY);
+            stmt.executeUpdate(DROP_UPDATES_TABLE);
+            stmt.executeUpdate(CREATE_UPDATES_TABLE);
+            
+            con.commit();
+            
+            fixture.loadFile(new File(fixture.getDataPath(), UPDATES_FILE), 
+               con, BenchmarkInsertSQL.INSERT_UPDATES);
+               
+            stmt.executeUpdate(CREATE_HUNDRED_FOREIGN_KEY);
+            con.commit();
+            
+        } catch(SQLException ex) {
+            con.rollback();
+            
+            throw ex;
+        }         
     }
     
 }
