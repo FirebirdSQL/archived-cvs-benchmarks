@@ -130,7 +130,7 @@ public class MultiUserTest extends BenchmarkTest {
         getConnection().setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
         
         ResultSet rs = stmt.executeQuery(""
-            + "SELECT " + COLUMNS_DEF + " "
+            + "SELECT " + COLUMNS_LIST + " "
             + "FROM " + HUNDRED_TABLE + " "
             + "WHERE " + KEY_COL + " <= 1000"
         );
@@ -146,7 +146,7 @@ public class MultiUserTest extends BenchmarkTest {
             + KEY_COL + ", " + INT_COL + ", " + SIGNED_COL + ", "
             + CODE_COL + ", " + DOUBLE_COL + ", " + NAME_COL + " "
             + "FROM " + UPDATES_TABLE + " "
-            + "WHERE " + CODE_COL + "'BENCHMARKS'";
+            + "WHERE " + CODE_COL + " = 'BENCHMARKS'";
         
         Fetcher f = new Fetcher(new String[]{
             KEY_COL, INT_COL, SIGNED_COL, CODE_COL, DOUBLE_COL, NAME_COL
@@ -199,7 +199,7 @@ public class MultiUserTest extends BenchmarkTest {
     }
     
     public void testSelect100Random() throws Exception {
-        stmt.executeQuery(""
+        stmt.executeUpdate(""
             + "INSERT INTO " + SEL_100_RND_TABLE + " "
             + "SELECT * FROM " + UPDATES_TABLE + " "
             + "WHERE " + UPDATES_INT_COL + " BETWEEN 1001 AND 1100"
@@ -208,12 +208,12 @@ public class MultiUserTest extends BenchmarkTest {
     
     private void updateUpdates(String whereColumn, boolean modify) throws Exception {
         String sql = ""
-            + "UPDATES " + UPDATES_TABLE + " "
+            + "UPDATE " + UPDATES_TABLE + " "
             + "SET " + DOUBLE_COL + " = " + DOUBLE_COL + (modify ? "+" : "-") + " 100000000 "
             + "WHERE " + whereColumn + " BETWEEN 1001 AND 1100"
             ;   
             
-        stmt.executeQuery(sql);
+        stmt.executeUpdate(sql);
     }
     
     public void testModify100Sequence() throws Exception {
@@ -249,7 +249,11 @@ public class MultiUserTest extends BenchmarkTest {
         );
         
         assertTrue("Should have at least one row.", rs.next());
-        assertTrue("Should have no records.", rs.getInt(1) == 0);
+        
+        int rowCount = rs.getInt(1);
+        assertTrue(
+            "Should have no records, but reported " + rowCount + ".", 
+            rowCount == 0);
     }
     
     public void testCheck100Random() throws Exception {
@@ -261,7 +265,11 @@ public class MultiUserTest extends BenchmarkTest {
         );
         
         assertTrue("Should have at least one row.", rs.next());
-        assertTrue("Should have no records.", rs.getInt(1) == 0);
+        
+        int rowCount = rs.getInt(1);
+        assertTrue(
+            "Should have no records, but reported " + rowCount + ".", 
+            rowCount == 0);
     }
     
 }
