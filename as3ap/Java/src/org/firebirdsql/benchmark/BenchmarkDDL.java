@@ -61,19 +61,19 @@ public abstract class BenchmarkDDL extends TestCase {
         + DATE_COL + " TIMESTAMP NOT NULL, "
         + CODE_COL + " CHAR(10) NOT NULL, "
         + NAME_COL + " CHAR(20) NOT NULL, "
-        + ADDRESS_COL + " VARCHAR(80) NOT NULL, "
+        + ADDRESS_COL + " VARCHAR(80) NOT NULL "
         ;
     
     public static final String CREATE_UNIQUES_TABLE = ""
         + "CREATE TABLE " + UNIQUES_TABLE + "("
-        + COLUMNS_DEF
+        + COLUMNS_DEF + ", "
         + "PRIMARY KEY ("+ KEY_COL + ")"
         + ")"
         ;
         
     public static final String CREATE_HUNDRED_TABLE = ""
         + "CREATE TABLE " + HUNDRED_TABLE + "("
-        + COLUMNS_DEF 
+        + COLUMNS_DEF + ", "
         + "PRIMARY KEY (" + KEY_COL + "), "
         + "FOREIGN KEY (" + SIGNED_COL + ") REFERENCES " + UPDATES_TABLE
         + ")"
@@ -81,14 +81,14 @@ public abstract class BenchmarkDDL extends TestCase {
         
     public static final String CREATE_TEN_PCT_TABLE = ""
         + "CREATE TABLE " + TEN_PCT_TABLE + "("
-        + COLUMNS_DEF
+        + COLUMNS_DEF + ", "
         + "PRIMARY KEY (" + KEY_COL + ", " + CODE_COL + ")"
         + ")"
         ;
         
     public static final String CREATE_UPDATES_TABLE = ""
         + "CREATE TABLE " + UPDATES_TABLE + "("
-        + COLUMNS_DEF
+        + COLUMNS_DEF + ", "
         + "PRIMARY KEY (" + KEY_COL + ")"
         + ")"
         ;
