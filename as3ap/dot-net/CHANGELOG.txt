@@ -20,6 +20,14 @@ AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 
 	*  Added a new configuration parameter for ForcedWrites mode.
 
+	* source/GUI.As3ApGui.cs:
+
+		- Added check box for new ForcedWrites configuration parameter.
+
+		- Added Loading of default configuration file at start.
+
+
+
 2003-04-29 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
 	* Backend class is no more needed.
