@@ -23,6 +23,7 @@
 //
 
 using System;
+using System.IO;
 using System.Data;
 using System.Text;
 using System.Threading;
@@ -52,25 +53,29 @@ namespace AS3AP.BenchMark
 		#region FIELDS
 
 		private BenchMarkConfiguration	configuration;
-
-		private bool		disposed		= false;
-
-		private ITestSuite	testSuite;
-		private string		currentTest		= String.Empty;
-		private int			tupleCount		= 0;
-		private string		testSuiteType	= "SQL87";
-
-		private Logger		log;
-		
+		private ITestSuite				testSuite;
+		private Logger					log;
+		private string					logPath;
+		private bool					disposed		= false;
+		private string					currentTest		= String.Empty;
+		private string					testSuiteType	= "SQL87";
+		private int						tupleCount		= 0;
+				
 		#endregion
 
 		#region CONSTRUCTORS
 
-		public AS3AP(BenchMarkConfiguration	configuration)
+		public AS3AP(string logPath, BenchMarkConfiguration	configuration)
 		{
 			this.configuration	= configuration;
 
-			string logName = "as3ap_"					+
+			this.logPath = logPath;
+			if (!this.logPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+			{
+				this.logPath += Path.DirectorySeparatorChar;
+			}
+
+			string logName = logPath + "as3ap_"			+
 				System.DateTime.Now.Year.ToString()		+
 				System.DateTime.Now.Month.ToString()	+
 				System.DateTime.Now.Day.ToString()		+

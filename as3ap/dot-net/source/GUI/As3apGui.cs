@@ -885,7 +885,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				as3ap = new AS3AP(configuration);
+				as3ap = new AS3AP(
+					Path.GetDirectoryName(Application.ExecutablePath),
+					configuration);
 			
 				as3ap.TestResult		+= new TestResultEventHandler(OnTestResult);
 				as3ap.ProgressMessage	+= new ProgressMessageEventHandler(OnProgressMessage);
