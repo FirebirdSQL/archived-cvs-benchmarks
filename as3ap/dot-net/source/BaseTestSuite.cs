@@ -194,13 +194,19 @@ namespace AS3AP.BenchMark
 			}
 			catch(Exception)
 			{
-				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
 			{
 				backend.CursorClose();
-				backend.TransactionCommit();
+				if (testFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			return count;
@@ -272,13 +278,19 @@ namespace AS3AP.BenchMark
 			}
 			catch(Exception)
 			{
-				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
 			{
 				backend.CursorClose();
-				backend.TransactionCommit();				
+				if (testFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			testResult = count; 
@@ -306,13 +318,19 @@ namespace AS3AP.BenchMark
 			}
 			catch(Exception)
 			{
-				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
 			{
 				backend.CursorClose();
-				backend.TransactionCommit();
+				if (testFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 		}
 
@@ -330,14 +348,20 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				backend.TransactionRollback();
 				testFailed = true;
 				testResult = -1;
 			}
 			finally
 			{
 				backend.CursorClose();
-				backend.TransactionCommit();
+				if (testFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 		}
 
@@ -365,13 +389,19 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
 			{
 				backend.CursorClose();
-				backend.TransactionCommit();
+				if (testFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			testResult = count;
@@ -1025,13 +1055,19 @@ namespace AS3AP.BenchMark
 				}
 				catch (Exception)
 				{
-					backend.TransactionRollback();
 					testFailed = true;
 				}
 				finally
 				{
 					backend.CursorClose();
-					backend.TransactionCommit();
+					if (testFailed)
+					{
+						Backend.TransactionRollback();
+					}
+					else
+					{
+						Backend.TransactionCommit();
+					}
 				}
 			}
 
@@ -1055,13 +1091,19 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
 			{
 				backend.CursorClose();
-				backend.TransactionCommit();
+				if (testFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			testResult = count;
@@ -1087,13 +1129,19 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
 			{
 				backend.CursorClose();
-				backend.TransactionCommit();
+				if (testFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			testResult = count; 
@@ -1119,13 +1167,19 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
 			{
 				backend.CursorClose();
-				backend.TransactionCommit();
+				if (testFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			testResult = count;
@@ -1151,13 +1205,19 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
 			{
 				backend.CursorClose();
-				backend.TransactionCommit();
+				if (testFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			testResult = count;
@@ -1183,13 +1243,19 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
 			{
 				backend.CursorClose();
-				backend.TransactionCommit();
+				if (testFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 
@@ -1217,13 +1283,19 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
 			{
 				backend.CursorClose();
-				backend.TransactionCommit();
+				if (testFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			testResult = count;
@@ -1255,13 +1327,19 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
 			{
 				backend.CursorClose();
-				backend.TransactionCommit();
+				if (testFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			testResult = count;
@@ -1296,13 +1374,19 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
 			{
 				backend.CursorClose();
-				backend.TransactionCommit();
+				if (testFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			testResult = count;
@@ -1534,7 +1618,14 @@ namespace AS3AP.BenchMark
 				finally
 				{
 					backend.CursorClose();
-					backend.TransactionCommit();
+					if (testFailed)
+					{
+						Backend.TransactionRollback();
+					}
+					else
+					{
+						Backend.TransactionCommit();
+					}
 				}
 			}
 
@@ -1565,7 +1656,14 @@ namespace AS3AP.BenchMark
 				finally
 				{
 					backend.CursorClose();
-					backend.TransactionCommit();
+					if (testFailed)
+					{
+						Backend.TransactionRollback();
+					}
+					else
+					{
+						Backend.TransactionCommit();
+					}
 				}
 			}
 
@@ -1598,7 +1696,14 @@ namespace AS3AP.BenchMark
 				finally
 				{					
 					backend.CursorClose();
-					backend.TransactionCommit();
+					if (testFailed)
+					{
+						Backend.TransactionRollback();
+					}
+					else
+					{
+						Backend.TransactionCommit();
+					}
 				}
 			}
 
@@ -1656,7 +1761,14 @@ namespace AS3AP.BenchMark
 				finally
 				{
 					backend.CursorClose();
-					backend.TransactionCommit();
+					if (testFailed)
+					{
+						Backend.TransactionRollback();
+					}
+					else
+					{
+						Backend.TransactionCommit();
+					}
 				}
 			}
 
@@ -1730,7 +1842,14 @@ namespace AS3AP.BenchMark
 				finally
 				{
 					backend.CursorClose();
-					backend.TransactionCommit();
+					if (testFailed)
+					{
+						Backend.TransactionRollback();
+					}
+					else
+					{
+						Backend.TransactionCommit();
+					}
 				}
 			}
 

@@ -65,7 +65,14 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				Backend.CursorClose();
-				Backend.TransactionCommit();
+				if (TestFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 		}
 
@@ -96,7 +103,14 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				Backend.CursorClose();
-				Backend.TransactionCommit();
+				if (TestFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			TestResult = count;
@@ -129,7 +143,14 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				Backend.CursorClose();
-				Backend.TransactionCommit();
+				if (TestFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			TestResult = count;
@@ -162,7 +183,14 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				Backend.CursorClose();
-				Backend.TransactionCommit();
+				if (TestFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			TestResult = count;
@@ -197,7 +225,14 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				Backend.CursorClose();
-				Backend.TransactionCommit();
+				if (TestFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			TestResult = count;
@@ -232,7 +267,14 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				Backend.CursorClose();
-				Backend.TransactionCommit();
+				if (TestFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			TestResult = count;
@@ -267,7 +309,14 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				Backend.CursorClose();
-				Backend.TransactionCommit();
+				if (TestFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			TestResult = count;
@@ -302,7 +351,14 @@ namespace AS3AP.BenchMark
 			finally
 			{
 				Backend.CursorClose();
-				Backend.TransactionCommit();
+				if (TestFailed)
+				{
+					Backend.TransactionRollback();
+				}
+				else
+				{
+					Backend.TransactionCommit();
+				}
 			}
 
 			TestResult = count;
