@@ -153,8 +153,16 @@ public class TestRunner extends junit.runner.BaseTestRunner{
                          ",  Errors: "+result.errorCount());
         }
     }
-    
 
+    public void testEnded(String testName) {
+    }
+
+    public void testFailed(int status, Test test, Throwable t) {
+    }
+
+    public void testStarted(String testName) {
+    }
+    
     public static void run(Class testClass, TestListener listener) {
         new TestRunner(listener).doRun(new TestSuite(testClass));
     }
