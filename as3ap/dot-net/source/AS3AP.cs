@@ -33,8 +33,68 @@ using CSharp.Logger;
 
 namespace AS3AP.BenchMark
 {
+	public class TestResultEventArgs : EventArgs
+	{
+		#region FIELDS
+
+		private string		testName	= String.Empty;
+		private object		testResult;
+		private TimeSpan	testTime;
+		private bool		testFailed	= false;
+
+		#endregion
+
+		#region PROPERTIES
+
+		public string TestName
+		{
+			get { return testName; }
+			set { testName = value; }
+		}
+
+		public object TestResult
+		{
+			get { return testResult; }
+			set { testResult = value; }
+		}
+
+		public TimeSpan TestTime
+		{
+			get { return testTime; }
+			set { testTime = value; }
+		}
+
+		public bool TestFailed
+		{
+			get { return testFailed; }
+			set { testFailed = value; }
+		}
+
+		#endregion
+
+		#region CONSTRUCTORS
+
+		public TestResultEventArgs(string testName, object testResult, TimeSpan testTime, bool testFailed)
+		{
+			this.testName	= testName;
+			this.testResult = testResult;
+			this.testTime	= testTime;
+			this.testFailed	= testFailed;
+		}
+
+		#endregion
+	}
+
+	public delegate void TestResultEventHandler(object sender, TestResultEventArgs e);
+
 	public class AS3AP
-	{		
+	{	
+		#region EVENTS
+
+		public event TestResultEventHandler TestResult;
+
+		#endregion
+
 		#region FIELDS
 
 		private BenchMarkConfiguration	configuration;
@@ -557,7 +617,6 @@ namespace AS3AP.BenchMark
 			MethodInfo	method		= null;
 			MethodInfo	thisMethod	= null;
 			long		clocks;
-			object		retval;
 
 			currentTest				= methodName;
 			testSuite.TestFailed	= false;
@@ -584,11 +643,18 @@ namespace AS3AP.BenchMark
 			{
 				thisMethod.Invoke(this, null);
 			}
-			retval = testSuite.TestResult;
 
 			clocks	= DateTime.Now.Ticks - clocks;
 
 			methodName = formatMethodName(methodName);
+
+			TimeSpan testTime = new TimeSpan(clocks);				
+			// Math.Round((double)clocks/ticksPerSecond, 4);
+
+			if (TestResult != null)
+			{
+				TestResult(this, new TestResultEventArgs(methodName, testSuite.TestResult, testTime, testSuite.TestFailed));
+			}
 
 			StringBuilder logMessage = new StringBuilder();
 
@@ -602,8 +668,8 @@ namespace AS3AP.BenchMark
 				logMessage.AppendFormat(
 							"{0}\t{1} seconds\treturn value = {2} \t\t",
 							methodName + "()"							,
-							Math.Round((double)clocks/ticksPerSecond, 4),
-							retval);
+							testTime,
+							testSuite.TestResult);
 			}
 
 			log.Simple(logMessage.ToString());

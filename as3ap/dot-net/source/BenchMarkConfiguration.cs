@@ -37,7 +37,6 @@ namespace AS3AP.BenchMark
 		#region FIELDS
 
 		private int		userNumber			= 0;
-		private long	dataSize			= 10000;
 		private string	runSequence			= "SQL87;singleuser;SQL92;singleuser";
 		private bool	runCreate			= true;
 		private string	dataPath			= String.Empty;
@@ -61,12 +60,6 @@ namespace AS3AP.BenchMark
 		{
 			get { return userNumber; }
 			set { userNumber = value; }
-		}
-
-		public long DataSize
-		{
-			get { return dataSize; }
-			set { dataSize = value; }
 		}
 
 		public string RunSequence
