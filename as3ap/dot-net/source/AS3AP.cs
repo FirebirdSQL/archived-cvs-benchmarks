@@ -98,12 +98,14 @@ namespace AS3AP.BenchMark
 		public void Run()
 		{
 			TimeSpan	elapsed;
-			long		clocks;
-			int			dbSize;
+			long		clocks			= 0;
+			int			dbSize			= 0;
+			int			singleUserCount = 0;
+			int			multiUserCount	= 0;
 			
 			currentTest = "Test Initialization";
 
-			log.Simple("Starting as3ap benchmar at: {0}", DateTime.Now);
+			log.Simple("Starting as3ap benchmark at: {0}", DateTime.Now);
 
 			/* Start of database table creation */
 			if (runCreate) 
@@ -136,7 +138,7 @@ namespace AS3AP.BenchMark
 			{
 				string[] testType = testSequence[i].Split(':');
 
-				for (int j = 0; i < testType.Length; j++)				
+				for (int j = 0; j < testType.Length; j++)				
 				{
 					switch (testType[j].ToLower())
 					{
@@ -145,6 +147,12 @@ namespace AS3AP.BenchMark
 							/* Start of the single user test */
 							if (runSingleUser)
 							{
+								Console.WriteLine("Preparing single-user test");
+								if (singleUserCount != 0)
+								{
+									setup_database();
+								}
+
 								Console.WriteLine("Starting single-user test");
 								currentTest = "Preparing single user test";
 								clocks		= DateTime.Now.Ticks;
@@ -153,6 +161,8 @@ namespace AS3AP.BenchMark
 				
 								log.Simple("\r\n\"Single User Test\"\t{0} seconds\t({1})\r\n\r\n",
 											(double)clocks / TimeSpan.TicksPerSecond, elapsed);
+
+								singleUserCount++;
 							}
 						}
 						break;
@@ -177,6 +187,8 @@ namespace AS3AP.BenchMark
 
 								log.Simple("\r\n\"Multi-User Test\"\t{0} seconds\t({1})\r\n\r\n",
 											(double)clocks / TimeSpan.TicksPerSecond, elapsed);
+
+								multiUserCount++;
 							}
 						}
 						break;
@@ -220,6 +232,14 @@ namespace AS3AP.BenchMark
 			callableSql.Backend.DatabaseDisconnect();
 			
 			return 0;
+		}
+
+
+		private void setup_database()
+		{
+			callableSql.Backend.DatabaseConnect();
+			callableSql.setup_database();
+			callableSql.Backend.DatabaseDisconnect();
 		}
 
 
