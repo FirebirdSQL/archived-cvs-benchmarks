@@ -10,6 +10,7 @@ COPY = cp
 LD_FLAGS = -reference:System.dll -reference:System.Data.dll -reference:System.Xml.dll
 
 cp-dll:
+	$(COPY) ../asemblys/*.dll ./
 	$(COPY) ../../Net-Provider/build/FirebirdSql.Data.Firebird.dll ./
 
 Logger.dll:	

@@ -31,7 +31,7 @@ using System.Text;
 using System.Configuration;
 using System.Reflection;
 
-using AS3AP.LogData;
+using CSharp.Logger;
 
 using FirebirdSql.Data.Firebird;
 
@@ -92,12 +92,17 @@ namespace AS3AP.BenchMark.Backends
 		{
 			getConfiguration();
 			
-			log = new Logger(GetType(), ConfigurationSettings.AppSettings["LogFile"], Mode.OVERWRITE);
+			log = new Logger("AS3AP_ERRORS.LOG", Mode.OVERWRITE);
 		}
 
 		#endregion
 
 		#region METHODS
+
+		public void CloseLogger()
+		{
+			log.Close();
+		}
 
 		private void getConfiguration()
 		{

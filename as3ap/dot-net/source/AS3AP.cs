@@ -29,7 +29,7 @@ using System.Threading;
 using System.Reflection;
 using System.Configuration;
 
-using AS3AP.LogData;
+using CSharp.Logger;
 
 namespace AS3AP.BenchMark
 {
@@ -72,7 +72,7 @@ namespace AS3AP.BenchMark
 							System.DateTime.Now.Second.ToString()	+
 							".log";
 
-			log	= new Logger(GetType(), logName, Mode.OVERWRITE);
+			log	= new Logger(logName, Mode.OVERWRITE);
 			getConfiguration();
 
 			testSuite = TestSuiteFactory.GetTestSuite(testSuiteType, backendName);
@@ -108,7 +108,7 @@ namespace AS3AP.BenchMark
 
 			log.Simple("Starting as3ap benchmark at: {0}", DateTime.Now);
 
-			if (runCreate) 
+			if (!runCreate) 
 			{
 				Console.WriteLine("Creating tables and loading data {0}.", DateTime.Now);
 				timeIt("createDataBase");
@@ -146,7 +146,8 @@ namespace AS3AP.BenchMark
 						case "SQL92":
 						{
 							Console.WriteLine("Running tests using {0} syntax", testType[j]);
-							
+						
+							testSuite.CloseBackendLogger();
 							testSuite = TestSuiteFactory.GetTestSuite(testSuiteType, backendName);
 							testSuite.TupleCount = tupleCount;
 

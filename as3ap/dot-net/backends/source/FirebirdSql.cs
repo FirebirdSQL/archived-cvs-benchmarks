@@ -30,7 +30,7 @@ using System.Text;
 using System.Configuration;
 using System.Globalization;
 
-using AS3AP.LogData;
+using CSharp.Logger;
 
 using FirebirdSql.Data.Firebird;
 
@@ -94,8 +94,8 @@ namespace AS3AP.BenchMark.Backends
 		public FirebirdSql()
 		{
 			getConfiguration();
-			
-			log = new Logger(GetType(), "as3ap.log", Mode.OVERWRITE);
+
+			log = new Logger("AS3AP_ERRORS.LOG", Mode.OVERWRITE);
 
 			// Use point as decimal separator
 			numberFormat.CurrencyDecimalSeparator = ".";
@@ -103,7 +103,13 @@ namespace AS3AP.BenchMark.Backends
 
 		#endregion
 
+
 		#region METHODS
+
+		public void CloseLogger()
+		{
+			log.Close();
+		}
 
 		private void getConfiguration()
 		{

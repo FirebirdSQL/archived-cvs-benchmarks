@@ -120,6 +120,11 @@ namespace AS3AP.BenchMark
 
 		#region MISC_METHODS
 
+		public void CloseBackendLogger()
+		{
+			backend.CloseLogger();
+		}
+
 		public void setup_database()
 		{
 			try

@@ -46,6 +46,7 @@ namespace AS3AP.BenchMark.Backends
 			set;
 		}
 
+		void CloseLogger();
 		void CreateIndexBtree(string indexName, string tableName, string fields);
 		void CreateIndexCluster(string indexName, string tableName, string fields);
 		void CreateForeignKey(string foreignTable, string constraintName, 

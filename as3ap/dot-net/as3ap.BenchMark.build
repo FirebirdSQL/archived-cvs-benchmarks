@@ -28,25 +28,16 @@
         <call target="build-as3ap"/>
     </target>
 
-    <target name="build-logger">
-        <!-- compile Logger.dll -->
-        <csc target="library" output="${build.dir}\Logger.dll" debug="${build.debug}">
-            <sources>
-                <includes name="${logger.src.dir}/**/*.cs"/>
-            </sources>
-            
-            <references>
-                <absolute file="System.dll"/>
-                <absolute file="System.Data.dll"/>
-                <absolute file="System.XML.dll"/>
-            </references>
-        </csc>
-    </target>
-
-    <target name="build-backends" depends="build-logger">
+    <target name="build-backends">
         <copy todir="${build.dir}">
             <fileset basedir="${FirebirdSql.Data.Firebird.dir}">
                 <includes name="FirebirdSql.Data.Firebird.dll"/>
+            </fileset>
+        </copy>
+
+        <copy todir="${build.dir}">
+            <fileset basedir=".\assemblys">
+                <includes name="Logger.dll"/>
             </fileset>
         </copy>
 
