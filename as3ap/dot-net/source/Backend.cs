@@ -440,24 +440,24 @@ namespace AS3AP.BenchMark
 			try
 			{
 				TransactionBegin();
+				loadTinyFile("tiny");
+				TransactionCommit();
+
+				TransactionBegin();
+				loadFile("uniques");
+				TransactionCommit();
+
+				TransactionBegin();
 				loadFile("updates");
 				TransactionCommit();
 
 				TransactionBegin();
 				loadFile("hundred");
 				TransactionCommit();
-				
+
 				TransactionBegin();
 				loadFile("tenpct");
-				TransactionCommit();
-				
-				TransactionBegin();
-				loadFile("uniques");
-				TransactionCommit();
-				
-				TransactionBegin();
-				loadTinyFile("tiny");
-				TransactionCommit();
+				TransactionCommit();								
 			}
 			catch (Exception ex)
 			{
