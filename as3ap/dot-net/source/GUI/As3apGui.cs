@@ -143,6 +143,7 @@ namespace AS3AP.BenchMark
 			this.lblConnectionString = new System.Windows.Forms.Label();
 			this.txtConnectionString = new System.Windows.Forms.TextBox();
 			this.tabRDBMS = new System.Windows.Forms.TabPage();
+			this.chkForcedWrites = new System.Windows.Forms.CheckBox();
 			this.grbDataTypes = new System.Windows.Forms.GroupBox();
 			this.txtVarchar = new System.Windows.Forms.TextBox();
 			this.lblVarchar = new System.Windows.Forms.Label();
@@ -177,7 +178,6 @@ namespace AS3AP.BenchMark
 			this.cmdSave = new System.Windows.Forms.Button();
 			this.cmdLoad = new System.Windows.Forms.Button();
 			this.tabBenchmark = new System.Windows.Forms.TabControl();
-			this.chkForcedWrites = new System.Windows.Forms.CheckBox();
 			this.tabControl.SuspendLayout();
 			this.tabGeneral.SuspendLayout();
 			this.tabProvider.SuspendLayout();
@@ -447,6 +447,14 @@ namespace AS3AP.BenchMark
 			this.tabRDBMS.TabIndex = 2;
 			this.tabRDBMS.Text = "RDBMS";
 			// 
+			// chkForcedWrites
+			// 
+			this.chkForcedWrites.Location = new System.Drawing.Point(336, 8);
+			this.chkForcedWrites.Name = "chkForcedWrites";
+			this.chkForcedWrites.Size = new System.Drawing.Size(96, 16);
+			this.chkForcedWrites.TabIndex = 9;
+			this.chkForcedWrites.Text = "Forced writes";
+			// 
 			// grbDataTypes
 			// 
 			this.grbDataTypes.Controls.AddRange(new System.Windows.Forms.Control[] {
@@ -695,7 +703,7 @@ namespace AS3AP.BenchMark
 			// colFailed
 			// 
 			this.colFailed.Text = "Failed";
-			this.colFailed.Width = 100;
+			this.colFailed.Width = 75;
 			// 
 			// cmdRun
 			// 
@@ -746,14 +754,6 @@ namespace AS3AP.BenchMark
 			this.tabBenchmark.SelectedIndex = 0;
 			this.tabBenchmark.Size = new System.Drawing.Size(480, 320);
 			this.tabBenchmark.TabIndex = 0;
-			// 
-			// chkForcedWrites
-			// 
-			this.chkForcedWrites.Location = new System.Drawing.Point(336, 8);
-			this.chkForcedWrites.Name = "chkForcedWrites";
-			this.chkForcedWrites.Size = new System.Drawing.Size(96, 16);
-			this.chkForcedWrites.TabIndex = 9;
-			this.chkForcedWrites.Text = "Forced writes";
 			// 
 			// As3apGui
 			// 
