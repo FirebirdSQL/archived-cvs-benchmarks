@@ -6,6 +6,9 @@ Requirements for build the sources on Windows
 
 - The Microsoft .Net Framework or Mono:: platform.
 
+- The Firebird .NET Provider binaries should be located in the assemblys directory.
+
+- The Firebird Helper binaries should be located in the assemblys directory.
 
 Build with Microsoft .Net Framework:
 
