@@ -28,7 +28,7 @@ import junit.framework.*;
  */
 public class MultiUserSuite extends BenchmarkSuite {
     
-    public static final int KEY_RANGE = 10 * 1000;
+    public static final int KEY_RANGE = 100 * 1000;
     
     private BenchmarkListener listener;
     
@@ -41,7 +41,7 @@ public class MultiUserSuite extends BenchmarkSuite {
     }
     
     protected int getUserCount() {
-        return 2;
+        return BenchmarkConfiguration.getConfiguration().getUserCount();
     }
     
     protected int getKeyRange() {
