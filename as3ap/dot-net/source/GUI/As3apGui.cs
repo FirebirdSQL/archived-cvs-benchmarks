@@ -24,6 +24,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Threading;
@@ -40,6 +41,8 @@ namespace AS3AP.BenchMark
 		private Thread					runThread;
 		private bool					isRunning = false;
 		private AS3AP					as3ap;
+		private TestResultEventHandler	testResultHandler;
+		private ProgressMessageEventHandler	progressMessageHandler;
 
 		private System.Windows.Forms.TextBox txtUserNumber;
 		private System.Windows.Forms.Label lblRunSequence;
@@ -950,31 +953,60 @@ namespace AS3AP.BenchMark
 				as3ap = new AS3AP(Path.GetDirectoryName(Application.ExecutablePath),
 					configuration);
 			
-				as3ap.TestResult		+= new TestResultEventHandler(OnTestResult);
-				as3ap.ProgressMessage	+= new ProgressMessageEventHandler(OnProgressMessage);
+				// Test Result Event handler
+				testResultHandler		= new TestResultEventHandler(OnTestResult);
+				as3ap.TestResult		+= testResultHandler;
+
+				// Progress Message Event handler
+				progressMessageHandler	= new ProgressMessageEventHandler(OnProgressMessage);
+				as3ap.ProgressMessage	+= progressMessageHandler;
 
 				isRunning = true;
 
 				updateButtonState();
 
 				as3ap.Run();
-
-				as3ap = null;
-
-				isRunning = false;
-
-				updateButtonState();
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show(ex.Message, "AS3AP Benchmark - Exception");
+				StringBuilder e = new StringBuilder();
+
+				e.AppendFormat("Message: \r\n {0} \r\n StackTrace: \r\n {1}", ex.Message, ex.StackTrace);
+				MessageBox.Show(e.ToString(), "AS3AP Benchmark - Exception");
+			}
+			finally
+			{
+				if (testResultHandler != null)
+				{
+					as3ap.TestResult	-= testResultHandler;
+				}
+				if (progressMessageHandler != null)
+				{
+					as3ap.ProgressMessage -= progressMessageHandler;
+				}
+				as3ap		= null;
+				isRunning	= false;
+				
+				updateButtonState();
 			}
 		}
 
 		private void stopBenchMark()
 		{
 			showProgressMessage("Stopping benchmark");
+
+			if (testResultHandler != null)
+			{
+				as3ap.TestResult	-= testResultHandler;
+			}
+			if (progressMessageHandler != null)
+			{
+				as3ap.ProgressMessage -= progressMessageHandler;
+			}
+				
+			updateButtonState();
 			
+			runThread.Interrupt();
 			runThread.Abort();
 			runThread = null;
 
