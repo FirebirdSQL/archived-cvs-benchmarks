@@ -94,15 +94,6 @@ namespace AS3AP.BenchMark
 			dataSize		= Int64.Parse(ConfigurationSettings.AppSettings["DataSize"]);			
 
 			runSequence		= ConfigurationSettings.AppSettings["RunSequence"];
-
-			if (ConfigurationSettings.AppSettings["TestSuiteType"] != null)
-			{
-				if (ConfigurationSettings.AppSettings["TestSuiteType"] == "SQL87" ||
-					ConfigurationSettings.AppSettings["TestSuiteType"] == "SQL92")
-				{
-					testSuiteType = ConfigurationSettings.AppSettings["TestSuiteType"];
-				}
-			}
 		}
 
 		public void Run()
@@ -117,7 +108,7 @@ namespace AS3AP.BenchMark
 
 			log.Simple("Starting as3ap benchmark at: {0}", DateTime.Now);
 
-			if (runCreate) 
+			if (!runCreate) 
 			{
 				Console.WriteLine("Creating tables and loading data {0}.", DateTime.Now);
 				timeIt("createDataBase");
@@ -144,9 +135,17 @@ namespace AS3AP.BenchMark
 
 				for (int j = 0; j < testType.Length; j++)				
 				{
-					switch (testType[j].ToLower())
+					switch (testType[j].ToUpper())
 					{
-						case "singleuser":
+						case "SQL87":
+						case "SQL92":
+						{
+							testSuite = TestSuiteFactory.GetTestSuite(testSuiteType, backendName);
+							log.Simple("\r\n\"Running tests using {0} syntax\r\n", testType[j]);
+						}
+						break;
+
+						case "SINGLEUSER":
 						{
 							/* Start of the single user test */
 							Console.WriteLine("Preparing single-user test");
@@ -168,7 +167,7 @@ namespace AS3AP.BenchMark
 						}
 						break;
 
-						case "multiuser":
+						case "MULTIUSER":
 						{
 							/* Start of the multi-user test */
 							currentTest = "Preparing multi-user test";
