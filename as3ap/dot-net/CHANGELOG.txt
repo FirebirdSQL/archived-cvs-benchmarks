@@ -19,6 +19,11 @@ AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 	
 	* Removed DataSize property.
 
+	* Added more configuration parameters.
+	
+	* Changed Index creation methods.
+	
+	* Changed table creation method.
 
 2003-03-28 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
