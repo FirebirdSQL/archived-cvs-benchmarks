@@ -14,7 +14,7 @@
     <property name="logger.src.dir" value=".\logger\source"/>
 	<property name="backends.src.dir" value=".\backends\source"/>
 	<property name="as3ap.src.dir" value=".\source"/>
-    <property name="FirebirdSql.Data.Firebird.dir" value="D:\DESARROLLO\FIREBIRDPROJECT\NET-PROVIDER\SOURCE\BIN"/>    
+    <property name="FirebirdSql.Data.Firebird.dir" value="D:\DESARROLLO\FIREBIRDPROJECT\NET-PROVIDER\BUILD"/>
 
     <!-- Targets -->
     <target name="clean" description="cleans build directory">
@@ -29,8 +29,8 @@
     </target>
 
     <target name="build-logger">
-        <!-- compile as3ap.Logger.dll -->
-        <csc target="library" output="${build.dir}\as3ap.Logger.dll" debug="${build.debug}">
+        <!-- compile Logger.dll -->
+        <csc target="library" output="${build.dir}\Logger.dll" debug="${build.debug}">
             <sources>
                 <includes name="${logger.src.dir}/**/*.cs"/>
             </sources>
@@ -60,7 +60,7 @@
                 <absolute file="System.dll"/>
                 <absolute file="System.Data.dll"/>
                 <absolute file="System.XML.dll"/>
-				<includes name="${build.dir}/as3ap.Logger.dll"/>
+				<includes name="${build.dir}/Logger.dll"/>
 				<includes name="${build.dir}/FirebirdSql.Data.Firebird.dll"/>				
             </references>
         </csc>
@@ -90,7 +90,7 @@
                 <absolute file="System.Data.dll"/>
                 <absolute file="System.XML.dll"/>
                 <includes name="${build.dir}/as3ap.BenchMark.Backends.dll"/>
-                <includes name="${build.dir}/as3ap.Logger.dll"/>
+                <includes name="${build.dir}/Logger.dll"/>
             </references>
         </csc>
     </target>
