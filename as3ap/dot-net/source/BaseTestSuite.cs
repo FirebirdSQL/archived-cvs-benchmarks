@@ -2777,11 +2777,11 @@ namespace AS3AP.BenchMark
 			}
 
 			stream = new StreamReader(
-				(System.IO.Stream)File.Open(
+				new BufferedStream((System.IO.Stream)File.Open(
 				path + "asap." + table	,
 				FileMode.Open			,
 				FileAccess.Read			,
-				FileShare.None));
+				FileShare.None)));
 
 			/* Crate command */
 			command = this.CreateCommand(commandText.ToString(), transaction);
@@ -2865,11 +2865,11 @@ namespace AS3AP.BenchMark
 			}
 
 			stream = new StreamReader(
-				(System.IO.Stream)File.Open(
+				new BufferedStream((System.IO.Stream)File.Open(
 				path + "asap." + table	,
 				FileMode.Open			,
 				FileAccess.Read			,
-				FileShare.None));
+				FileShare.None)));
 
 			/* Crate command */
 			transaction	= this.BeginTransaction();

@@ -2,6 +2,12 @@ AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 =============================================================================================
 
 
+2004-02-28 Carlos Guzman Alvarez  <carlosga@telefonica.net>
+
+	* source/BaseTestSuite.cs:
+
+		- Use a buffered stream for read data files.
+
 2004-02-27 Carlos Guzman Alvarez  <carlosga@telefonica.net>
 
 	* source/BaseTestSuite.cs:
