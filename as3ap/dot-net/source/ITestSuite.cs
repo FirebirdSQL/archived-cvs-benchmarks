@@ -67,6 +67,8 @@ namespace AS3AP.BenchMark
 
 		void CreateData();
 		
+		void LoadData();
+		
 		int CountRows(string table);
 
 		void agg_create_view();

@@ -157,6 +157,20 @@ namespace AS3AP.BenchMark
 			testResult = 0;
 		}
 
+		public void LoadData()
+		{
+			try
+			{
+				backend.LoadData();
+			}
+			catch(Exception)
+			{
+				testFailed = true;
+			}
+
+			testResult = 0;
+		}
+
 		public int CountRows(string table)
 		{
 			StringBuilder	commandText = new StringBuilder();

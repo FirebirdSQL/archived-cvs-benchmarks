@@ -57,6 +57,8 @@ namespace AS3AP.BenchMark
 
 		private string		testSuiteType	= "SQL87";
 
+		private string		dataCreationMethod = "LOAD";
+
 		#endregion
 
 		#region CONSTRUCTORS
@@ -94,6 +96,8 @@ namespace AS3AP.BenchMark
 			dataSize		= Int64.Parse(ConfigurationSettings.AppSettings["DataSize"]);			
 
 			runSequence		= ConfigurationSettings.AppSettings["RunSequence"];
+
+			dataCreationMethod	= ConfigurationSettings.AppSettings["DataCreationMethod"];			
 		}
 
 		public void Run()
@@ -206,7 +210,14 @@ namespace AS3AP.BenchMark
 
 			testSuite.Backend.DatabaseConnect();
 			timeIt("create_tables");
-			timeIt("CreateData");
+			if (dataCreationMethod == "LOAD")
+			{
+				timeIt("LoadData");
+			}
+			else
+			{
+				timeIt("CreateData");
+			}
 			timeIt("create_idx_uniques_key_bt");
 			timeIt("create_idx_updates_key_bt");
 			timeIt("create_idx_hundred_key_bt");
