@@ -28,6 +28,7 @@ using System.Data;
 using System.Threading;
 using System.Text;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 using CSharp.Logger;
 
@@ -58,7 +59,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region FIELDS	
+		#region FIELDS
 
 		private Thread[] userProcess;
 
@@ -2651,7 +2652,7 @@ namespace AS3AP.BenchMark
 
 				if (cursor != null)
 				{
-					cursor.Dispose();
+					cursor.Close();
 					cursor = null;
 				}
 
@@ -2700,7 +2701,7 @@ namespace AS3AP.BenchMark
 			{
 				if (cursor != null)
 				{
-					cursor.Dispose();
+					cursor.Close();
 					cursor = null;
 				}
 
@@ -2728,7 +2729,60 @@ namespace AS3AP.BenchMark
 
 		private void databaseCreate()
 		{
-			// FbConnection.CreateDatabase();
+			string	dataSource	= "localhost";
+			int		port		= 3050;
+			string	database	= @"C:\asp3ap.fdb";
+			string	user		= "SYSDBA";
+			string	password	= "masterkey";
+			byte	dialect		= 3;
+			bool	forcedWrite = true;
+			short	pageSize	= 4096;
+			string	charset		= "NONE";
+
+			Regex			search	 = new Regex(@"([\w\s\d]*)\s*=\s*([^;]*)");
+			MatchCollection	elements = search.Matches(this.configuration.ConnectionString);
+
+			foreach (Match element in elements)
+			{
+				switch (element.Groups[1].Value.Trim().ToLower())
+				{
+					case "datasource":
+					case "server":
+					case "host":
+						dataSource = element.Groups[2].Value.Trim();
+						break;
+
+					case "database":
+						database = element.Groups[2].Value.Trim();
+						break;
+
+					case "user name":
+					case "user":
+						user = element.Groups[2].Value.Trim();
+						break;
+
+					case "user password":
+					case "password":
+						password = element.Groups[2].Value.Trim();
+						break;
+
+					case "port":
+						port = Int32.Parse(element.Groups[2].Value.Trim());
+						break;
+
+					case "dialect":
+						dialect = byte.Parse(element.Groups[2].Value.Trim());
+						break;
+
+					case "charset":
+						charset = element.Groups[2].Value.Trim();
+						break;
+				}
+			}
+
+			FbConnection.CreateDatabase(
+					dataSource, port, database, user, password, dialect, forcedWrite,
+					pageSize, charset);
 		}
 
 		public void DatabaseDisconnect()
@@ -2862,16 +2916,16 @@ namespace AS3AP.BenchMark
 			command = getCommand(commandText.ToString());
 
 			/* Add parameters	*/
-			command.Parameters.Add("@col_key"	, FbType.Integer	, "COL_KEY");
-			command.Parameters.Add("@col_int"	, FbType.Integer	, "COL_INT");
-			command.Parameters.Add("@col_signed", FbType.Integer	, "COL_SIGNED");
-			command.Parameters.Add("@col_float"	, FbType.Float		, "COL_FLOAT");
-			command.Parameters.Add("@col_double", FbType.Double		, "COL_DOUBLE");
-			command.Parameters.Add("@col_decim"	, FbType.Decimal	, "COL_DECIM");
-			command.Parameters.Add("@col_date"	, FbType.Char		, "COL_DATE");
-			command.Parameters.Add("@col_code"	, FbType.Char		, "COL_CODE");
-			command.Parameters.Add("@col_name"	, FbType.Char		, "COL_NAME");
-			command.Parameters.Add("@col_address", FbType.VarChar	, "COL_ADDRESS");
+			command.Parameters.Add("@col_key"	, FbDbType.Integer	, 4, "COL_KEY");
+			command.Parameters.Add("@col_int"	, FbDbType.Integer	, 4, "COL_INT");
+			command.Parameters.Add("@col_signed", FbDbType.Integer	, 4, "COL_SIGNED");
+			command.Parameters.Add("@col_float"	, FbDbType.Float	, 4, "COL_FLOAT");
+			command.Parameters.Add("@col_double", FbDbType.Double	, 8, "COL_DOUBLE");
+			command.Parameters.Add("@col_decim"	, FbDbType.Decimal	, 8, "COL_DECIM");
+			command.Parameters.Add("@col_date"	, FbDbType.Char		, 20, "COL_DATE");
+			command.Parameters.Add("@col_code"	, FbDbType.Char		, 10, "COL_CODE");
+			command.Parameters.Add("@col_name"	, FbDbType.Char		, 20, "COL_NAME");
+			command.Parameters.Add("@col_address", FbDbType.VarChar	, 80, "COL_ADDRESS");
 
 			/* Prepare command execution	*/
 			command.Prepare();
@@ -2911,7 +2965,7 @@ namespace AS3AP.BenchMark
 			command = getCommand(commandText.ToString());
 
 			/* Add parameters	*/
-			command.Parameters.Add("@col_key", FbType.Integer, "COL_KEY");
+			command.Parameters.Add("@col_key", FbDbType.Integer, 4, "COL_KEY");
 
 			/* Prepare command execution	*/
 			command.Prepare();

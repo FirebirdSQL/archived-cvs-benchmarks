@@ -194,7 +194,7 @@ namespace AS3AP.BenchMark
 								TestResult(this, 
 									new TestResultEventArgs("Running using [" + testType[j] + "] syntax", 
 													0, 
-													new TimeSpan(System.DateTime.Now.Ticks), 
+													new TimeSpan(0), 
 													false));									
 							}
 
@@ -273,7 +273,6 @@ namespace AS3AP.BenchMark
 					new ProgressMessageEventArgs("!!! Finished !!!"));
 			}
 		}
-
 
 		private void OnResult(object Sender, TestResultEventArgs e)
 		{
