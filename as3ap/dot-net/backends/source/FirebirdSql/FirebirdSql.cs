@@ -101,47 +101,18 @@ namespace AS3AP.BenchMark.Backends
 			connectionString	= ConfigurationSettings.AppSettings["ConnectionString"];
 		}
 
-		public int CountTuples(string table)
-		{
-			FbCommand		command		= null;
-			StringBuilder	commandText = new StringBuilder();
-			int				count;
-
-			commandText.AppendFormat("select count(col_key) from {0}", table);
-			
-			try
-			{
-				TransactionBegin();
-
-				command = GetCommand(commandText.ToString());
-				count = (int)command.ExecuteScalar();
-
-				TransactionCommit();
-			}
-			catch(Exception ex)
-			{
-				TransactionRollback();
-				log.Error("Error counting tuples");
-				throw ex;
-			}
-			finally
-			{
-				command.Dispose();
-			}
-
-			return count;
-		}
-
-		public void CreateIndexBtree(string iName, string tName, string fields)
+		public void CreateIndexBtree(string indexName, string tableName, string fields)
 		{
 			StringBuilder commandText = new StringBuilder();
 
 			commandText.AppendFormat("create index {0} on {1} ({2})",
-									iName, tName, fields);
+									indexName, tableName, fields);
 
 			try
 			{
-				ddl(commandText.ToString());
+				TransactionBegin();
+				ExecuteStatement(commandText.ToString());
+				TransactionCommit();
 			}
 			catch(Exception ex)
 			{
@@ -150,19 +121,19 @@ namespace AS3AP.BenchMark.Backends
 			}
 		}
 
-		public void CreateIndexCluster(string iName, string tName, string fields)
+		public void CreateIndexCluster(string indexName, string tableName, string fields)
 		{
 			StringBuilder commandText = new StringBuilder();
 
 			commandText.AppendFormat("create unique index {0} on {1} ({2})",
-									iName, tName, fields);
+									indexName, tableName, fields);
 
 			try
 			{
 				/* This is not needed, Firebird creates a new unique index
 				 * when a table has a primary key defined.
 				 */
-				// ddl(commandText.ToString());
+				// ExecuteStatement(commandText.ToString());
 			}
 			catch(Exception ex)
 			{
@@ -171,18 +142,23 @@ namespace AS3AP.BenchMark.Backends
 			}
 		}
 
-		public void CreateIndexForeign(string tName, string keyName, string keyCol,
-										string fTable, string fFields)
+		public void CreateForeignKey(string foreignTable, string constraintName, 
+										string foreignKeyColumns,
+										string referencesTableName, 
+										string referencesFields)
 		{
 			StringBuilder commandText = new StringBuilder();
 
 			commandText.AppendFormat("alter table {0} add constraint {1} foreign key ({2}) references {3} ({4}) {5} {6}",
-									tName, keyName, keyCol, fTable, fFields,
+									foreignTable, constraintName, foreignKeyColumns, 
+									referencesTableName, referencesFields,
 									"on delete cascade", "on update cascade");
 
 			try
 			{
-				ddl(commandText.ToString());
+				TransactionBegin();
+				ExecuteStatement(commandText.ToString());
+				TransactionCommit();
 			}
 			catch(Exception ex)
 			{
@@ -191,17 +167,19 @@ namespace AS3AP.BenchMark.Backends
 			}
 		}
 
-		public void CreateIndexHash(string iName, string tName, string fields)
+		public void CreateIndexHash(string indexName, string tableName, string fields)
 		{
 			StringBuilder commandText = new StringBuilder();
 
 			commandText.AppendFormat("create index {0} on {1} ({2})",
-									iName, tName, fields);
+									indexName, tableName, fields);
 
 			try
 			{
+				TransactionBegin();
 				// Firebird doesn't have clustered indexes
-				ddl(commandText.ToString());
+				ExecuteStatement(commandText.ToString());
+				TransactionCommit();
 			}
 			catch (Exception ex)
 			{
@@ -210,11 +188,26 @@ namespace AS3AP.BenchMark.Backends
 			}
 		}
 
-		public void CreateTable(string stg) 
+		public void CreateTable(string tableName, string tableStructure, string primaryKey) 
 		{
 			try
 			{
-				ddl(stg);
+				StringBuilder commandText = new StringBuilder();
+
+				if (primaryKey != null)
+				{
+					commandText.AppendFormat(
+						"create table {0} ({1}, primary key ({2}))", tableName, tableStructure, primaryKey);
+				}
+				else
+				{
+					commandText.AppendFormat(
+						"create table {0} ({1})", tableName, tableStructure);
+				}
+
+				TransactionBegin();
+				ExecuteStatement(commandText.ToString());
+				TransactionCommit();
 			}
 			catch (Exception ex)
 			{
@@ -307,6 +300,7 @@ namespace AS3AP.BenchMark.Backends
 			// ADO.NET interfaces don't support database creation
 		}
 
+		
 		public void DatabaseDisconnect()
 		{
 			try
@@ -323,41 +317,14 @@ namespace AS3AP.BenchMark.Backends
 			}
 		}
 
-		public void ddl(string stg)
-		{			
-			FbCommand command = null;
 
-			try
-			{
-				TransactionBegin();
-
-				command = GetCommand(stg);
-				command.ExecuteNonQuery();
-
-				TransactionCommit();
-			}
-			catch (Exception ex)
-			{
-				TransactionRollback();
-				throw ex;
-			}
-			finally
-			{	
-				if (command != null)
-				{
-					command.Dispose();
-					command = null;	
-				}
-			}
-		}
-
-		public void dml(string stg)
+		public void ExecuteStatement(string statement)
 		{
 			FbCommand command = null;
 
 			try
 			{
-				command = GetCommand(stg);
+				command = GetCommand(statement);
 				command.ExecuteNonQuery();
 			}
 			catch (Exception ex)
@@ -383,7 +350,6 @@ namespace AS3AP.BenchMark.Backends
 			}
 			catch(Exception ex)
 			{
-				Console.WriteLine("transaccion no iniciada");
 				throw ex;
 			}
 		}
@@ -510,7 +476,7 @@ namespace AS3AP.BenchMark.Backends
 			try
 			{
 				CreateTable(
-					"create table random_data("					+
+					"random_data",
 					" randomizer int not null,"					+
 					" sparse_key int not null,"					+
 					" dense_key	int not null,"					+
@@ -522,15 +488,15 @@ namespace AS3AP.BenchMark.Backends
 					" double_normal double precision not null,"	+
 					" code char(10) not null,"					+
 					" name char(20) not null,"					+
-					" address varchar(800) not null)");
+					" address varchar(800) not null", null);
 		    		
 				CreateTable(
-					"create table random_tenpct("					+
+					"random_tenpct"									,
 					" col_key 		int not null,"					+
 					" col_float		int not null,"					+
 					" col_signed 	int not null,"					+
 					" col_double 	double precision not null," 	+
-					" col_address	varchar(800) not null)");
+					" col_address	varchar(800) not null", null);
 			}
 			catch(Exception)
 			{
@@ -594,13 +560,13 @@ namespace AS3AP.BenchMark.Backends
 						zipf10_float, zipf100_float, uniform100_float, double_normal,
 						col_code, col_name, col_address);				
 
-				dml(sqlCommand.ToString());
+				ExecuteStatement(sqlCommand.ToString());
 			}
 			TransactionCommit();
 		    
 			TransactionBegin();
-			dml(
-				"update random_data set"				+
+			ExecuteStatement(
+				"update random_data set"			+
 				" address='SILICON VALLEY' where "	+
 				" randomizer = " + randomizer.ToString());
 			TransactionCommit();
@@ -635,7 +601,7 @@ namespace AS3AP.BenchMark.Backends
 					" VALUES ({0}, {1}, {2}, {3}, '{4}')",
 						col_key, col_signed, col_float, col_double, col_address);
 
-				dml(sqlCommand.ToString());
+				ExecuteStatement(sqlCommand.ToString());
 
 				rec++;
 			}
@@ -644,7 +610,9 @@ namespace AS3AP.BenchMark.Backends
 			adapter.Dispose();
 			dataset.Dispose();
 
-			ddl("create index random10_ix on random_tenpct(col_key)");
+			TransactionBegin();
+			ExecuteStatement("create index random10_ix on random_tenpct(col_key)");
+			TransactionCommit();
 		    
 			/* Now generate a table with only 100 tuples of interesting data */
 			TransactionBegin();
@@ -675,7 +643,7 @@ namespace AS3AP.BenchMark.Backends
 
 			col_double = hundred_unique_double[i];
 			TransactionBegin();
-			dml("update random_data"	+
+			ExecuteStatement("update random_data"	+
 				" set code = 'BENCHMARKS', name = 'THE+ASAP+BENCHMARKS+' where" +
 				" double_normal = " + col_double.ToString());
 			TransactionCommit();
@@ -801,7 +769,7 @@ namespace AS3AP.BenchMark.Backends
 						zipf100_float, double_normal, double_normal,
 						tm, col_code, col_name, col_address);
 
-				dml(sqlCommand.ToString());
+				ExecuteStatement(sqlCommand.ToString());
 
 				sqlCommand = new StringBuilder();
 				sqlCommand.AppendFormat(
@@ -815,7 +783,7 @@ namespace AS3AP.BenchMark.Backends
 						zipf10_float, double_normal, double_normal,
 						tm, col_code, col_name, col_address);
 		            
-				dml(sqlCommand.ToString());
+				ExecuteStatement(sqlCommand.ToString());
 			
 				if (++hundred_key >= 100)
 				{
@@ -838,7 +806,7 @@ namespace AS3AP.BenchMark.Backends
 						hundred_float, hundred_double, hundred_double,
 						tm, col_code, hundred_name, hundred_address);
 
-				dml(sqlCommand.ToString());
+				ExecuteStatement(sqlCommand.ToString());
 
 				if (++tenpct_key > tenpct) 
 				{
@@ -871,7 +839,7 @@ namespace AS3AP.BenchMark.Backends
 					sqlCommand = new StringBuilder();
 					sqlCommand.AppendFormat(
 						numberFormat,
-						"INSERT INTO tenpct ("							+
+						"INSERT INTO tenpct ("								+
 							" col_key, col_int, col_signed,"				+
 							" col_float, col_double, col_decim,"			+
 							" col_date, col_code, col_name, col_address)"	+
@@ -880,7 +848,7 @@ namespace AS3AP.BenchMark.Backends
 							col_float, col_double, col_double,
 							tm, col_code, col_name, col_address);
 
-					dml(sqlCommand.ToString());
+					ExecuteStatement(sqlCommand.ToString());
 				}
 				else
 				{
@@ -891,12 +859,14 @@ namespace AS3AP.BenchMark.Backends
 			adapter.Dispose();
 			dataset.Dispose();
 			
-			dml("INSERT INTO tiny values(0)" );
+			ExecuteStatement("INSERT INTO tiny values(0)" );
 
 			TransactionCommit();
 
-			ddl("drop table random_data");
-			ddl("drop table random_tenpct");
+			TransactionBegin();
+			ExecuteStatement("drop table random_data");
+			ExecuteStatement("drop table random_tenpct");
+			TransactionCommit();
 
 			return 0;
 		}
