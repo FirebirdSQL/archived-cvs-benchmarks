@@ -66,6 +66,7 @@
                 <absolute file="System.Windows.Forms.dll" />
                 <absolute file="System.Runtime.Serialization.Formatters.Soap" />
                 <includes name="${build.dir}/Logger.dll" />
+                <includes name="${build.dir}/FirebirdSql.Data.Firebird.dll" />
             </references>
         </csc>
     </target>
