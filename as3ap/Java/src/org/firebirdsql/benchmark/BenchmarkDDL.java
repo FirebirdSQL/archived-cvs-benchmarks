@@ -34,6 +34,8 @@ public abstract class BenchmarkDDL extends TestCase {
     public static final String UPDATES_TABLE = "\"updates\"";
     public static final String TINY_TABLE = "\"tiny\"";
     
+    public static final String HUNDRED_FOREIGN_KEY = "\"fk_hundred\"";
+    
     public static final String SAVE_UPDATES_TABLE = "\"saveupdates\"";
     public static final String SEL_100_SEQ_TABLE = "\"sel100seq\"";
     public static final String SEL_100_RND_TABLE = "\"sel100rnd\"";
@@ -90,10 +92,15 @@ public abstract class BenchmarkDDL extends TestCase {
     public static final String CREATE_HUNDRED_TABLE = ""
         + "CREATE TABLE " + HUNDRED_TABLE + "("
         + COLUMNS_DEF + ", "
-        + "PRIMARY KEY (" + KEY_COL + "), "
-        + "FOREIGN KEY (" + SIGNED_COL + ") "
-        + "REFERENCES " + UPDATES_TABLE 
+        + "PRIMARY KEY (" + KEY_COL + ")"
         + ")"
+        ;
+        
+    public static final String CREATE_HUNDRED_FOREIGN_KEY = ""
+        + "ALTER TABLE " + HUNDRED_TABLE + " "
+        + "ADD CONSTRAINT " + HUNDRED_FOREIGN_KEY + " "
+        + "FOREIGN KEY (" + SIGNED_COL + ") "
+        + "REFERENCES " + UPDATES_TABLE
         ;
         
     public static final String CREATE_TEN_PCT_TABLE = ""
@@ -156,7 +163,11 @@ public abstract class BenchmarkDDL extends TestCase {
         + ")"
         ;
         
-    /*
+    public static final String DROP_HUNDRED_FOREIGN_KEY = ""
+        + "ALTER TABLE " + HUNDRED_TABLE + " "
+        + "DROP CONSTRAINT " + HUNDRED_FOREIGN_KEY
+        ;
+        
     public static final String DROP_UPDATES_TABLE = ""
         + "DROP TABLE " + UPDATES_TABLE
         ;
@@ -168,8 +179,7 @@ public abstract class BenchmarkDDL extends TestCase {
     public static final String DROP_SEL_100_RND_TABLE = ""
         + "DROP TABLE " + SEL_100_RND_TABLE
         ;
-    */
-
+        
     public BenchmarkDDL(String string) {
         super(string);
     }
