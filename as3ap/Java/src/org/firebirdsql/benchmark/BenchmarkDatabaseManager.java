@@ -22,14 +22,10 @@ package org.firebirdsql.benchmark;
 import java.sql.*;
 import javax.sql.DataSource;
 import javax.resource.ResourceException;
-import org.firebirdsql.gds.*;
 import org.firebirdsql.jdbc.FBSQLException;
-import org.firebirdsql.jdbc.FBSimpleDataSource;
-import org.firebirdsql.pool.FBConnectionPoolConfiguration;
-import org.firebirdsql.pool.FBConnectionPoolDataSource;
-import org.firebirdsql.pool.GenericConnectionPoolConfiguration;
-import org.firebirdsql.pool.SimpleDataSource;
-import org.firebirdsql.jdbc.FBWrappingDataSource;
+import org.firebirdsql.management.FBManager;
+import org.firebirdsql.pool.*;
+import org.firebirdsql.pool.FBWrappingDataSource;
 
 /**
  * This class is responsible for database management.
@@ -98,54 +94,20 @@ public class BenchmarkDatabaseManager {
     }
 
     protected DataSource getConnectionPoolingDataSource() throws SQLException {
-        try {
-            FBWrappingDataSource ds = new FBWrappingDataSource();
-        
-            ds.setTpbMapping(getConfig().getTpbMapping());
-            ds.setDatabase(getConfig().getDatabasePath());
-            ds.setUserName(getConfig().getUserName());
-            ds.setPassword(getConfig().getPassword());
-            ds.setPooling(true);
-            ds.setMaxSize(getConfig().getMaxConnections());
-        
-            return ds;
-
-        } catch(ResourceException ex) {
-            throw new FBSQLException(ex);
-        }
-    }
+        FBWrappingDataSource ds = new FBWrappingDataSource();
     
-    protected FBConnectionPoolConfiguration getConfiguration() throws SQLException {
-        
-        FBConnectionPoolConfiguration config;
-        if (getConfig().getDriverClassName() != null) {
-            config = new GenericConnectionPoolConfiguration(
-                getConfig().getDriverClassName());
-                
-            config.setJdbcUrl(getConfig().getJdbcUrl());
-        } else {
-             config = new FBConnectionPoolConfiguration();
-             config.setJdbcUrl("jdbc:firebirdsql:" + getConfig().getDatabasePath());
-            config.setProperty(
-                "tpb_mapping",
-                getConfig().getTpbMapping()
-            );
-        }
-        
-        config.setProperty("user", getConfig().getUserName());
-        config.setProperty("password", getConfig().getPassword());
-        config.setMaxConnections(getConfig().getMaxConnections());
-        
-        return config;
+        ds.setTpbMapping(getConfig().getTpbMapping());
+        ds.setDatabase(getConfig().getDatabasePath());
+        ds.setUserName(getConfig().getUserName());
+        ds.setPassword(getConfig().getPassword());
+        ds.setPooling(true);
+        ds.setMaxSize(getConfig().getMaxConnections());
+    
+        return ds;
     }
     
     protected DataSource getStatementPoolingDataSource() throws SQLException {
-        
-        FBConnectionPoolDataSource pool = 
-            new FBConnectionPoolDataSource(getConfiguration());
-        pool.start();
-        
-        return new SimpleDataSource(pool);
+        return getConnectionPoolingDataSource();
     }
 
     
@@ -157,53 +119,18 @@ public class BenchmarkDatabaseManager {
      * @throws SQLException
      */
     protected void createDatabase() throws SQLException {
-        
-        GDS gds = GDSFactory.newGDS();
-        
-        // construct DPB
-        Clumplet dpb = GDSFactory.newClumplet(ISCConstants.isc_dpb_version1);
-
-        dpb = GDSFactory.newClumplet(
-            ISCConstants.isc_dpb_num_buffers, 
-            new byte[] {90}
-        );
-        
-        dpb.append(GDSFactory.newClumplet(
-            ISCConstants.isc_dpb_dummy_packet_interval, 
-            new byte[] {120, 10, 0, 0})
-        );
-        
-        dpb.append(GDSFactory.newClumplet(
-            ISCConstants.isc_dpb_sql_dialect, 
-            new byte[] {3, 0, 0, 0})
-        );
-
-        dpb.append(GDSFactory.newClumplet(
-            ISCConstants.isc_dpb_user_name, 
-            getConfig().getUserName())
-        );
-        
-        dpb.append(GDSFactory.newClumplet(
-            ISCConstants.isc_dpb_password, 
-            getConfig().getPassword())
-        );
-        
-        isc_db_handle db = gds.get_new_isc_db_handle();
-        
-        try {
-            gds.isc_create_database(getConfig().getDatabasePath(), db, dpb);
-            gds.isc_detach_database(db);
-        } catch(GDSException ex) {
-            throw new FBSQLException(ex);
-        } 
-        
-        /*
-        // this code is equivalent to the code above
         FBManager manager = new FBManager();
         manager.setForceCreate(true);
         
-        manager.createDatabase(databaseURL, user, password);
-        */
+        try {
+            manager.createDatabase(
+                    getConfig().getDatabasePath(), 
+                    getConfig().getUserName(), 
+                    getConfig().getPassword());
+            
+        } catch(Exception ex) {
+            throw new SQLException(ex.getMessage());
+        }
     }
     
     /**
