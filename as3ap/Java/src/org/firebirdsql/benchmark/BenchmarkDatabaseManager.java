@@ -133,7 +133,45 @@ public class BenchmarkDatabaseManager {
      * @throws SQLException if connection cannot be obtained.
      */
     public Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
+        Connection connection = dataSource.getConnection();
+        setUp(connection);
+        return connection;
+    }
+
+    /**
+     * Release JDBC connection that was obtained using {@link #getConnection()}
+     * method.
+     * 
+     * @param connection connection to release.
+     * 
+     * @throws SQLException if connection could not be released.
+     */    
+    public void releaseConnection(Connection connection) throws SQLException {
+        tearDown(connection);
+        connection.close();
+    }
+    
+    /**
+     * Set up JDBC connection before giving it to the requester. This method 
+     * should be overrided in order to model various scenarios. 
+     * 
+     * @param connection JDBC connection to set up.
+     * 
+     * @throws SQLException if something happened during connection set up.
+     */
+    protected void setUp(Connection connection) throws SQLException {
+        connection.setAutoCommit(false);
+    }
+    
+    /**
+     * Tear down connection before releasing it.
+     * 
+     * @param connection connection to tear down.
+     * 
+     * @throws SQLException if something happened during connection tear down.
+     */
+    protected void tearDown(Connection connection) throws SQLException {
+        connection.commit();
     }
     
     /**
