@@ -286,16 +286,28 @@ public abstract class MultiUserTest extends BenchmarkTest {
             Fetcher f = new Fetcher(new String[]{
                 KEY_COL, INT_COL, SIGNED_COL, CODE_COL, DOUBLE_COL, NAME_COL
             });
+            
+            // workaround for bad drivers like InterClient
+            if (getConnection().getAutoCommit())
+                getConnection().commit();
     
             getConnection().setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             ResultSet rs = executeQuery(sql, params);
             f.fetchResultSet(rs);
             rs.close();
+
+            // workaround for bad drivers like InterClient
+            if (getConnection().getAutoCommit())
+                getConnection().commit();
             
             getConnection().setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             rs = executeQuery(sql, params);
             f.fetchResultSet(rs);
             rs.close();
+
+            // workaround for bad drivers like InterClient
+            if (getConnection().getAutoCommit())
+                getConnection().commit();
             
             getConnection().setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             rs = executeQuery(sql, params);
