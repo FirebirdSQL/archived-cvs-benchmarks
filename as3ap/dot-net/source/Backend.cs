@@ -40,6 +40,7 @@ namespace AS3AP.BenchMark
 		Hash
 	}
 
+	#warning "Implement IDispossable"
 	public class Backend
 	{		
 		#region FIELDS
@@ -79,16 +80,48 @@ namespace AS3AP.BenchMark
 		{	
 			this.configuration = configuration;
 
-			log = new Logger("AS3AP_ERRORS.LOG", Mode.OVERWRITE);
+			if (configuration.EnableErrorLogging)
+			{
+				log = new Logger("AS3AP_ERRORS.LOG", Mode.OVERWRITE);
+			}
 		}
 
 		#endregion
 
 		#region METHODS
 
+		public void Close()
+		{
+			CloseLogger();
+
+			if (cursor != null)
+			{
+				cursor.Close();
+				cursor = null;
+			}
+
+			if (cmdCursor != null)
+			{
+				cmdCursor.Dispose();
+				cmdCursor = null;
+			}
+
+			if (transaction != null)
+			{
+				TransactionRollback();
+				transaction = null;
+			}
+			
+			if (connection != null)
+			{
+				connection.Close();
+				connection = null;
+			}
+		}
+
 		public void CloseLogger()
 		{
-			log.Close();
+			if (log != null) log.Close();
 		}
 
 		public void LoadAssembly(string assemblyName)
@@ -395,6 +428,7 @@ namespace AS3AP.BenchMark
 				if (log != null) log.Error("load failed {0}", ex.Message);
 
 				TransactionRollback();
+
 				throw ex;
 			}
 		}

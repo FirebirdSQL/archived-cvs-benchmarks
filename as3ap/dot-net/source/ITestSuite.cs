@@ -66,7 +66,7 @@ namespace AS3AP.BenchMark
 
 		#region METHODS
 
-		void CloseBackendLogger();
+		void Close();
 
 		void SetIsolationLevel(string methodName);
 

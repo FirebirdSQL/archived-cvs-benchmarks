@@ -30,6 +30,8 @@ using System.Reflection;
 
 namespace AS3AP.BenchMark
 {
+	#warning "Implement IDispossable"
+
 	public abstract class BaseTestSuite : ITestSuite
 	{
 		#region FIELDS
@@ -131,9 +133,9 @@ namespace AS3AP.BenchMark
 
 		#region MISC_METHODS
 
-		public void CloseBackendLogger()
+		public void Close()
 		{
-			backend.CloseLogger();
+			backend.Close();
 		}
 
 		public void setup_database()

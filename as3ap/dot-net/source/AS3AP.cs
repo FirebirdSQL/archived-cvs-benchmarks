@@ -120,6 +120,8 @@ namespace AS3AP.BenchMark
 
 	#endregion
 
+	#warning "Implement IDispossable"
+
 	public class AS3AP
 	{	
 		#region EVENTS
@@ -157,7 +159,10 @@ namespace AS3AP.BenchMark
 							System.DateTime.Now.Second.ToString()	+
 							".log";
 			
-			this.log			= new Logger(logName, Mode.OVERWRITE);		
+			if (configuration.EnableLogging)
+			{
+				this.log = new Logger(logName, Mode.OVERWRITE);		
+			}
 			this.configuration	= configuration;
 	
 			testSuite		= TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
@@ -166,6 +171,12 @@ namespace AS3AP.BenchMark
 		#endregion
 
 		#region METHODS
+
+		public void Close()
+		{
+			if (log != null) log.Close();
+			testSuite.Close();
+		}
 
 		public void Run()
 		{
@@ -177,7 +188,7 @@ namespace AS3AP.BenchMark
 			
 			currentTest = "Test Initialization";
 
-			log.Simple("Starting as3ap benchmark at: {0}", DateTime.Now);
+			if (log != null) log.Simple("Starting as3ap benchmark at: {0}", DateTime.Now);
 
 			if (configuration.RunCreate) 
 			{
@@ -197,13 +208,13 @@ namespace AS3AP.BenchMark
 			testSuite.Backend.DatabaseConnect();
 			if ((tupleCount = testSuite.CountRows("updates")) == 0)
 			{
-				log.Simple("empty database -- empty results");
+				if (log != null) log.Simple("empty database -- empty results");
 				return;
 			}		
 			testSuite.TupleCount = tupleCount;
 			dbSize = (4 * testSuite.TupleCount * 100)/1000000;
 			
-			log.Simple("\r\n\"Logical database size {0}MB\"\r\n", dbSize);
+			if (log != null) log.Simple("\r\n\"Logical database size {0}MB\"\r\n", dbSize);
 
 			testSuite.Backend.DatabaseDisconnect();			
 
@@ -226,11 +237,11 @@ namespace AS3AP.BenchMark
 									new ProgressMessageEventArgs("Running tests using " + testType[j] + " syntax"));
 							}
 						
-							testSuite.CloseBackendLogger();
+							testSuite.Backend.CloseLogger();
 							testSuite = TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
 							testSuite.TupleCount = tupleCount;
 
-							log.Simple("\r\n\"Running tests using {0} syntax\r\n", testType[j]);
+							if (log != null) log.Simple("\r\n\"Running tests using {0} syntax\r\n", testType[j]);
 						}
 						break;
 
@@ -257,7 +268,7 @@ namespace AS3AP.BenchMark
 							runSingleUserTests();
 							elapsed	= new TimeSpan(clocks = (DateTime.Now.Ticks - clocks));
 			
-							log.Simple("\r\n\"Single user test\"\t{0} seconds\t({1})\r\n\r\n",
+							if (log != null) log.Simple("\r\n\"Single user test\"\t{0} seconds\t({1})\r\n\r\n",
 										(double)clocks / TimeSpan.TicksPerSecond, elapsed);
 
 							singleUserCount++;
@@ -271,7 +282,7 @@ namespace AS3AP.BenchMark
 							testSuite.Backend.DatabaseConnect();
 							if (testSuite.TupleCount != testSuite.CountRows("updates")) 
 							{
-								log.Simple("Invalid data ( skipping multi-user test )");
+								if (log != null) log.Simple("Invalid data ( skipping multi-user test )");
 							}
 							else
 							{
@@ -286,7 +297,7 @@ namespace AS3AP.BenchMark
 								runMultiUserTests(configuration.UserNumber == 0 ? (int)(dbSize / 4) : configuration.UserNumber);
 								elapsed = new TimeSpan(clocks = (DateTime.Now.Ticks - clocks));
 
-								log.Simple("\r\n\"Multi user test\"\t{0} seconds\t({1})\r\n\r\n",
+								if (log != null) log.Simple("\r\n\"Multi user test\"\t{0} seconds\t({1})\r\n\r\n",
 											(double)clocks / TimeSpan.TicksPerSecond, elapsed);
 
 								multiUserCount++;
@@ -405,7 +416,7 @@ namespace AS3AP.BenchMark
 			
 			currentTest = "Multi-user tests";			
 
-			log.Simple("\"Executing multi-user tests with {0} user task{1}\"\n",
+			if (log != null) log.Simple("\"Executing multi-user tests with {0} user task{1}\"\n",
 						nInstances, ((nInstances != 1) ? "s" : ""));
 
 			/* Step 1 -- Backup updates relation, including indices, 
@@ -456,7 +467,7 @@ namespace AS3AP.BenchMark
 			}
 
 			fTime = ((double)(DateTime.Now.Ticks - startTime.Ticks)) / ticksPerSecond;
-			log.Simple("Mixed IR (tup/sec)\t{0}"			+
+			if (log != null) log.Simple("Mixed IR (tup/sec)\t{0}"			+
 						"\treturned in {1} minutes"			,
 						Math.Round((double)iters/fTime, 4)	, 
 						Math.Round(fTime/60, 4));
@@ -567,7 +578,7 @@ namespace AS3AP.BenchMark
 			}
 
 			fTime = ((double)(DateTime.Now.Ticks - startTime.Ticks)) / ticksPerSecond;
-			log.Simple("Mixed OLTP (tup/sec)\t{0}"			+
+			if (log != null) log.Simple("Mixed OLTP (tup/sec)\t{0}"			+
 						"\treturned in {1} minutes\n"		,
 						Math.Round((double)iters/fTime, 4)	, 
 						Math.Round(fTime/60, 4));
@@ -644,7 +655,7 @@ namespace AS3AP.BenchMark
 
 			startTime = DateTime.Now.Ticks - startTime;
 
-			log.Simple("CrossSectionTests({0})\t{1}", currentTest, 
+			if (log != null) log.Simple("CrossSectionTests({0})\t{1}", currentTest, 
 						Math.Round((double)startTime / ticksPerSecond, 4));
 		}
 
@@ -750,7 +761,7 @@ namespace AS3AP.BenchMark
 
 			if (testSuite.TestFailed)
 			{
-				log.Simple("--------------> {0}\tfailed <--------------",
+				if (log != null) log.Simple("--------------> {0}\tfailed <--------------",
 							methodName + "()");
 			}
 			else
@@ -762,7 +773,7 @@ namespace AS3AP.BenchMark
 							testSuite.TestResult);
 			}
 
-			log.Simple(logMessage.ToString());
+			if (log != null) log.Simple(logMessage.ToString());
 		}
 
 		private string formatMethodName(string methodName)
