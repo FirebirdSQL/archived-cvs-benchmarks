@@ -4,7 +4,7 @@
 //
 // Ported from OSDB project at http://osdb.sourceforge.net
 //
-// Author: Carlos Guzmán Álvarez <carlosga@telefonica.net>
+// Author: Carlos Guzmn lvarez <carlosga@telefonica.net>
 //
 // Distributable under LGPL license.
 // You may obtain a copy of the License at http://www.gnu.org/copyleft/lgpl.html
@@ -139,6 +139,7 @@ namespace AS3AP.BenchMark
 		Logger Log
 		{
 			get;
+			set;
 		}
 
 		#endregion

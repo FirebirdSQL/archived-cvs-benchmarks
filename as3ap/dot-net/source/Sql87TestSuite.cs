@@ -2,7 +2,7 @@
 // AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark
 //			for Relational Database Systems.
 //
-// Author: Carlos Guzmán Álvarez <carlosga@telefonica.net>
+// Author: Carlos Guzmn lvarez <carlosga@telefonica.net>
 //
 // Distributable under LGPL license.
 // You may obtain a copy of the License at http://www.gnu.org/copyleft/lgpl.html
@@ -44,7 +44,7 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				Backend.TransactionBegin();
+				Backend.BeginTransaction();
 				Backend.CursorOpen(
 					"select avg(updates.col_decim) "					+
 					"from updates "										+
@@ -67,11 +67,11 @@ namespace AS3AP.BenchMark
 				Backend.CursorClose();
 				if (base.testFailed)
 				{
-					Backend.TransactionRollback();
+					Backend.RollbackTransaction();
 				}
 				else
 				{
-					Backend.TransactionCommit();
+					Backend.CommitTransaction();
 				}
 			}
 		}
@@ -83,7 +83,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{			
-				Backend.TransactionBegin();
+				Backend.BeginTransaction();
 				Backend.CursorOpen( 
 					"select uniques.col_signed, uniques.col_name, "		+
 					"hundred.col_signed, hundred.col_name "				+
@@ -105,11 +105,11 @@ namespace AS3AP.BenchMark
 				Backend.CursorClose();
 				if (base.testFailed)
 				{
-					Backend.TransactionRollback();
+					Backend.RollbackTransaction();
 				}
 				else
 				{
-					Backend.TransactionCommit();
+					Backend.CommitTransaction();
 				}
 			}
 
@@ -123,7 +123,7 @@ namespace AS3AP.BenchMark
 			
 			try
 			{
-				Backend.TransactionBegin();
+				Backend.BeginTransaction();
 				Backend.CursorOpen(
 					"select uniques.col_signed, uniques.col_name, "	+
 					"hundred.col_signed, hundred.col_name "			+
@@ -145,11 +145,11 @@ namespace AS3AP.BenchMark
 				Backend.CursorClose();
 				if (base.testFailed)
 				{
-					Backend.TransactionRollback();
+					Backend.RollbackTransaction();
 				}
 				else
 				{
-					Backend.TransactionCommit();
+					Backend.CommitTransaction();
 				}
 			}
 
@@ -163,7 +163,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				Backend.TransactionBegin();
+				Backend.BeginTransaction();
 				Backend.CursorOpen( 
 					"select uniques.col_signed, uniques.col_name, "		+
 					"hundred.col_signed, hundred.col_name "		+
@@ -185,11 +185,11 @@ namespace AS3AP.BenchMark
 				Backend.CursorClose();
 				if (base.testFailed)
 				{
-					Backend.TransactionRollback();
+					Backend.RollbackTransaction();
 				}
 				else
 				{
-					Backend.TransactionCommit();
+					Backend.CommitTransaction();
 				}
 			}
 
@@ -203,7 +203,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				Backend.TransactionBegin();
+				Backend.BeginTransaction();
 				Backend.CursorOpen(
 					"select uniques.col_signed, uniques.col_date, "		+
 					"hundred.col_signed, hundred.col_date, "	+
@@ -227,11 +227,11 @@ namespace AS3AP.BenchMark
 				Backend.CursorClose();
 				if (base.testFailed)
 				{
-					Backend.TransactionRollback();
+					Backend.RollbackTransaction();
 				}
 				else
 				{
-					Backend.TransactionCommit();
+					Backend.CommitTransaction();
 				}
 			}
 
@@ -245,7 +245,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				Backend.TransactionBegin();
+				Backend.BeginTransaction();
 				Backend.CursorOpen( 
 					"select uniques.col_signed, uniques.col_date, "		+
 					"hundred.col_signed, hundred.col_date, "	+
@@ -269,11 +269,11 @@ namespace AS3AP.BenchMark
 				Backend.CursorClose();
 				if (base.testFailed)
 				{
-					Backend.TransactionRollback();
+					Backend.RollbackTransaction();
 				}
 				else
 				{
-					Backend.TransactionCommit();
+					Backend.CommitTransaction();
 				}
 			}
 
@@ -287,7 +287,7 @@ namespace AS3AP.BenchMark
 	
 			try
 			{
-				Backend.TransactionBegin();
+				Backend.BeginTransaction();
 				Backend.CursorOpen(
 					"select uniques.col_date, hundred.col_date, "	+
 					"tenpct.col_date, updates.col_date "			+
@@ -311,11 +311,11 @@ namespace AS3AP.BenchMark
 				Backend.CursorClose();
 				if (base.testFailed)
 				{
-					Backend.TransactionRollback();
+					Backend.RollbackTransaction();
 				}
 				else
 				{
-					Backend.TransactionCommit();
+					Backend.CommitTransaction();
 				}
 			}
 
@@ -329,7 +329,7 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				Backend.TransactionBegin();
+				Backend.BeginTransaction();
 				Backend.CursorOpen( 
 					"select uniques.col_date, hundred.col_date, "	+
 					"tenpct.col_date, updates.col_date "			+
@@ -353,11 +353,11 @@ namespace AS3AP.BenchMark
 				Backend.CursorClose();
 				if (base.testFailed)
 				{
-					Backend.TransactionRollback();
+					Backend.RollbackTransaction();
 				}
 				else
 				{
-					Backend.TransactionCommit();
+					Backend.CommitTransaction();
 				}
 			}
 

@@ -29,6 +29,8 @@ using System.Threading;
 using System.Reflection;
 using System.Configuration;
 
+using CSharp.Logger;
+
 namespace AS3AP.BenchMark
 {
 	#region DELEGATES
@@ -58,6 +60,8 @@ namespace AS3AP.BenchMark
 		private int			tupleCount		= 0;
 		private string		testSuiteType	= "SQL87";
 
+		private Logger		log;
+		
 		#endregion
 
 		#region CONSTRUCTORS
@@ -65,8 +69,23 @@ namespace AS3AP.BenchMark
 		public AS3AP(BenchMarkConfiguration	configuration)
 		{
 			this.configuration	= configuration;
+
+			string logName = "as3ap_"					+
+				System.DateTime.Now.Year.ToString()		+
+				System.DateTime.Now.Month.ToString()	+
+				System.DateTime.Now.Day.ToString()		+
+				System.DateTime.Now.Hour.ToString()		+
+				System.DateTime.Now.Minute.ToString()	+
+				System.DateTime.Now.Second.ToString()	+
+				".log";
+			
+			if (configuration.EnableLogging)
+			{
+				this.log = new Logger(logName, Mode.OVERWRITE);		
+			}
 	
-			testSuite = TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
+			testSuite		= TestSuiteFactory.GetTestSuite(testSuiteType, configuration);			
+			testSuite.Log	= log;
 
 			testSuite.Result	+= new ResultEventHandler(OnResult);
 			testSuite.Progress	+= new ProgressEventHandler(OnProgress);
@@ -89,6 +108,10 @@ namespace AS3AP.BenchMark
 				{
 					try
 					{
+						// Close logger
+						log.Close();
+						log = null;
+
 						// release any managed resources
 						testSuite.Dispose();
 						testSuite = null;
@@ -118,7 +141,7 @@ namespace AS3AP.BenchMark
 			int			singleUserCount = 0;
 			int			multiUserCount	= 0;
 			
-			if (testSuite.Log != null) testSuite.Log.Simple("Starting as3ap benchmark at: {0}", DateTime.Now);
+			if (testSuite.Log != null) testSuite.Log.Simple("Starting as3ap benchmark at: {0} \r\n\r\n", DateTime.Now);
 
 			if (configuration.RunCreate) 
 			{
@@ -176,13 +199,14 @@ namespace AS3AP.BenchMark
 							}
 
 							testSuite.Backend.CloseLogger();
-							testSuite = TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
+							testSuite 		= TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
+							testSuite.Log	= log;
 							testSuite.TupleCount = tupleCount;
 
 							testSuite.Result	+= new ResultEventHandler(OnResult);
 							testSuite.Progress	+= new ProgressEventHandler(OnProgress);
 
-							if (testSuite.Log != null) testSuite.Log.Simple("\r\n\"Running tests using {0} syntax\r\n\"", testType[j]);
+							if (testSuite.Log != null) testSuite.Log.Simple("\r\n\"Running tests using {0} syntax\"\r\n", testType[j]);
 						}
 						break;
 
