@@ -1,52 +1,117 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<project name="as3ap.BenchMark" default="release" basedir=".">
-	<!-- Project properties -->
-    <property name="project.name" value="as3ap.BenchMark"/>
-    <property name="project.FormalName" value="as3ap.BenchMark"/>
+<?xml version="1.0" encoding="utf-8" ?> 
+<project name="as3ap.benchmark" default="release" basedir="." xmlnds="http://tempuri.org/nant-vs.xsd">
+
+    <!-- Project properties -->
+    <property name="project.name" value="as3ap.benchmark"/>
     <property name="project.version" value="0.1"/>
 
-    <!-- Build properties -->
-    <property name="build.debug"  value="false"/>
+    <!-- Default Configuration -->
+    <property name="project.config" value="debug" /> <!-- debug|release -->
+    <property name="build.debug"  value="true"/>
+    <property name="build.defines" value="DEBUG"/>
+    
+    <!-- Platform specific properties. These are the defaults -->
+    <property name="current.build.defines" value="${build.defines}" />    
 
     <!-- Paths properties -->
-    <property name="build.dir" value="build" />
-    <property name="base.dir" value="." />
-	<property name="as3ap.src.dir" value=".\source" />
-
-    <!-- Targets -->
-    <target name="clean" description="cleans build directory">
-        <delete dir="${build.dir}" verbose="true" failonerror="false" />
+    <property name="base.dir" value="."/>            	
+    <property name="base.build.dir" value="builds" />
+    <property name="build.dir" value="${base.build.dir}" />
+    <property name="source.dir" value="${base.dir}/source"/>
+	
+	<!-- Target for build in DEBUG mode -->
+    <target name="debug">
+		<property name="project.config" value="debug" />
+        <property name="build.debug" value="true"/>
+        <property name="current.build.defines" value="${build.defines}DEBUG" />
+        
+		<call target="build-all" />
     </target>
 
-    <target name="debug" depends="clean">
-        <property name="build.debug" value="true" />
-		
-        <mkdir dir="${build.dir}" />
-        <mkdir dir="${build.dir}/config" />
-        <call target="build-as3ap" />
+	<!-- Target for build in RELEASE mode -->
+    <target name="release">
+		<property name="project.config" value="release" />
+        <property name="build.debug" value="false"/>
+        <property name="current.build.defines" value="${build.defines}RELEASE" />
+
+		<call target="build-all" />
     </target>
-    
-    <target name="release" depends="clean">
-        <property name="build.debug" value="false" />
+
+	<!-- Build target for all existing platforms -->
+	<target name="build-all">
+		<call target="net-1.0" />
+		<call target="net-1.1"  />
+		<call target="mono-1.0" />
+	</target>
+	
+	<target name="net-1.0">
+		<!-- .NET Framework 1.0 -->
+		<available type="Framework" resource="net-1.0" property="temp.framework.available" />
+		<ifnot propertytrue="temp.framework.available">
+			<echo message=".NET Framework 1.0 runtime is not available." />
+		</ifnot>
+		<if propertytrue="temp.framework.available">
+			<property name="nant.settings.currentframework" value="net-1.0" />
+			
+			<echo message="Build using .NET Framework 1.0." />
+			<call target="build" failonerror="false" />
+		</if>
+	</target>
+
+	<target name="net-1.1">
+		<!-- .NET Framework 1.1 -->
+		<available type="Framework" resource="net-1.1" property="temp.framework.available" />
+		<ifnot propertytrue="temp.framework.available">
+			<echo message=".NET Framework 1.1 runtime is not available." />
+		</ifnot>
+		<if propertytrue="temp.framework.available">
+			<property name="nant.settings.currentframework" value="net-1.1" />
+
+			<echo message="Build using .NET Framework 1.1." />
+			<call target="build" failonerror="false" />
+		</if>		
+	</target>
+
+	<target name="mono-1.0">
+		<!-- Mono 1.0 -->
+		<available type="Framework" resource="mono-1.0" property="temp.framework.available" />
+		<ifnot propertytrue="temp.framework.available">
+			<echo message="Mono 1.0 runtime is not available." />
+		</ifnot>
+		<if propertytrue="temp.framework.available">
+			<property name="nant.settings.currentframework" value="mono-1.0" />
+			<property name="current.build.task" value="mono-build" />
+			
+			<echo message="Build using Mono 1.0." />
+			<call target="build" failonerror="false" />			
+		</if>		
+	</target>
+	
+	<target name="build">
+		<!-- Set build directory -->
+		<property name="build.dir" value="${nant.project.basedir}/${base.build.dir}/${nant.settings.currentframework}.${nant.platform.name}/bin/${project.config}" />
 		
-        <mkdir dir="${build.dir}" />
-        <mkdir dir="${build.dir}/config" />
-        <call target="build-as3ap" />
-    </target>
-    
-    <target name="build-as3ap">
+		<!-- Create root build directory -->
+		<mkdir dir="${base.build.dir}" failonerror="false" />
+		
+		<!-- Clean actual build directory -->
+		<delete dir="${build.dir}" failonerror="false" />
+				
+		<!-- Create actual build directory -->
+		<mkdir dir="${build.dir}" />
+
         <copy todir="${build.dir}">
             <fileset basedir=".\assemblys">
                 <includes name="*.dll" />
             </fileset>
         </copy>
 
-		<copy file="${as3ap.src.dir}/AS3AP.config" tofile="${build.dir}/as3ap.Benchmark.exe.config" />
+		<copy file="${source.dir}/AS3AP.config" tofile="${build.dir}/as3ap.benchmark.exe.config" />
 		        
-        <!-- compile as3ap.Benchmark.exe -->
-        <csc target="winexe" output="${build.dir}\as3ap.Benchmark.exe" debug="${build.debug}" win32icon="${as3ap.src.dir}/App.ico">
+        <!-- compile as3ap.benchmark.exe -->
+        <csc target="winexe" output="${build.dir}\as3ap.benchmark.exe" debug="${build.debug}" define="${current.build.defines}" win32icon="${source.dir}/App.ico" >
             <sources>
-                <includes name="${as3ap.src.dir}/**/*.cs" />
+                <includes name="${source.dir}/**/*.cs" />
             </sources>
             
             <references>
@@ -59,5 +124,6 @@
                 <includes name="${build.dir}/Common.Data.Helper.dll" />
             </references>
         </csc>
-    </target>
+	</target>
+	
 </project>

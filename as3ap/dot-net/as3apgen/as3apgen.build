@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?> 
-<project name="" default="release" basedir="." xmlnds="http://tempuri.org/nant-vs.xsd">
+<project name="as3apgen" default="release" basedir="." xmlnds="http://tempuri.org/nant-vs.xsd">
 
     <!-- Project properties -->
     <property name="project.name" value="as3apgen"/>
-    <property name="project.version" value="1.6"/>
+    <property name="project.version" value="0.1"/>
 
     <!-- Default Configuration -->
     <property name="project.config" value="debug" /> <!-- debug|release -->
