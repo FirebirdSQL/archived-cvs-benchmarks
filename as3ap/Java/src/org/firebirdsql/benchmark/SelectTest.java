@@ -31,17 +31,23 @@ public class SelectTest extends BenchmarkTest {
         + SIGNED_COL + ", " + CODE_COL + ", "
         + DOUBLE_COL + ", " + NAME_COL
         ;
+        
+    public static final String[] COLUMNS_FOR_FETCH = new String[] {
+        KEY_COL, INT_COL, SIGNED_COL, CODE_COL, DOUBLE_COL, NAME_COL
+    };
     
     public SelectTest(String name) {
         super(name);
     }
 
     protected Statement stmt;
+    protected Fetcher f;
     
     protected void setUp() throws Exception {
         super.setUp();
         
         stmt = getConnection().createStatement();
+        f = new Fetcher(COLUMNS_FOR_FETCH);
     }
     
     protected void tearDown() throws Exception {
@@ -59,7 +65,10 @@ public class SelectTest extends BenchmarkTest {
             + "WHERE " + condition;
             
         ResultSet rs = stmt.executeQuery(sql);
-                
+        
+        f.fetchResultSet(rs);
+        
+        rs.close();
     }
     
     public void testSelect1Clustered() throws Exception {
@@ -86,12 +95,8 @@ public class SelectTest extends BenchmarkTest {
         executeSelect(TEN_PCT_TABLE, NAME_COL + " = 'THE+ASAP+BENCHMARK'");
     }
     
-    public void testSelectVariable() throws Exception {
+    public void testVariableSelectivity() throws Exception {
         
-        Fetcher f = new Fetcher(new String[] {
-            KEY_COL, INT_COL, SIGNED_COL, CODE_COL, DOUBLE_COL, NAME_COL
-        });
-
         PreparedStatement ps = getConnection().prepareStatement(""
             + "SELECT " + COLUMNS_FOR_SELECT + " "
             + "FROM " + TEN_PCT_TABLE + " "
@@ -109,4 +114,15 @@ public class SelectTest extends BenchmarkTest {
         rs.close();
     }
     
+    public void testTableScan() throws Exception {
+        Fetcher f = new Fetcher(new String[]{
+            KEY_COL, INT_COL, SIGNED_COL, FLOAT_COL, DOUBLE_COL,
+            DECIM_COL, DATE_COL, CODE_COL, NAME_COL, ADDRESS_COL
+        });
+        
+        ResultSet rs = stmt.executeQuery(""
+            + "SELECT * FROM " + UNIQUES_TABLE + " "
+            + "WHERE " + INT_COL + " = 1"
+        );
+    }
 }

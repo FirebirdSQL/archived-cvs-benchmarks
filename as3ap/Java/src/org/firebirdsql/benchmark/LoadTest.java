@@ -57,5 +57,5 @@ public class LoadTest extends BenchmarkTest {
         fixture.loadFile(new File(dataPath, TINY_FILE), 
             BenchmarkInsertSQL.INSERT_TINY);
     }
-
+    
 }

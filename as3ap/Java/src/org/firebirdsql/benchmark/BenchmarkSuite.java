@@ -118,14 +118,8 @@ public class BenchmarkSuite extends TestSuite {
         if (CREATE_DATABASE)
             addTest(new LoadTest("testLoadData"));
         
-        /*
-        suite.addTestSuite(OutputTest.class);
-        suite.addTestSuite(SelectTest.class);
-        suite.addTestSuite(JoinTest.class);
-        suite.addTestSuite(ProjectionTest.class);
-        suite.addTestSuite(AggregateTest.class );
-        */
-        
+        addTest(getSingleUserTests());
+        addTest(getMultiuserTests());
     }
     
     protected TestSuite getSingleUserTests() {
@@ -134,9 +128,70 @@ public class BenchmarkSuite extends TestSuite {
         suite.addTest(createOutputTest("testModeTinyRelation"));
 
         suite.addTest(createIndexTest("testTenPctKeyCodeIndex"));
+        
         suite.addTest(createOutputTest("testModeTinyFile"));
         
         suite.addTest(createSelectTest("testSelect1Clustered"));
+        
+        suite.addTest(createOutputTest("testModeTinyScreen"));
+        
+        suite.addTest(createIndexTest("testTenPctIntIndex"));
+        
+        suite.addTest(createOutputTest("testMode100kFile"));
+        suite.addTest(createOutputTest("testMode1kRelation"));
+        
+        suite.addTest(createIndexTest("testTenPctSignedIndex"));
+        suite.addTest(createIndexTest("testUniquesCodeIndex"));
+        
+        suite.addTest(createOutputTest("testMode1kFile"));
+        
+        suite.addTest(createIndexTest("testTenPctDoubleIndex"));
+        suite.addTest(createIndexTest("testUpdatesDecimIndex"));
+        
+        suite.addTest(createOutputTest("testMode10kFile"));
+        
+        suite.addTest(createIndexTest("testTenPctFloatIndex"));
+        suite.addTest(createIndexTest("testUpdatesIntIndex"));
+        suite.addTest(createIndexTest("testTenPctDecimIndex"));
+        suite.addTest(createIndexTest("testHundredCodeIndex"));
+        
+        suite.addTest(createOutputTest("testMode10kRelation"));
+        
+        suite.addTest(createIndexTest("testTenPctNameIndex"));
+        suite.addTest(createIndexTest("testUpdatesCodeIndex"));
+        
+        suite.addTest(createOutputTest("testMode100kRelation"));
+        
+        suite.addTest(createIndexTest("testTenPctCodeIndex"));
+        suite.addTest(createIndexTest("testUpdatesDoubleIndex"));
+        
+        suite.addTest(createOutputTest("testMode1kScreen"));
+        suite.addTest(createOutputTest("testMode10kScreen"));
+        suite.addTest(createOutputTest("testMode100kScreen"));
+        
+        suite.addTest(createJoinTest("testJoin3Clustered"));
+        suite.addTest(createSelectTest("testSelect100NonClustered"));
+        /* @todo move this test case to a separate class */
+        suite.addTest(createSelectTest("testTableScan"));
+        suite.addTest(createAggregateTest("testFunctionAggregate"));
+        suite.addTest(createAggregateTest("testScalarAggregate"));
+        suite.addTest(createSelectTest("testSelect100Clustered"));
+        suite.addTest(createJoinTest("testJoin3NonClustered"));
+        suite.addTest(createSelectTest("testSelect10TenPctNonClustered"));
+        suite.addTest(createAggregateTest("testSimpleReport"));
+        suite.addTest(createAggregateTest("testInfoRetrieval"));
+        suite.addTest(createAggregateTest("testCreateView"));
+        suite.addTest(createAggregateTest("testSubtotalReport"));
+        suite.addTest(createAggregateTest("testTotalReport"));
+        suite.addTest(createJoinTest("testJoin2Clustered"));
+        suite.addTest(createJoinTest("testJoin2"));
+        suite.addTest(createSelectTest("testVariableSelectivity"));
+        suite.addTest(createJoinTest("testJoin4Clustered"));
+        suite.addTest(createProjectionTest("testProjection100"));
+        suite.addTest(createJoinTest("testJoin4NonClustered"));
+        suite.addTest(createProjectionTest("testProjectionTenPct"));
+        suite.addTest(createSelectTest("testSelect1NonClustered"));
+        suite.addTest(createJoinTest("testJoin2NonClustered"));
         
         
         suite.addTest(createUpdateTest("testIntegrity"));
@@ -199,6 +254,7 @@ public class BenchmarkSuite extends TestSuite {
     }
     
     public static void main(String[] args) {
-        TestRunner.run(new BenchmarkSuite().suite(), new BenchmarkListener());
+        BenchmarkListener listener = new BenchmarkListener();
+        TestRunner.run(new BenchmarkSuite().suite(), listener);
     }
 }

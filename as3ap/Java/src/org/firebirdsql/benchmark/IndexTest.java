@@ -28,7 +28,7 @@ public class IndexTest extends BenchmarkTest {
     
     public static final String TEN_PCT_KEY_CODE_IDX = "\"ten_pct_key_code\"";
     public static final String TEN_PCT_INT_IDX = "\"ten_pct_int\"";
-    public static final String TEN_PCT_SIGNED_IDX = "\ten_pct_signed\"";
+    public static final String TEN_PCT_SIGNED_IDX = "\"ten_pct_signed\"";
     public static final String TEN_PCT_DOUBLE_IDX = "\"ten_pct_double\"";
     public static final String TEN_PCT_FLOAT_IDX = "\"ten_pct_float\"";
     public static final String TEN_PCT_DECIM_IDX = "\"ten_pct_decim\"";
