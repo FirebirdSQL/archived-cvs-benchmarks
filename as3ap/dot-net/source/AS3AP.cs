@@ -54,6 +54,8 @@ namespace AS3AP.BenchMark
 		private int			userNumber		= 0;
 		private long		dataSize		= 0;
 
+		private string		runSequence		= String.Empty;
+
 		#endregion
 
 		#region CONSTRUCTORS
@@ -61,11 +63,11 @@ namespace AS3AP.BenchMark
 		public AS3AP()
 		{
 			string logName = "as3ap_"								+
-							System.DateTime.Now.Year.ToString()		+ "_"	+
-							System.DateTime.Now.Month.ToString()	+ "_"	+
-							System.DateTime.Now.Day.ToString()		+ "_"	+
-							System.DateTime.Now.Hour.ToString()		+ "_"	+
-							System.DateTime.Now.Minute.ToString()	+ "_"	+
+							System.DateTime.Now.Year.ToString()		+
+							System.DateTime.Now.Month.ToString()	+
+							System.DateTime.Now.Day.ToString()		+
+							System.DateTime.Now.Hour.ToString()		+
+							System.DateTime.Now.Minute.ToString()	+
 							System.DateTime.Now.Second.ToString()	+
 							".log";
 
@@ -89,6 +91,8 @@ namespace AS3AP.BenchMark
 
 			userNumber		= Int32.Parse(ConfigurationSettings.AppSettings["UserNumber"]);
 			dataSize		= Int64.Parse(ConfigurationSettings.AppSettings["DataSize"]);			
+
+			runSequence		= ConfigurationSettings.AppSettings["RunSequence"];
 		}
 
 		public void Run()
@@ -126,43 +130,58 @@ namespace AS3AP.BenchMark
 			log.Simple("");
 			callableSql.Backend.DatabaseDisconnect();
 
-			/* Start of the single user test */
-			if (runSingleUser)
-			{
-				Console.WriteLine("Starting single-user test");
-				currentTest = "Preparing single user test";
-				clocks		= DateTime.Now.Ticks;
-				singleUserTests();
-				elapsed		= elapsedTime(clocks = (DateTime.Now.Ticks - clocks));
-				
-				log.Simple("");
-				log.Simple("\"Single User Test\"\t{0} seconds\t({1})",
-							(double)clocks / TimeSpan.TicksPerSecond, elapsed);
-				log.Simple("");
-				log.Simple("");
-			}
+			string[] testSequence = runSequence.Split(';');
 
-			/* Start of the multi-user test */
-			if (runMultiUser)
+			for (int i = 0; i < testSequence.Length; i++)
 			{
-				currentTest = "Preparing multi-user test";
-				callableSql.Backend.DatabaseConnect();
-				if (callableSql.TupleCount != callableSql.Backend.CountTuples("updates")) 
+				string[] testType = testSequence[i].Split(':');
+
+				for (int j = 0; i < testType.Length; j++)				
 				{
-					log.Simple("data corrupted; skipping multi-user test");					
-				}
-				callableSql.Backend.DatabaseDisconnect();
-				Console.WriteLine("Starting multi-user test");
+					switch (testType[j].ToLower())
+					{
+						case "singleuser":
+						{
+							/* Start of the single user test */
+							if (runSingleUser)
+							{
+								Console.WriteLine("Starting single-user test");
+								currentTest = "Preparing single user test";
+								clocks		= DateTime.Now.Ticks;
+								singleUserTests();
+								elapsed		= elapsedTime(clocks = (DateTime.Now.Ticks - clocks));
 				
-				clocks = DateTime.Now.Ticks;
-				multiUserTests(userNumber == 0 ? (int)(dbSize / 4) : userNumber);
-				elapsed = elapsedTime(clocks = (DateTime.Now.Ticks - clocks));
+								log.Simple("\r\n\"Single User Test\"\t{0} seconds\t({1})\r\n\r\n",
+											(double)clocks / TimeSpan.TicksPerSecond, elapsed);
+							}
+						}
+						break;
 
-				log.Simple("");
-				log.Simple("\"Multi-User Test\"\t{0} seconds\t({1})",
-							(double)clocks / TimeSpan.TicksPerSecond, elapsed);
-				log.Simple("");
-				log.Simple("");
+						case "multiuser":
+						{
+							/* Start of the multi-user test */
+							if (runMultiUser)
+							{
+								currentTest = "Preparing multi-user test";
+								callableSql.Backend.DatabaseConnect();
+								if (callableSql.TupleCount != callableSql.Backend.CountTuples("updates")) 
+								{
+									log.Simple("data corrupted; skipping multi-user test");					
+								}
+								callableSql.Backend.DatabaseDisconnect();
+								Console.WriteLine("Starting multi-user test");
+				
+								clocks = DateTime.Now.Ticks;
+								multiUserTests(userNumber == 0 ? (int)(dbSize / 4) : userNumber);
+								elapsed = elapsedTime(clocks = (DateTime.Now.Ticks - clocks));
+
+								log.Simple("\r\n\"Multi-User Test\"\t{0} seconds\t({1})\r\n\r\n",
+											(double)clocks / TimeSpan.TicksPerSecond, elapsed);
+							}
+						}
+						break;
+					}
+				}
 			}
 		}
 
