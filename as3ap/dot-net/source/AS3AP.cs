@@ -605,6 +605,9 @@ namespace AS3AP.BenchMark
 			// Set IsolationLevel for test execution
 			testSuite.SetIsolationLevel(methodName);
 
+			// Reset TestFailed property value
+			testSuite.TestFailed = false;
+
 			clocks = DateTime.Now.Ticks;
 
 			if (method != null)
@@ -617,7 +620,7 @@ namespace AS3AP.BenchMark
 			}
 			retval = testSuite.TestResult;
 
-			clocks		= DateTime.Now.Ticks - clocks;
+			clocks	= DateTime.Now.Ticks - clocks;
 
 			int length = 40 - methodName.Length;
 			for (int i = 0; i < length; i++)

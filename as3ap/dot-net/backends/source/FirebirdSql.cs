@@ -261,8 +261,6 @@ namespace AS3AP.BenchMark.Backends
 			{
 				if (log != null) log.Error("CursorOpen failed {0}", ex.Message);
 
-				TransactionRollback();
-
 				if (cursor != null)
 				{
 					cursor.Dispose();
@@ -308,7 +306,6 @@ namespace AS3AP.BenchMark.Backends
 			{				
 				if (log != null) log.Error("CursorClose failed {0}", ex.Message);
 
-				TransactionRollback();				
 				throw ex;
 			}
 			finally

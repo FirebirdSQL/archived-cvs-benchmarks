@@ -41,7 +41,7 @@ namespace AS3AP.BenchMark
 			"col_int     int             not null, "	+
 			"col_signed  int             not null, "	+
 			"col_float   float           not null, "	+
-			"col_double  float           not null, "	+
+			"col_double  float			 not null, "	+
 			"col_decim   numeric(18,2)   not null, "	+
 			"col_date    char(20)        not null, "	+
 			"col_code    char(10)        not null, "	+
@@ -272,12 +272,13 @@ namespace AS3AP.BenchMark
 			}
 			catch(Exception)
 			{
+				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
 			{
-				backend.TransactionCommit();
 				backend.CursorClose();
+				backend.TransactionCommit();				
 			}
 
 			testResult = count; 
@@ -305,6 +306,7 @@ namespace AS3AP.BenchMark
 			}
 			catch(Exception)
 			{
+				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
@@ -328,6 +330,7 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
+				backend.TransactionRollback();
 				testFailed = true;
 				testResult = -1;
 			}
@@ -362,6 +365,7 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
+				backend.TransactionRollback();
 				testFailed = true;
 			}
 			finally
@@ -387,19 +391,32 @@ namespace AS3AP.BenchMark
 					"from reportview "												+
 					"where col_decim >980000000");
 
-				backend.CursorFetch();
+				if (backend.CursorFetch())
+				{
+					testResult = backend.Cursor.GetValue(0);
+				}
+				else
+				{
+					backend.CursorClose();					
+					backend.TransactionRollback();
 
-				testResult = backend.Cursor.GetValue(0);
+					testFailed = true;
+					testResult = -1;
+				}
 			}
 			catch (Exception)
 			{
+				backend.TransactionRollback();
 				testFailed = true;
 				testResult = -1;
 			}
 			finally
 			{
 				backend.CursorClose();
-				backend.TransactionCommit();
+				if (!testFailed)
+				{
+					backend.TransactionCommit();
+				}
 			}
 		}
 

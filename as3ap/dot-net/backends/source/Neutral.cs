@@ -113,11 +113,24 @@ namespace AS3AP.BenchMark.Backends
 				dataPath += Path.DirectorySeparatorChar;
 			}
 
-			assembly = Assembly.Load(ConfigurationSettings.AppSettings["BackendAssembly"]);
-
 			connectionClass = ConfigurationSettings.AppSettings["BackendConnectionClass"];
 			commandClass	= ConfigurationSettings.AppSettings["BackendCommandClass"];
 			parameterClass	= ConfigurationSettings.AppSettings["BackendParameterClass"];
+
+			try
+			{
+				assembly = Assembly.Load(ConfigurationSettings.AppSettings["BackendAssembly"]);
+			}
+			catch(Exception)
+			{
+				try
+				{
+					assembly = Assembly.LoadWithPartialName(ConfigurationSettings.AppSettings["BackendAssembly"]);
+				}
+				catch (Exception)
+				{
+				}
+			}
 		}
 
 		public void CreateIndexBtree(string indexName, string tableName, string fields)
@@ -238,15 +251,13 @@ namespace AS3AP.BenchMark.Backends
 		public void CursorOpen(string stg)
 		{
 			try
-			{
-				TransactionBegin();
-				
+			{				
 				cmdCursor	= GetCommand(stg);
 				cursor		= cmdCursor.ExecuteReader();
 			}
 			catch (Exception ex)
 			{
-				TransactionRollback();
+				if (log != null) log.Error("CursorOpen failed {0}", ex.Message);
 
 				if (cursor != null)
 				{
@@ -284,8 +295,6 @@ namespace AS3AP.BenchMark.Backends
 			}
 			finally
 			{
-				TransactionCommit();
-
 				if (cursor != null)
 				{
 					cursor.Dispose();
@@ -462,22 +471,22 @@ namespace AS3AP.BenchMark.Backends
 			StreamReader	stream		= null;
 			IDbCommand		command		= null;
 
-			commandText.AppendFormat("insert into {0} values (?,?,?,?,?,?,?,?,?,?)", table);
+			commandText.AppendFormat("insert into {0} values (@col_key,@col_int,@col_signed,@col_float,@col_double,@col_decim,@col_date,@col_code,@col_name,@col_address)", table);
 
 			/* Create command */
-			command = createCommand(ToString());
+			command = createCommand(commandText.ToString());
 
 			/* Add parameters	*/
-			command.Parameters.Add(GetParam("@col_key"));
-			command.Parameters.Add(GetParam("@col_int"));
-			command.Parameters.Add(GetParam("@col_signed"));
-			command.Parameters.Add(GetParam("@col_float"));
-			command.Parameters.Add(GetParam("@col_double"));
-			command.Parameters.Add(GetParam("@col_decim"));
-			command.Parameters.Add(GetParam("@col_date"));
-			command.Parameters.Add(GetParam("@col_code"));
-			command.Parameters.Add(GetParam("@col_name"));
-			command.Parameters.Add(GetParam("@col_address"));
+			command.Parameters.Add(GetParam("@col_key", DbType.Int32, 4, 0, 0));
+			command.Parameters.Add(GetParam("@col_int", DbType.Int32, 4, 0, 0));
+			command.Parameters.Add(GetParam("@col_signed", DbType.Int32, 4, 0, 0));
+			command.Parameters.Add(GetParam("@col_float", DbType.Single, 8, 0, 0));
+			command.Parameters.Add(GetParam("@col_double", DbType.Double, 8, 0, 0));
+			command.Parameters.Add(GetParam("@col_decim", DbType.Decimal, 9, 18, 2));
+			command.Parameters.Add(GetParam("@col_date", DbType.StringFixedLength, 20, 0, 0));
+			command.Parameters.Add(GetParam("@col_code", DbType.StringFixedLength, 10, 0, 0));
+			command.Parameters.Add(GetParam("@col_name", DbType.StringFixedLength, 20, 0, 0));
+			command.Parameters.Add(GetParam("@col_address", DbType.String, 80, 0, 0));
 
 			/* Prepare command execution	*/
 			command.Prepare();
@@ -511,13 +520,13 @@ namespace AS3AP.BenchMark.Backends
 			StreamReader	stream		= null;
 			IDbCommand		command		= null;
 
-			commandText.AppendFormat("insert into {0} values (?)", table);
+			commandText.AppendFormat("insert into {0} values (@col_key)", table);
 
 			/* Create command */
 			command = createCommand(commandText.ToString());
 
 			/* Add parameters */
-			command.Parameters.Add(GetParam("@col_key"));
+			command.Parameters.Add(GetParam("@col_key", DbType.Int32, 4, 0, 0));
 
 			/* Prepare command execution	*/
 			command.Prepare();
@@ -558,15 +567,25 @@ namespace AS3AP.BenchMark.Backends
 											parameters);
 		}
 
-		private IDataParameter GetParam(string parameterName)
+		private IDataParameter GetParam(string parameterName, DbType parameterType, int size, byte precision, byte scale)
 		{
 			object[] parameters = new object[1];
 
 			parameters[0] = parameterName;
 
-			return (IDataParameter)Activator.CreateInstance(
-									assembly.GetType(this.parameterClass), 
-									parameters);				
+			IDataParameter parameter =  (IDataParameter)Activator.CreateInstance(
+										assembly.GetType(this.parameterClass));
+
+			parameter.ParameterName = parameterName;
+			parameter.DbType		= parameterType;
+			((IDbDataParameter)parameter).Size = size;
+			if (parameter.DbType == DbType.Decimal)				
+			{
+				((IDbDataParameter)parameter).Precision = precision;
+				((IDbDataParameter)parameter).Scale		= scale;
+			}
+
+			return parameter;
 		}
 
 		#endregion
