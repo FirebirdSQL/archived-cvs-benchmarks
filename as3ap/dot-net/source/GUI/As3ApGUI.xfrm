@@ -7,7 +7,6 @@
     <Size value="{Width=504, Height=376}" />
     <DockPadding value="" />
     <Text value="AS3AP Benchmark" />
-    <Menu value="System.Windows.Forms.MainMenu, Items.Count: 0, GetForm: &lt;Sin formulario&gt;" />
     <Controls>
       <System.Windows.Forms.TabControl>
         <Name value="tabBenchmark" />
@@ -255,6 +254,10 @@
                     <Name value="colTestTime" />
                     <Text value="Test time" />
                   </System.Windows.Forms.ColumnHeader>
+                  <System.Windows.Forms.ColumnHeader>
+                    <Name value="colTestFailed" />
+                    <Text value="Test Failed" />
+                  </System.Windows.Forms.ColumnHeader>
                 </Columns>
               </System.Windows.Forms.ListView>
               <System.Windows.Forms.Button>
@@ -278,7 +281,23 @@
     <Text value="Test name" />
   </System.Windows.Forms.ColumnHeader>
   <System.Windows.Forms.ColumnHeader>
+    <Name value="columnHeader2" />
+    <Text value="Test name" />
+  </System.Windows.Forms.ColumnHeader>
+  <System.Windows.Forms.ColumnHeader>
+    <Name value="colTestFailed" />
+    <Text value="Test Failed" />
+  </System.Windows.Forms.ColumnHeader>
+  <System.Windows.Forms.ColumnHeader>
+    <Name value="columnHeader3" />
+    <Text value="Test Result" />
+  </System.Windows.Forms.ColumnHeader>
+  <System.Windows.Forms.ColumnHeader>
     <Name value="colTestResult" />
     <Text value="Test Result" />
+  </System.Windows.Forms.ColumnHeader>
+  <System.Windows.Forms.ColumnHeader>
+    <Name value="columnHeader" />
+    <Text value="Test time" />
   </System.Windows.Forms.ColumnHeader>
 </Components>
