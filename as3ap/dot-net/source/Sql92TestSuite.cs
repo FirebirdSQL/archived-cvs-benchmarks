@@ -33,7 +33,8 @@ namespace AS3AP.BenchMark
 
 		public Sql92TestSuite(BenchMarkConfiguration configuration) : base(configuration)
 		{
-		}
+			this.testSuiteName = "SQL87";
+		}		
 
 		#endregion
 
@@ -44,16 +45,16 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				Backend.BeginTransaction();
-				Backend.CursorOpen(
+				beginTransaction();
+				cursorOpen(
 					"select avg(updates.col_decim)"							+
 					"from updates"											+
 						"join hundred ON hundred.col_key = updates.col_key"	+
 					"where updates.col_decim > 980000000");
 				
-				Backend.CursorFetch();
+				cursorFetch();
 
-				base.testResult = Backend.Cursor.GetValue(0);
+				base.testResult = cursor.GetValue(0);
 			}
 			catch (Exception)
 			{
@@ -61,14 +62,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				Backend.CursorClose();
+				cursorClose();
 				if (base.testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 		}
@@ -80,15 +81,15 @@ namespace AS3AP.BenchMark
 
 			try
 			{			
-				Backend.BeginTransaction();
-				Backend.CursorOpen( 
+				beginTransaction();
+				cursorOpen( 
 					"select uniques.col_signed, uniques.col_name,"					+
 						"hundred.col_signed, hundred.col_name"						+
 					"from uniques"													+
 						"join hundred ON uniques.col_address = hundred.col_address"	+
 					"where uniques.col_address = 'SILICON VALLEY'");
 				
-				while (Backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{
 					count++;
 				}
@@ -99,14 +100,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				Backend.CursorClose();
+				cursorClose();
 				if (base.testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -120,15 +121,15 @@ namespace AS3AP.BenchMark
 			
 			try
 			{
-				Backend.BeginTransaction();
-				Backend.CursorOpen(
+				beginTransaction();
+				cursorOpen(
 					"select uniques.col_signed, uniques.col_name,"			+
 						"hundred.col_signed, hundred.col_name"				+
 					"from uniques"											+
 						"join hundred ON uniques.col_key = hundred.col_key"	+
 					"where uniques.col_key = 1000");
 				
-				while (Backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{
 					count++;
 				}
@@ -139,14 +140,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				Backend.CursorClose();
+				cursorClose();
 				if (base.testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -160,15 +161,15 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				Backend.BeginTransaction();
-				Backend.CursorOpen( 
+				beginTransaction();
+				cursorOpen( 
 					"select uniques.col_signed, uniques.col_name,"				+
 						"hundred.col_signed, hundred.col_name"					+
 					"from uniques"												+
 						"join hundred on uniques.col_code = hundred.col_code"	+
 					"where uniques.col_code = 'BENCHMARKS'");
 				
-				while (Backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{
 					count++;
 				}
@@ -179,14 +180,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				Backend.CursorClose();
+				cursorClose();
 				if (base.testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -200,8 +201,8 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				Backend.BeginTransaction();
-				Backend.CursorOpen(
+				beginTransaction();
+				cursorOpen(
 					"select uniques.col_signed, uniques.col_date,"			+
 						"hundred.col_signed, hundred.col_date,"				+
 						"tenpct.col_signed, tenpct.col_date"				+
@@ -210,7 +211,7 @@ namespace AS3AP.BenchMark
 						"join tenpct on uniques.col_key = tenpct.col_key"	+
 					"where uniques.col_key = 1000");
 				
-				while (Backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{
 					count++;
 				}
@@ -221,14 +222,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				Backend.CursorClose();
+				cursorClose();
 				if (base.testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -242,8 +243,8 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				Backend.BeginTransaction();
-				Backend.CursorOpen( 
+				beginTransaction();
+				cursorOpen( 
 					"select uniques.col_signed, uniques.col_date,"				+
 						"hundred.col_signed, hundred.col_date,"					+
 						"tenpct.col_signed, tenpct.col_date"					+
@@ -252,7 +253,7 @@ namespace AS3AP.BenchMark
 						"join tenpct on uniques.col_code = tenpct.col_code"		+
 					"where uniques.col_code = 'BENCHMARKS'");
 				
-				while (Backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{
 					count++;
 				}
@@ -263,14 +264,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				Backend.CursorClose();
+				cursorClose();
 				if (base.testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -284,8 +285,8 @@ namespace AS3AP.BenchMark
 	
 			try
 			{
-				Backend.BeginTransaction();
-				Backend.CursorOpen(
+				beginTransaction();
+				cursorOpen(
 					"select uniques.col_date, hundred.col_date,"			+
 						"tenpct.col_date, updates.col_date"					+
 					"from uniques"											+
@@ -294,7 +295,7 @@ namespace AS3AP.BenchMark
 						"join updates on uniques.col_key = updates.col_key"	+
 					"where uniques.col_key = 1000");
 				
-				while (Backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{
 					count++;
 				}
@@ -305,14 +306,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				Backend.CursorClose();
+				cursorClose();
 				if (base.testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -326,8 +327,8 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				Backend.BeginTransaction();
-				Backend.CursorOpen( 
+				beginTransaction();
+				cursorOpen( 
 					"select uniques.col_date, hundred.col_date,"				+
 						"tenpct.col_date, updates.col_date"						+
 					"from uniques"												+
@@ -336,7 +337,7 @@ namespace AS3AP.BenchMark
 						"join updates on uniques.col_code = updates.col_code"	+
 						"where uniques.col_code = 'BENCHMARKS'");
 				
-				while (Backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{
 					count++;
 				}				
@@ -347,14 +348,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				Backend.CursorClose();
+				cursorClose();
 				if (base.testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 

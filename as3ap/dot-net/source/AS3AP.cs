@@ -157,18 +157,18 @@ namespace AS3AP.BenchMark
 				testSuite.setup_database();
 			}
 
-			testSuite.Backend.DatabaseConnect();
+			testSuite.DatabaseConnect();
 			if ((tupleCount = testSuite.count_rows("updates")) == 0)
 			{
-				if (testSuite.Log != null) testSuite.Log.Simple("empty database -- empty results");
-				return;
+				if (testSuite.Log != null) testSuite.Log.Simple("Database tables are empty. ( ERROR )");
+				throw new InvalidOperationException("Database tables are empty.");
 			}		
 			testSuite.TupleCount = tupleCount;
 			dbSize = (4 * testSuite.TupleCount * 100)/1000000;
 			
 			if (testSuite.Log != null) testSuite.Log.Simple("\r\n\"Database size {0}MB\"\r\n", dbSize);
 
-			testSuite.Backend.DatabaseDisconnect();			
+			testSuite.DatabaseDisconnect();			
 
 			string[] testSequence = configuration.RunSequence.Split(';');
 
@@ -198,7 +198,6 @@ namespace AS3AP.BenchMark
 													false));									
 							}
 
-							testSuite.Backend.CloseLogger();
 							testSuite 		= TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
 							testSuite.Log	= log;
 							testSuite.TupleCount = tupleCount;
@@ -242,14 +241,16 @@ namespace AS3AP.BenchMark
 						{
 							/* Start of the multi-user test */
 							currentTest = "Preparing multi-user test";
-							testSuite.Backend.DatabaseConnect();
+							testSuite.DatabaseConnect();
 							if (testSuite.TupleCount != testSuite.count_rows("updates")) 
 							{
-								if (testSuite.Log != null) testSuite.Log.Simple("Invalid data ( skipping multi-user test )");
+								testSuite.DatabaseDisconnect();															
+								if (testSuite.Log != null) testSuite.Log.Simple("Invalid data ( Multi user tests )");
+								throw new InvalidOperationException("Invalid data ( Multi user tests ).");
 							}
 							else
 							{
-								testSuite.Backend.DatabaseDisconnect();
+								testSuite.DatabaseDisconnect();
 								if (ProgressMessage != null)
 								{
 									ProgressMessage(this, 

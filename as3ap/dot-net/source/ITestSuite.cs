@@ -125,11 +125,6 @@ namespace AS3AP.BenchMark
 			set;
 		}
 
-		Backend Backend
-		{
-			get;
-		}
-
 		int TupleCount
 		{
 			get;
@@ -140,6 +135,11 @@ namespace AS3AP.BenchMark
 		{
 			get;
 			set;
+		}
+
+		String TestSuiteName
+		{
+			get;
 		}
 
 		#endregion
@@ -156,9 +156,7 @@ namespace AS3AP.BenchMark
 		void set_isolation_level(string methodName);
 
 		void setup_database();
-		
-		void load_data();
-		
+				
 		void create_database();
 
 		void single_user_tests();
@@ -318,6 +316,11 @@ namespace AS3AP.BenchMark
 		void upd_mod_t_mid();
 
 		void upd_remove_duplicate();
+
+		void DatabaseConnect();
+				
+		void DatabaseDisconnect();
+		
 
 		#endregion
 	}

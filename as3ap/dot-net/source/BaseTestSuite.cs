@@ -23,6 +23,7 @@
 //
 
 using System;
+using System.IO;
 using System.Data;
 using System.Threading;
 using System.Text;
@@ -30,8 +31,17 @@ using System.Reflection;
 
 using CSharp.Logger;
 
+using FirebirdSql.Data.Firebird;
+
 namespace AS3AP.BenchMark
 {
+	public enum IndexType
+	{
+		Btree,
+		Clustered,
+		Hash
+	}
+
 	#region DELEGATES
 
 	public delegate void ResultEventHandler(object sender, TestResultEventArgs e);
@@ -48,7 +58,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region FIELDS
+		#region FIELDS	
 
 		private Thread[] userProcess;
 
@@ -67,7 +77,6 @@ namespace AS3AP.BenchMark
 		private BenchMarkConfiguration configuration;
 
 		private	Logger		log;
-		private Backend		backend;
 		private int			iters		= 0;
 		private int			timeToRun	= 15;
 		private bool		disposed	= false;
@@ -75,6 +84,14 @@ namespace AS3AP.BenchMark
 
 		protected bool		testFailed	= false;
 		protected object	testResult	= 0;
+		
+		protected string 	testSuiteName = String.Empty;
+
+		private IsolationLevel	isolation  = IsolationLevel.ReadCommitted;
+		private FbConnection	connection;
+		private FbTransaction	transaction;
+		protected FbDataReader	cursor;
+		private FbCommand		cmdCursor;	
 
 		#endregion
 
@@ -92,15 +109,15 @@ namespace AS3AP.BenchMark
 			set { configuration = value; }
 		}
 
-		public Backend Backend
-		{
-			get { return backend; }
-		}
-
 		public int TupleCount
 		{
 			get { return tupleCount; }
 			set { tupleCount = value;}
+		}
+
+		public string TestSuiteName
+		{
+			get { return testSuiteName; }
 		}
 
 		#endregion
@@ -110,10 +127,6 @@ namespace AS3AP.BenchMark
 		public BaseTestSuite(BenchMarkConfiguration configuration)
 		{
 			this.configuration	= configuration;
-			this.backend		= new Backend(this.configuration);
-
-			// Load ADO .NET data provider Assembly
-			backend.LoadAssembly(configuration.ProviderAssembly);
 
 			// Set specific table structure
 			baseTableStructure = baseTableStructure.Replace("@INTEGER", configuration.IntegerTypeName);
@@ -142,6 +155,29 @@ namespace AS3AP.BenchMark
 					try
 					{
 						// release any managed resources					
+						if (cursor != null)
+						{
+							cursor.Close();
+							cursor = null;
+						}
+			
+						if (cmdCursor != null)
+						{
+							cmdCursor.Dispose();
+							cmdCursor = null;
+						}
+			
+						if (transaction != null)
+						{
+							rollbackTransaction();
+							transaction = null;
+						}
+						
+						if (connection != null)
+						{
+							connection.Close();
+							connection = null;
+						}
 						if (log != null)
 						{
 							if (userProcess != null)
@@ -152,9 +188,6 @@ namespace AS3AP.BenchMark
 								}
 							}							
 						}
-
-						backend.Dispose();
-						backend = null;
 
 						configuration = null;
 					}
@@ -201,17 +234,17 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.DatabaseConnect();
+				DatabaseConnect();
 
-				backend.BeginTransaction();
+				beginTransaction();
 
 				// Remove reportview
-				backend.ExecuteStatement("drop view reportview");
+				executeStatement("drop view reportview");
 
 				// Remove saveupdates table
-				backend.ExecuteStatement("drop table saveupdates");
+				executeStatement("drop table saveupdates");
 
-				backend.CommitTransaction();
+				commitTransaction();
 
 				// Create indexes for updates table				
 				create_idx_updates_double_bt();
@@ -222,22 +255,8 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.DatabaseDisconnect();
+				DatabaseDisconnect();
 			}
-		}
-
-		public void load_data()
-		{
-			try
-			{
-				backend.LoadData();
-			}
-			catch(Exception)
-			{
-				testFailed = true;
-			}
-
-			testResult = 0;
 		}
 
 		public int count_rows(string table)
@@ -249,11 +268,11 @@ namespace AS3AP.BenchMark
 			
 			try
 			{
-				backend.BeginTransaction();
-				backend.CursorOpen(commandText.ToString());
-				if (backend.CursorFetch())
+				beginTransaction();
+				cursorOpen(commandText.ToString());
+				if (cursorFetch())
 				{
-					count = backend.Cursor.GetInt32(0);					
+					count = cursor.GetInt32(0);					
 				}
 			}
 			catch(Exception)
@@ -262,14 +281,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.CursorClose();
+				cursorClose();
 				if (testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -292,7 +311,7 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.Isolation = isolationLevel;
+				isolation = isolationLevel;
 			}
 		}
 
@@ -305,8 +324,8 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("create view "									+
+				beginTransaction();
+				executeStatement("create view "								+
 					"reportview(col_key,col_signed,col_date,col_decim, "	+
 					"col_name,col_code,col_int) as "						+
 					"select updates.col_key, updates.col_signed, "			+
@@ -315,7 +334,7 @@ namespace AS3AP.BenchMark
 					"hundred.col_int "										+
 					"from updates, hundred "								+
 					"where updates.col_key = hundred.col_key");
-				backend.CommitTransaction();
+				commitTransaction();
 			}
 			catch(Exception)
 			{				
@@ -332,10 +351,10 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				backend.BeginTransaction();
-				backend.CursorOpen(
+				beginTransaction();
+				cursorOpen(
 					"select min(col_key) from hundred group by col_name");			
-				while (backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{
 					count++;
 				}
@@ -346,14 +365,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.CursorClose();
+				cursorClose();
 				if (testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -365,8 +384,8 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.BeginTransaction();
-				backend.CursorOpen(
+				beginTransaction();
+				cursorOpen(
 					"select count(col_key) "									+
 					"from tenpct "												+
 					"where col_name = 'THE+ASAP+BENCHMARKS+' "					+
@@ -376,9 +395,9 @@ namespace AS3AP.BenchMark
 					"and col_double > 600000000 "								+
 					"and col_decim < -600000000");
 
-				backend.CursorFetch();
+				cursorFetch();
 
-				testResult = backend.Cursor.GetValue(0);
+				testResult = cursor.GetValue(0);
 			}
 			catch(Exception)
 			{
@@ -386,14 +405,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.CursorClose();
+				cursorClose();
 				if (testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 		}
@@ -403,12 +422,12 @@ namespace AS3AP.BenchMark
 		{	
 			try
 			{
-				backend.BeginTransaction();
-				backend.CursorOpen("select min(col_key) from uniques");
+				beginTransaction();
+				cursorOpen("select min(col_key) from uniques");
 				
-				backend.CursorFetch();
+				cursorFetch();
 				
-				testResult = backend.Cursor.GetValue(0);
+				testResult = cursor.GetValue(0);
 			}
 			catch (Exception)
 			{
@@ -417,14 +436,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.CursorClose();
+				cursorClose();
 				if (testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 		}
@@ -436,8 +455,8 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				backend.BeginTransaction();
-				backend.CursorOpen(
+				beginTransaction();
+				cursorOpen(
 					"select avg(col_signed), min(col_signed), max(col_signed), "	+
 					"max(col_date), min(col_date), "								+
 					"count(distinct col_name), count(col_name), "					+
@@ -446,7 +465,7 @@ namespace AS3AP.BenchMark
 					"where col_decim >980000000 "									+
 					"group by col_code, col_int");
 				
-				while (backend.CursorFetch())
+				while (cursorFetch())
 				{  
 					count++;
 				}
@@ -457,14 +476,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.CursorClose();
+				cursorClose();
 				if (testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -476,8 +495,8 @@ namespace AS3AP.BenchMark
 		{			
 			try
 			{
-				backend.BeginTransaction();
-				backend.CursorOpen(
+				beginTransaction();
+				cursorOpen(
 					"select avg(col_signed), min(col_signed), max(col_signed), "	+
 					"max(col_date), min(col_date), "						+
 					"count(distinct col_name), count(col_name), "			+
@@ -485,14 +504,14 @@ namespace AS3AP.BenchMark
 					"from reportview "												+
 					"where col_decim >980000000");
 
-				if (backend.CursorFetch())
+				if (cursorFetch())
 				{
-					testResult = backend.Cursor.GetValue(0);
+					testResult = cursor.GetValue(0);
 				}
 				else
 				{
-					backend.CursorClose();					
-					backend.RollbackTransaction();
+					cursorClose();					
+					rollbackTransaction();
 
 					testFailed = true;
 					testResult = -1;
@@ -500,16 +519,16 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception)
 			{
-				backend.RollbackTransaction();
+				rollbackTransaction();
 				testFailed = true;
 				testResult = -1;
 			}
 			finally
 			{
-				backend.CursorClose();
+				cursorClose();
 				if (!testFailed)
 				{
-					backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 		}
@@ -519,9 +538,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("insert into updates select * from saveupdates");
-				backend.CommitTransaction();
+				beginTransaction();
+				executeStatement("insert into updates select * from saveupdates");
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -536,9 +555,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("delete from updates where col_key < 0");
-				backend.CommitTransaction();
+				beginTransaction();
+				executeStatement("delete from updates where col_key < 0");
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -553,11 +572,11 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("update updates "	+
+				beginTransaction();
+				executeStatement("update updates "	+
 					"set col_key = col_key - 100000 "		+
 					"where col_key between 5000 and 5999");
-				backend.CommitTransaction();
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -572,12 +591,12 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.CreateTable("saveupdates", baseTableStructure, null);
+				createTable("saveupdates", baseTableStructure, null);
 
-				backend.BeginTransaction();
-				backend.ExecuteStatement("insert into saveupdates select * "	+
+				beginTransaction();
+				executeStatement("insert into saveupdates select * "	+
 							"from updates where col_key between 5000 and 5999");
-				backend.CommitTransaction();
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -594,7 +613,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Btree		,
+					createIndex(IndexType.Btree		,
 										"hundred_code_h"	, 
 										"hundred"			, 
 										"col_code");
@@ -615,7 +634,7 @@ namespace AS3AP.BenchMark
 			{  
 				try
 				{
-					backend.CreateForeignKey("hundred", 
+					createForeignKey("hundred", 
 											"fk_hundred_updates"	, 
 											"col_signed"			, 
 											"updates"				, 
@@ -637,7 +656,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Clustered,"hundred_key_bt"	, 
+					createIndex(IndexType.Clustered,"hundred_key_bt"	, 
 												"hundred"		, 
 												"col_key");
 				}
@@ -657,7 +676,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Hash,"tenpct_code_h"	, 
+					createIndex(IndexType.Hash,"tenpct_code_h"	, 
 											"tenpct"		, 
 											"col_code");
 				}
@@ -677,7 +696,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Btree,"tenpct_decim_bt"	, 
+					createIndex(IndexType.Btree,"tenpct_decim_bt"	, 
 												"tenpct"		, 
 												"col_decim");
 				}
@@ -697,7 +716,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Btree,"tenpct_double_bt"	, 
+					createIndex(IndexType.Btree,"tenpct_double_bt"	, 
 												"tenpct"		, 
 												"col_double");
 				}
@@ -717,7 +736,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Btree,"tenpct_float_bt"	, 
+					createIndex(IndexType.Btree,"tenpct_float_bt"	, 
 												"tenpct"		, 
 												"col_float");
 				}
@@ -737,7 +756,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Btree,"tenpct_int_bt"	, 
+					createIndex(IndexType.Btree,"tenpct_int_bt"	, 
 												"tenpct"		, 
 												"col_int");
 				}
@@ -757,7 +776,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Clustered,"tenpct_key_bt"	, 
+					createIndex(IndexType.Clustered,"tenpct_key_bt"	, 
 												"tenpct"		, 
 												"col_key");
 				}
@@ -777,7 +796,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Btree,"tenpct_key_code_bt"	,
+					createIndex(IndexType.Btree,"tenpct_key_code_bt"	,
 												"tenpct"			,
 												"col_key, col_code");
 				}
@@ -797,7 +816,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Hash,"tenpct_name_h"	, 
+					createIndex(IndexType.Hash,"tenpct_name_h"	, 
 											"tenpct"	,
 											"col_name");
 				}
@@ -817,7 +836,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Btree,"tenpct_signed_bt"	, 
+					createIndex(IndexType.Btree,"tenpct_signed_bt"	, 
 												"tenpct"		,
 												"col_signed");
 				}
@@ -837,7 +856,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Btree,"tiny_key_bt"	, 
+					createIndex(IndexType.Btree,"tiny_key_bt"	, 
 												"tiny"		, 
 												"col_key");
 				}
@@ -857,7 +876,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Hash,"uniques_code_h"	, 
+					createIndex(IndexType.Hash,"uniques_code_h"	, 
 											"uniques"			, 
 											"col_code");
 				}
@@ -877,7 +896,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Clustered,"uniques_key_bt"	, 
+					createIndex(IndexType.Clustered,"uniques_key_bt"	, 
 												"uniques"		, 
 												"col_key");
 				}
@@ -897,7 +916,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Hash,"updates_code_h"	, 
+					createIndex(IndexType.Hash,"updates_code_h"	, 
 											"updates"			, 
 											"col_code");
 				}
@@ -917,7 +936,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Btree,"updates_decim_bt"	, 
+					createIndex(IndexType.Btree,"updates_decim_bt"	, 
 												"updates"		,
 												"col_decim");
 				}
@@ -937,7 +956,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Btree,"updates_double_bt"	, 
+					createIndex(IndexType.Btree,"updates_double_bt"	, 
 												"updates"			,
 												"col_double");
 				}
@@ -956,7 +975,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Btree,"updates_int_bt"	, 
+					createIndex(IndexType.Btree,"updates_int_bt"	, 
 												"updates"		, 
 												"col_int");
 				}
@@ -976,7 +995,7 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.CreateIndex(IndexType.Clustered,"updates_key_bt"	, 
+					createIndex(IndexType.Clustered,"updates_key_bt"	, 
 												"updates"		, 
 												"col_key");
 				}
@@ -994,12 +1013,12 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.CreateTable("uniques", baseTableStructure, "col_key");
-				backend.CreateTable("hundred", baseTableStructure, "col_key");
-				backend.CreateTable("updates", baseTableStructure, "col_key");
-				backend.CreateTable("tenpct" , baseTableStructure, "col_key,col_code");
+				createTable("uniques", baseTableStructure, "col_key");
+				createTable("hundred", baseTableStructure, "col_key");
+				createTable("updates", baseTableStructure, "col_key");
+				createTable("tenpct" , baseTableStructure, "col_key,col_code");
 
-				backend.CreateTable( 
+				createTable( 
 					"tiny"					,
 					"col_key " + configuration.IntegerTypeName + " not null",
 					"col_key");
@@ -1019,15 +1038,15 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.BeginTransaction();
-					backend.ExecuteStatement("drop index updates_int_bt");
-					backend.ExecuteStatement("drop index updates_double_bt");
-					backend.ExecuteStatement("drop index updates_decim_bt");
+					beginTransaction();
+					executeStatement("drop index updates_int_bt");
+					executeStatement("drop index updates_double_bt");
+					executeStatement("drop index updates_decim_bt");
 					if (configuration.SupportsHashIndexes)
 					{
-						backend.ExecuteStatement("drop index updates_code_h");
+						executeStatement("drop index updates_code_h");
 					}
-					backend.CommitTransaction();
+					commitTransaction();
 				}
 				catch (Exception)
 				{
@@ -1043,11 +1062,11 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.CreateTable("integrity_temp", baseTableStructure, null);
+				createTable("integrity_temp", baseTableStructure, null);
 
-				backend.BeginTransaction();
-				backend.ExecuteStatement("insert into integrity_temp select * from hundred where col_int = 0");
-				backend.CommitTransaction();
+				beginTransaction();
+				executeStatement("insert into integrity_temp select * from hundred where col_int = 0");
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -1056,9 +1075,9 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("update hundred set col_signed = '-500000000' where col_int = 0");
-				backend.CommitTransaction();
+				beginTransaction();
+				executeStatement("update hundred set col_signed = '-500000000' where col_int = 0");
+				commitTransaction();
 
 				testFailed = true;				
 				testResult = 0;	
@@ -1069,9 +1088,9 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("delete from hundred where col_int = 0");
-				backend.CommitTransaction();
+				beginTransaction();
+				executeStatement("delete from hundred where col_int = 0");
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -1080,9 +1099,9 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("insert into hundred select * from integrity_temp");
-				backend.CommitTransaction();
+				beginTransaction();
+				executeStatement("insert into hundred select * from integrity_temp");
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -1091,9 +1110,9 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("drop table integrity_temp");
-				backend.CommitTransaction();
+				beginTransaction();
+				executeStatement("drop table integrity_temp");
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -1108,34 +1127,31 @@ namespace AS3AP.BenchMark
 		{
 			int count = 0;
 
-			lock (backend)
+			try
 			{
-				try
+				beginTransaction();
+				cursorOpen(
+					"select distinct col_address, col_signed from hundred");
+			
+				while (cursorFetch()) 
 				{
-					backend.BeginTransaction();
-					backend.CursorOpen(
-						"select distinct col_address, col_signed from hundred");
-				
-					while (backend.CursorFetch()) 
-					{
-						count++;
-					}				
+					count++;
+				}				
+			}
+			catch (Exception)
+			{
+				testFailed = true;
+			}
+			finally
+			{
+				cursorClose();
+				if (testFailed)
+				{
+					rollbackTransaction();
 				}
-				catch (Exception)
+				else
 				{
-					testFailed = true;
-				}
-				finally
-				{
-					backend.CursorClose();
-					if (testFailed)
-					{
-						Backend.RollbackTransaction();
-					}
-					else
-					{
-						Backend.CommitTransaction();
-					}
+					commitTransaction();
 				}
 			}
 
@@ -1149,10 +1165,10 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				backend.BeginTransaction();
-				backend.CursorOpen("select distinct col_signed from tenpct");
+				beginTransaction();
+				cursorOpen("select distinct col_signed from tenpct");
 				
-				while (backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{
 					count++;
 				}				
@@ -1163,14 +1179,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.CursorClose();
+				cursorClose();
 				if (testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -1184,13 +1200,13 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				backend.BeginTransaction();
-				backend.CursorOpen(
+				beginTransaction();
+				cursorOpen(
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
 					"from updates where col_key = 1000");
 				
-				while (backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{
 					count++;
 				}			
@@ -1201,14 +1217,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.CursorClose();
+				cursorClose();
 				if (testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -1222,13 +1238,13 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				backend.BeginTransaction();
-				backend.CursorOpen( 
+				beginTransaction();
+				cursorOpen( 
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
 					"from updates where col_code = 'BENCHMARKS'");
 				
-				while (backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{  
 					count++;
 				}
@@ -1239,14 +1255,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.CursorClose();
+				cursorClose();
 				if (testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -1260,13 +1276,13 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				backend.BeginTransaction();
-				backend.CursorOpen(
+				beginTransaction();
+				cursorOpen(
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
 					"from updates where col_key <= 100");
 				
-				while (backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{
 					count++;
 				}
@@ -1277,14 +1293,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.CursorClose();
+				cursorClose();
 				if (testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -1298,13 +1314,13 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				backend.BeginTransaction();
-				backend.CursorOpen(
+				beginTransaction();
+				cursorOpen(
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "								+
 					"from updates where col_int <= 100");
 				
-				while (backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{
 					count++;
 				}
@@ -1315,14 +1331,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.CursorClose();
+				cursorClose();
 				if (testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -1337,14 +1353,14 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				backend.BeginTransaction();
-				backend.CursorOpen( 
+				beginTransaction();
+				cursorOpen( 
 					"select col_key, col_int, col_signed, col_code, "	+
 					"col_double, col_name "						+
 					"from tenpct "									+
 					"where col_name = 'THE+ASAP+BENCHMARKS+'");
 				
-				while (backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{  
 					count++;
 				}
@@ -1355,14 +1371,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.CursorClose();
+				cursorClose();
 				if (testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -1385,10 +1401,10 @@ namespace AS3AP.BenchMark
 					"where col_signed < {0}",						+
 					foo);
 
-				backend.BeginTransaction();
-				backend.CursorOpen(lineBuf.ToString());
+				beginTransaction();
+				cursorOpen(lineBuf.ToString());
 				
-				while (backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{
 					count++;
 				}
@@ -1399,14 +1415,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.CursorClose();
+				cursorClose();
 				if (testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -1432,10 +1448,10 @@ namespace AS3AP.BenchMark
 
 			try
 			{			
-				backend.BeginTransaction();
-				backend.CursorOpen("select * from uniques where col_int = 1");
+				beginTransaction();
+				cursorOpen("select * from uniques where col_int = 1");
 				
-				while (backend.CursorFetch()) 
+				while (cursorFetch()) 
 				{  
 					count++;
 				}
@@ -1446,14 +1462,14 @@ namespace AS3AP.BenchMark
 			}
 			finally
 			{
-				backend.CursorClose();
+				cursorClose();
 				if (testFailed)
 				{
-					Backend.RollbackTransaction();
+					rollbackTransaction();
 				}
 				else
 				{
-					Backend.CommitTransaction();
+					commitTransaction();
 				}
 			}
 
@@ -1467,13 +1483,13 @@ namespace AS3AP.BenchMark
 		
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("insert into updates "		+
+				beginTransaction();
+				executeStatement("insert into updates "		+
 					"values (1000000001, 50005, 50005, 50005.00, "	+
 					"50005.00, 50005.00, '1/1/1988', "				+
 					"'CONTROLLER', 'ALICE IN WONDERLAND', "			+
 					"'UNIVERSITY OF ILLINOIS AT CHICAGO')"); 				
-				backend.CommitTransaction();
+				commitTransaction();
 				
 				count++;
 			}
@@ -1492,13 +1508,13 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("insert into updates "							+
+				beginTransaction();
+				executeStatement("insert into updates "							+
 					"values (5005, 5005, 50005, 50005.00, 50005.00, "	+
 					"50005.00, '1/1/1988', 'CONTROLLER', "				+
 					"'ALICE IN WONDERLAND', "							+
 					"'UNIVERSITY OF ILLINOIS AT CHICAGO')");
-				backend.CommitTransaction();
+				commitTransaction();
 
 				count++;
 			}
@@ -1517,14 +1533,14 @@ namespace AS3AP.BenchMark
 			{
 				try
 				{
-					backend.BeginTransaction();
-					backend.ExecuteStatement( "insert into updates  "		+
+					beginTransaction();
+					executeStatement( "insert into updates  "		+
 						"values (6000, 0, 60000, 39997.90, "				+
 						"50005.00, 50005.00, "								+
 						"'11/10/1985', 'CONTROLLER', "						+
 						"'ALICE IN WONDERLAND', "							+
 						"'UNIVERSITY OF ILLINOIS AT CHICAGO')"); 
-					backend.CommitTransaction();
+					commitTransaction();
 
 					testFailed = true;
 				}
@@ -1541,9 +1557,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("delete from updates where col_key = -1000"); 
-				backend.CommitTransaction();
+				beginTransaction();
+				executeStatement("delete from updates where col_key = -1000"); 
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -1558,9 +1574,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("delete from updates where (col_key='5005') or (col_key='-5000')");
-				backend.CommitTransaction();
+				beginTransaction();
+				executeStatement("delete from updates where (col_key='5005') or (col_key='-5000')");
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -1575,11 +1591,11 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("update updates "	+
+				beginTransaction();
+				executeStatement("update updates "	+
 					"set col_code = 'SQL+GROUPS' "			+
 					"where col_key = 5005");
-				backend.CommitTransaction();
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -1594,10 +1610,10 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement( "update updates "	+
+				beginTransaction();
+				executeStatement( "update updates "	+
 					"set col_key = -1000 where col_key = 1000000001");
-				backend.CommitTransaction();
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -1612,9 +1628,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("update updates set col_int = 50015 where col_key = 5005");
-				backend.CommitTransaction();
+				beginTransaction();
+				executeStatement("update updates set col_int = 50015 where col_key = 5005");
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -1629,9 +1645,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("update updates set col_key = '-5000' where col_key = 5005");
-				backend.CommitTransaction();
+				beginTransaction();
+				executeStatement("update updates set col_key = '-5000' where col_key = 5005");
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -1646,9 +1662,9 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				backend.BeginTransaction();
-				backend.ExecuteStatement("delete from updates where col_key = 6000 and col_int = 0");
-				backend.CommitTransaction();
+				beginTransaction();
+				executeStatement("delete from updates where col_key = 6000 and col_int = 0");
+				commitTransaction();
 			}
 			catch (Exception)
 			{
@@ -1667,33 +1683,30 @@ namespace AS3AP.BenchMark
 		{	
 			int count = 0;
 
-			lock (backend)
+			try
 			{
-				try
+				beginTransaction();
+				cursorOpen("select * from tiny");
+			
+				while (cursorFetch())
 				{
-					backend.BeginTransaction();
-					backend.CursorOpen("select * from tiny");
-				
-					while (backend.CursorFetch())
-					{
-						count++;
-					}
+					count++;
 				}
-				catch (Exception)
+			}
+			catch (Exception)
+			{
+				testFailed = true;
+			}
+			finally
+			{
+				cursorClose();
+				if (testFailed)
 				{
-					testFailed = true;
+					rollbackTransaction();
 				}
-				finally
+				else
 				{
-					backend.CursorClose();
-					if (testFailed)
-					{
-						Backend.RollbackTransaction();
-					}
-					else
-					{
-						Backend.CommitTransaction();
-					}
+					commitTransaction();
 				}
 			}
 
@@ -1705,33 +1718,30 @@ namespace AS3AP.BenchMark
 		{
 			int count = 0;
 
-			lock (backend)
+			try
 			{
-				try
+				beginTransaction();
+				cursorOpen("select * from hundred where col_key<=1000");
+			
+				while (cursorFetch())
 				{
-					backend.BeginTransaction();
-					backend.CursorOpen("select * from hundred where col_key<=1000");
-				
-					while (backend.CursorFetch())
-					{
-						count++;
-					}
+					count++;
 				}
-				catch (Exception)
+			}
+			catch (Exception)
+			{
+				testFailed = true;
+			}
+			finally
+			{
+				cursorClose();
+				if (testFailed)
 				{
-					testFailed = true;
+					rollbackTransaction();
 				}
-				finally
+				else
 				{
-					backend.CursorClose();
-					if (testFailed)
-					{
-						Backend.RollbackTransaction();
-					}
-					else
-					{
-						Backend.CommitTransaction();
-					}
+					commitTransaction();
 				}
 			}
 
@@ -1743,35 +1753,32 @@ namespace AS3AP.BenchMark
 		{
 			object count = 0;
 			
-			lock (backend)
+			try
 			{
-				try
-				{
-					backend.BeginTransaction();
-					backend.CursorOpen(
-						"select count(*) from updates, sel100rand "		+
-						"where updates.col_int=sel100rand.col_int "		+
-						"and not updates.col_double=sel100rand.col_double");
-				
-					backend.CursorFetch();
+				beginTransaction();
+				cursorOpen(
+					"select count(*) from updates, sel100rand "		+
+					"where updates.col_int=sel100rand.col_int "		+
+					"and not updates.col_double=sel100rand.col_double");
+			
+				cursorFetch();
 
-					count = backend.Cursor.GetValue(0);
-				}
-				catch (Exception)
+				count = cursor.GetValue(0);
+			}
+			catch (Exception)
+			{
+				testFailed = true;
+			}
+			finally
+			{					
+				cursorClose();
+				if (testFailed)
 				{
-					testFailed = true;
+					rollbackTransaction();
 				}
-				finally
-				{					
-					backend.CursorClose();
-					if (testFailed)
-					{
-						Backend.RollbackTransaction();
-					}
-					else
-					{
-						Backend.CommitTransaction();
-					}
+				else
+				{
+					commitTransaction();
 				}
 			}
 
@@ -1786,18 +1793,15 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void mu_drop_sel100_rand() 
 		{
-			lock (backend)
+			try
 			{
-				try
-				{
-					backend.BeginTransaction();
-					backend.ExecuteStatement("drop table sel100rand");
-					backend.CommitTransaction();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
+				beginTransaction();
+				executeStatement("drop table sel100rand");
+				commitTransaction();
+			}
+			catch (Exception)
+			{
+				testFailed = true;
 			}
 
 			testResult = 0;
@@ -1808,35 +1812,32 @@ namespace AS3AP.BenchMark
 		{
 			object count = 0;
 
-			lock (backend)
+			try
 			{
-				try
+				beginTransaction();
+				cursorOpen(
+					"select count(*) from updates, sel100seq "		+
+					"where updates.col_key=sel100seq.col_key "		+
+					"and not updates.col_double=sel100seq.col_double");
+			
+				cursorFetch();
+			
+				count = cursor.GetValue(0); 
+			}
+			catch (Exception)
+			{
+				testFailed = true;
+			}
+			finally
+			{
+				cursorClose();
+				if (testFailed)
 				{
-					backend.BeginTransaction();
-					backend.CursorOpen(
-						"select count(*) from updates, sel100seq "		+
-						"where updates.col_key=sel100seq.col_key "		+
-						"and not updates.col_double=sel100seq.col_double");
-				
-					backend.CursorFetch();
-				
-					count = backend.Cursor.GetValue(0); 
+					rollbackTransaction();
 				}
-				catch (Exception)
+				else
 				{
-					testFailed = true;
-				}
-				finally
-				{
-					backend.CursorClose();
-					if (testFailed)
-					{
-						Backend.RollbackTransaction();
-					}
-					else
-					{
-						Backend.CommitTransaction();
-					}
+					commitTransaction();
 				}
 			}
 
@@ -1851,18 +1852,15 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void mu_drop_sel100_seq() 
 		{
-			lock (backend)
+			try
 			{
-				try
-				{
-					backend.BeginTransaction();
-					backend.ExecuteStatement("drop table sel100seq");
-					backend.CommitTransaction();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
+				beginTransaction();
+				executeStatement("drop table sel100seq");
+				commitTransaction();
+			}
+			catch (Exception)
+			{
+				testFailed = true;
 			}
 
 			testResult = 0;
@@ -1878,46 +1876,43 @@ namespace AS3AP.BenchMark
 			Random randNumber = new Random(unchecked((int)DateTime.Now.Ticks));
 			r = 1;
 
-			lock (backend)
+			try
 			{
-				try
+				while (r == 1)
 				{
-					while (r == 1)
-					{
-						r = randNumber.Next(0, tupleCount);   // there IS no key 1
-					}
-			
-					lineBuf.AppendFormat(
-						"select col_key, col_code, col_date, col_signed, col_name "	+
-						"from updates where col_key = {0}",	r);
+					r = randNumber.Next(0, tupleCount);   // there IS no key 1
+				}
+		
+				lineBuf.AppendFormat(
+					"select col_key, col_code, col_date, col_signed, col_name "	+
+					"from updates where col_key = {0}",	r);
 
-					backend.BeginTransaction();
-					backend.CursorOpen(lineBuf.ToString());
-					if (!backend.CursorFetch())
-					{
-						testFailed = true;
-						count = 0;
-					}
-					else
-					{
-						count++;
-					}
-				}	
-				catch (Exception)
+				beginTransaction();
+				cursorOpen(lineBuf.ToString());
+				if (!cursorFetch())
 				{
 					testFailed = true;
+					count = 0;
 				}
-				finally
+				else
 				{
-					backend.CursorClose();
-					if (testFailed)
-					{
-						Backend.RollbackTransaction();
-					}
-					else
-					{
-						Backend.CommitTransaction();
-					}
+					count++;
+				}
+			}	
+			catch (Exception)
+			{
+				testFailed = true;
+			}
+			finally
+			{
+				cursorClose();
+				if (testFailed)
+				{
+					rollbackTransaction();
+				}
+				else
+				{
+					commitTransaction();
 				}
 			}
 
@@ -1929,20 +1924,17 @@ namespace AS3AP.BenchMark
 		{
 			int count = 0;
 
-			lock (backend)
+			try
 			{
-				try
-				{
-					backend.BeginTransaction();
-					backend.ExecuteStatement("update updates "	+
-						"set col_double=col_double+100000000 "	+
-						"where col_int between 1001 and 1100");
-					backend.CommitTransaction();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
+				beginTransaction();
+				executeStatement("update updates "	+
+					"set col_double=col_double+100000000 "	+
+					"where col_int between 1001 and 1100");
+				commitTransaction();
+			}
+			catch (Exception)
+			{
+				testFailed = true;
 			}
 
 			testResult = count;
@@ -1951,20 +1943,17 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
 		public void mu_mod_100_seq() 
 		{
-			lock (backend)
+			try
 			{
-				try
-				{
-					backend.BeginTransaction();					
-					backend.ExecuteStatement("update updates "		+
-						"set col_double = col_double+100000000 "	+
-						"where col_key between 1001 and 1100");
-					backend.RollbackTransaction();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
+				beginTransaction();					
+				executeStatement("update updates "		+
+					"set col_double = col_double+100000000 "	+
+					"where col_key between 1001 and 1100");
+				rollbackTransaction();
+			}
+			catch (Exception)
+			{
+				testFailed = true;
 			}
 
 			testResult = 0;
@@ -1976,29 +1965,26 @@ namespace AS3AP.BenchMark
 			StringBuilder   lineBuf = new StringBuilder();
 			int				r;
 
-			lock (backend)
+			try
 			{
-				try
+				Random randomNumber = new Random(unchecked((int)DateTime.Now.Ticks));
+				r = 1;
+				while (r == 1)
 				{
-					Random randomNumber = new Random(unchecked((int)DateTime.Now.Ticks));
-					r = 1;
-					while (r == 1)
-					{
-						r = randomNumber.Next(0, tupleCount);    // There IS no col_key 1
-					}	
+					r = randomNumber.Next(0, tupleCount);    // There IS no col_key 1
+				}	
 
-					lineBuf.AppendFormat(
-						"update updates set col_signed = col_signed + 1 " +
-						"where col_key = {0}", r);
+				lineBuf.AppendFormat(
+					"update updates set col_signed = col_signed + 1 " +
+					"where col_key = {0}", r);
 
-					backend.BeginTransaction();
-					backend.ExecuteStatement(lineBuf.ToString());
-					backend.CommitTransaction();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
+				beginTransaction();
+				executeStatement(lineBuf.ToString());
+				commitTransaction();
+			}
+			catch (Exception)
+			{
+				testFailed = true;
 			}
 
 			testResult = 0;
@@ -2007,21 +1993,18 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
 		public void mu_sel_100_rand() 
 		{
-			lock (backend)
+			try
 			{
-				try
-				{
-					backend.CreateTable("sel100rand", baseTableStructure, null);
+				createTable("sel100rand", baseTableStructure, null);
 
-					backend.BeginTransaction();
-					backend.ExecuteStatement("insert into sel100rand select * from updates "	+
-						"where updates.col_int between 1001 and 1100");
-					backend.CommitTransaction();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
+				beginTransaction();
+				executeStatement("insert into sel100rand select * from updates "	+
+					"where updates.col_int between 1001 and 1100");
+				commitTransaction();
+			}
+			catch (Exception)
+			{
+				testFailed = true;
 			}
 
 			testResult = 0;
@@ -2030,21 +2013,18 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
 		public void mu_sel_100_seq() 
 		{
-			lock (backend)
+			try
 			{
-				try
-				{
-					backend.CreateTable("sel100seq", baseTableStructure, null);
+				createTable("sel100seq", baseTableStructure, null);
 
-					backend.BeginTransaction();
-					backend.ExecuteStatement("insert into sel100seq select * from updates "	+
-						"where updates.col_key between 1001 and 1100");
-					backend.CommitTransaction();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
+				beginTransaction();
+				executeStatement("insert into sel100seq select * from updates "	+
+					"where updates.col_key between 1001 and 1100");
+				commitTransaction();
+			}
+			catch (Exception)
+			{
+				testFailed = true;
 			}
 
 			testResult = 0;
@@ -2053,20 +2033,17 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
 		public void mu_unmod_100_rand() 
 		{
-			lock (backend)
+			try
 			{
-				try
-				{
-					backend.BeginTransaction();
-					backend.ExecuteStatement("update updates "	+
-						"set col_double=col_double-100000000 "	+
-						"where col_int between 1001 and 1100");
-					backend.CommitTransaction();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
+				beginTransaction();
+				executeStatement("update updates "	+
+					"set col_double=col_double-100000000 "	+
+					"where col_int between 1001 and 1100");
+				commitTransaction();
+			}
+			catch (Exception)
+			{
+				testFailed = true;
 			}
 
 			testResult = 0;
@@ -2075,20 +2052,17 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.RepeatableRead)]
 		public void mu_unmod_100_seq() 
 		{
-			lock (backend)
+			try
 			{
-				try
-				{
-					backend.BeginTransaction();
-					backend.ExecuteStatement("update updates "	+
-						"set col_double=col_double-100000000 "	+
-						"where col_key between 1001 and 1100");
-					backend.CommitTransaction();
-				}
-				catch (Exception)
-				{
-					testFailed = true;
-				}
+				beginTransaction();
+				executeStatement("update updates "	+
+					"set col_double=col_double-100000000 "	+
+					"where col_key between 1001 and 1100");
+				commitTransaction();
+			}
+			catch (Exception)
+			{
+				testFailed = true;
 			}
 
 			testResult = 0; 
@@ -2100,9 +2074,9 @@ namespace AS3AP.BenchMark
 
 		public void create_database() 
 		{
-			backend.DatabaseCreate("AS3AP");
+			databaseCreate();
 
-			backend.DatabaseConnect();
+			DatabaseConnect();
 
 			runTest("create_tables");
 			runTest("load_data");
@@ -2127,7 +2101,7 @@ namespace AS3AP.BenchMark
 			runTest("create_idx_updates_double_bt");
 			runTest("create_idx_hundred_foreign");
 			
-			backend.DatabaseDisconnect();
+			DatabaseDisconnect();
 		}
 
 		public void single_user_tests() 
@@ -2135,7 +2109,7 @@ namespace AS3AP.BenchMark
 			long		clocks;
 			TimeSpan	elapsed;
 
-			backend.DatabaseConnect();
+			DatabaseConnect();
 			
 			clocks = System.DateTime.Now.Ticks;
 
@@ -2191,7 +2165,7 @@ namespace AS3AP.BenchMark
 			if (log != null) log.Simple("\r\nSingle user test ( {0} )\r\n\r\n",
 								 elapsed.ToString());
 
-			backend.DatabaseDisconnect();
+			DatabaseDisconnect();
 		}
 
 		public void multi_user_tests(int nInstances) 
@@ -2219,9 +2193,7 @@ namespace AS3AP.BenchMark
 
 			iters		= 0;
 			timeToRun	= 15;
-			
-			backend.DatabaseConnect();
-			
+					
 			for (int i = 0; i < nInstances; i++) 
 			{
 				userProcess[i]		= new Thread(new ThreadStart(ir_select));
@@ -2234,9 +2206,7 @@ namespace AS3AP.BenchMark
 			{
 				userProcess[i].Join();
 			}
-			
-			backend.DatabaseDisconnect();
-						
+									
 			
 			/* Step 3 -- Measure throughput in IR test for five minutes.	*/
 			if (Progress != null)
@@ -2248,9 +2218,7 @@ namespace AS3AP.BenchMark
 			iters		= 0;
 			sTime		= DateTime.Now.Ticks;
 			timeToRun	= 5;
-			
-			backend.DatabaseConnect();
-			
+						
 			for (int i = 0; i < nInstances; i++)
 			{
 				userProcess[i] = new Thread(new ThreadStart(ir_select));
@@ -2263,8 +2231,6 @@ namespace AS3AP.BenchMark
 			{
 				userProcess[i].Join();
 			}
-
-			backend.DatabaseDisconnect();
 
 			fTime = new TimeSpan(DateTime.Now.Ticks - sTime);
 			if (log != null) log.Simple("Mixed IR (tup/sec)\t{0}"			+
@@ -2282,14 +2248,11 @@ namespace AS3AP.BenchMark
 				Progress(this, 
 					new ProgressMessageEventArgs("Run Mixed Workload IR test (Mix 3) (" + DateTime.Now.ToString() + ")."));
 			}
-
-			backend.DatabaseConnect();
 			
 			userProcess[0]		= new Thread(new ThreadStart(cross_section_tests));
 			userProcess[0].Name = "User " + 0.ToString();
-			userProcess[0].Start();
-			/* Exec the only one time in each thread	*/
-			timeToRun	= -1;
+			userProcess[0].Start();			
+			timeToRun	= -1;	// Exec the only one time in each thread
 			for (int i = 1; i < nInstances; i++) 
 			{
 				userProcess[i] = new Thread(new ThreadStart(ir_select));
@@ -2302,9 +2265,7 @@ namespace AS3AP.BenchMark
 			{
 				userProcess[i].Join();
 			}
-			
-			backend.DatabaseDisconnect();
-			
+						
 			
 			/* Step 5 -- Run queries to check correctness of the sequential
 			 * and random bulk updates.
@@ -2315,10 +2276,10 @@ namespace AS3AP.BenchMark
 					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
 			}
 			
-			backend.DatabaseConnect();
+			DatabaseConnect();
 			runTest("mu_checkmod_100_seq");
 			runTest("mu_checkmod_100_rand");
-			backend.DatabaseDisconnect();
+			DatabaseDisconnect();
 
 			
 			/* Step 6 - Recover updates relation from backup tape (Step 1)
@@ -2336,13 +2297,13 @@ namespace AS3AP.BenchMark
 					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
 			}
 			
-			backend.DatabaseConnect();
+			DatabaseConnect();
 			runTest("mu_checkmod_100_seq");
 			runTest("mu_checkmod_100_rand");
 
 			runTest("mu_drop_sel100_seq");
 			runTest("mu_drop_sel100_rand");
-			backend.DatabaseDisconnect();
+			DatabaseDisconnect();
 
 			
 			/* Step 8 - Run OLTP test for 15 minutes.	*/
@@ -2351,10 +2312,8 @@ namespace AS3AP.BenchMark
 				Progress(this, 
 					new ProgressMessageEventArgs("Run OLTP test for 15 minutes (" + DateTime.Now.ToString() + ")."));
 			}
-			timeToRun = 15;
 			
-			backend.DatabaseConnect();
-			
+			timeToRun = 15;						
 			for (int i = 0; i < nInstances; i++) 
 			{
 				userProcess[i] = new Thread(new ThreadStart(oltp_update));
@@ -2368,20 +2327,16 @@ namespace AS3AP.BenchMark
 				userProcess[i].Join();
 			}
 			
-			backend.DatabaseDisconnect();
-
 			/* Step 9 -- Measure throughput in IR test for five minutes.	*/
 			if (Progress != null)
 			{
 				Progress(this, 
 					new ProgressMessageEventArgs("Run Measure throughput in IR test for five minutes (" + DateTime.Now.ToString() + ")."));
 			}
+
 			iters		= 0;
 			sTime		= DateTime.Now.Ticks;
-			timeToRun	= 5;
-			
-			backend.DatabaseConnect();
-			
+			timeToRun	= 5;						
 			for (int i = 0; i < nInstances; i++)
 			{
 				userProcess[i] = new Thread(new ThreadStart(ir_select));
@@ -2394,9 +2349,7 @@ namespace AS3AP.BenchMark
 			{
 				userProcess[i].Join();
 			}
-			
-			backend.DatabaseDisconnect();
-
+						
 			fTime = new TimeSpan(DateTime.Now.Ticks - sTime);
 			if (log != null) log.Simple("Mixed OLTP (tup/sec)\t{0}"			+
 										   "\treturned in {1} minutes\n"		,
@@ -2412,15 +2365,11 @@ namespace AS3AP.BenchMark
 				Progress(this, 
 					new ProgressMessageEventArgs("Run Mixed Workload OLTP test (Mix 4) (" + DateTime.Now.ToString() + ")."));
 			}
-			
-			backend.DatabaseConnect();
-			
+						
 			userProcess[0]		= new Thread(new ThreadStart(cross_section_tests));
 			userProcess[0].Name = "User " + 0.ToString();
 			userProcess[0].Start();
-			
-			/* Exec the only one time in each thread	*/
-			timeToRun	= -1;
+			timeToRun	= -1;	// Exec the only one time in each thread
 			for (int i = 1; i < nInstances; i++)
 			{
 				userProcess[i] = new Thread(new ThreadStart(oltp_update));
@@ -2433,9 +2382,7 @@ namespace AS3AP.BenchMark
 			{
 				userProcess[i].Join();
 			}
-			
-			backend.DatabaseDisconnect();
-						
+									
 			/* Step 11 -- Perform correctness checks, checkmod_100_seq and 
 			 * checkmod_100_rand. Remove temporary tables: sel100seq and 
 			 * sel100rand.
@@ -2446,13 +2393,13 @@ namespace AS3AP.BenchMark
 					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
 			}
 			
-			backend.DatabaseConnect();
+			DatabaseConnect();
 			runTest("mu_checkmod_100_seq");			
 			runTest("mu_checkmod_100_rand");
 			
 			runTest("mu_drop_sel100_seq");
 			runTest("mu_drop_sel100_rand");
-			backend.DatabaseDisconnect();
+			DatabaseDisconnect();
 		}
 
 		private void cross_section_tests() 
@@ -2460,7 +2407,7 @@ namespace AS3AP.BenchMark
 			long	startTime;
 			long	endTime;
 
-			backend.DatabaseConnect();
+			DatabaseConnect();
 
 			startTime = DateTime.Now.Ticks;
 
@@ -2480,13 +2427,17 @@ namespace AS3AP.BenchMark
 			endTime = DateTime.Now.Ticks;
 			TimeSpan elapsed = new TimeSpan(endTime - startTime);
 
-			backend.DatabaseDisconnect();
+			DatabaseDisconnect();
 
-			if (log != null) log.Simple("CrossSectionTests \t{1}", elapsed.ToString());
+			if (log != null) log.Simple("CrossSectionTests \t( {1} )", elapsed.ToString());
 		}
 
 		private void ir_select()
-		{
+		{		
+			ITestSuite	testSuite = TestSuiteFactory.GetTestSuite(testSuiteName, configuration);
+
+			testSuite.DatabaseConnect();
+			
 			DateTime	endTime	= DateTime.Now;
 
 			if (timeToRun > 0)
@@ -2494,7 +2445,7 @@ namespace AS3AP.BenchMark
 				endTime = DateTime.Now.AddMinutes(timeToRun);
 				while (endTime >= DateTime.Now)
 				{					
-					mu_ir_select();
+					testSuite.mu_ir_select();
 					iters++;
 				}
 			}
@@ -2502,10 +2453,16 @@ namespace AS3AP.BenchMark
 			{
 				mu_ir_select();
 			}
+			
+			testSuite.DatabaseDisconnect();
 		}
 		
 		private void oltp_update()
-		{
+		{			
+			ITestSuite	testSuite = TestSuiteFactory.GetTestSuite(testSuiteName, configuration);
+			
+			testSuite.DatabaseConnect();
+			
 			DateTime	endTime	= DateTime.Now;
 
 			if (timeToRun > 0)
@@ -2513,13 +2470,15 @@ namespace AS3AP.BenchMark
 				endTime = DateTime.Now.AddMinutes(timeToRun);
 				while (endTime >= DateTime.Now)
 				{
-					mu_oltp_update();
+					testSuite.mu_oltp_update();
 				}
 			}
 			else
 			{
-				mu_oltp_update();
+				testSuite.mu_oltp_update();
 			}
+			
+			testSuite.DatabaseDisconnect();
 		}
 
 		private void runTest(string testName)
@@ -2585,5 +2544,402 @@ namespace AS3AP.BenchMark
 		}
 
 		#endregion
+		
+		#region DATABASE_METHODS
+
+		private void createIndex(IndexType indextype, string indexName, string tableName, string fields)
+		{
+			string	createIndexStmt = String.Empty;
+			
+			switch (indextype)
+			{
+				case IndexType.Btree:
+					createIndexStmt = configuration.BtreeIndexStmt;
+					break;
+				
+				case IndexType.Clustered:
+					createIndexStmt = configuration.ClusteredIndexStmt;
+					break;
+
+				case IndexType.Hash:
+					createIndexStmt = configuration.HashIndexStmt;
+					break;
+			}
+
+			createIndexStmt	= createIndexStmt.Replace("@INDEX_NAME", indexName);
+			createIndexStmt	= createIndexStmt.Replace("@TABLE_NAME", tableName);
+			createIndexStmt	= createIndexStmt.Replace("@INDEX_FIELDS", fields);
+
+			try
+			{
+				beginTransaction();
+				executeStatement(createIndexStmt);
+				commitTransaction();
+			}
+			catch(Exception ex)
+			{
+				if (log != null) log.Error("btree error {0}", ex.Message);
+				throw ex;				
+			}
+		}
+
+		private void createForeignKey(string foreignTable, string constraintName, 
+										string foreignKeyColumns,
+										string referencesTableName, 
+										string referencesFields)
+		{
+			StringBuilder commandText = new StringBuilder();
+
+			commandText.AppendFormat("alter table {0} add constraint {1} foreign key ({2}) references {3} ({4}) {5} {6}",
+									foreignTable, constraintName, foreignKeyColumns, 
+									referencesTableName, referencesFields,
+									"on delete cascade", "on update cascade");
+
+			try
+			{
+				beginTransaction();
+				executeStatement(commandText.ToString());
+				commitTransaction();
+			}
+			catch(Exception ex)
+			{
+				if (log != null) log.Error("foreign key error {0}", ex.Message);
+				throw ex;
+			}
+		}
+
+		private void createTable(string tableName, string tableStructure, string primaryKey) 
+		{
+			try
+			{
+				StringBuilder commandText = new StringBuilder();
+
+				if (primaryKey != null)
+				{
+					commandText.AppendFormat(
+						"create table {0} ({1}, primary key ({2}))", tableName, tableStructure, primaryKey);
+				}
+				else
+				{
+					commandText.AppendFormat(
+						"create table {0} ({1})", tableName, tableStructure);
+				}
+
+				beginTransaction();
+				executeStatement(commandText.ToString());
+				commitTransaction();
+			}
+			catch (Exception ex)
+			{
+				if (log != null) log.Error("error create table {0}", ex.Message);
+				throw ex;
+			}
+		}
+
+		protected void cursorOpen(string commandText)
+		{
+			try
+			{
+				cmdCursor	= getCommand(commandText);
+				cursor		= cmdCursor.ExecuteReader();
+			}
+			catch (Exception ex)
+			{
+				if (log != null) log.Error("cursorOpen failed {0}", ex.Message);
+
+				if (cursor != null)
+				{
+					cursor.Dispose();
+					cursor = null;
+				}
+
+				if (cmdCursor != null)
+				{
+					cmdCursor.Dispose();
+					cmdCursor = null;
+				}
+				
+				throw ex;
+			}
+		}
+
+		protected bool cursorFetch()
+		{
+			bool fetched = false;
+
+			try
+			{
+				fetched = cursor.Read();
+			}
+			catch (Exception ex)
+			{
+				if (log != null) log.Error("cursorFetch failed {0}", ex.Message);
+			}
+
+			return fetched;
+		}
+		
+		protected void cursorClose()
+		{
+			try
+			{
+				if (cursor != null)
+				{
+					cursor.Close();
+				}
+			}
+			catch(Exception ex)
+			{				
+				if (log != null) log.Error("cursorClose failed {0}", ex.Message);
+
+				throw ex;
+			}
+			finally
+			{
+				if (cursor != null)
+				{
+					cursor.Dispose();
+					cursor = null;
+				}
+
+				if (cmdCursor != null)
+				{
+					cmdCursor.Dispose();
+					cmdCursor = null;
+				}
+			}
+		}
+
+		public void DatabaseConnect()
+		{
+			try
+			{
+				connection = new FbConnection(configuration.ConnectionString);
+				connection.Open();
+			}
+			catch (Exception ex)
+			{
+				if (log != null) log.Error("DatabaseConnect error {0}", ex.Message);
+				throw ex;
+			}
+		}
+
+		private void databaseCreate()
+		{
+			// FbConnection.CreateDatabase();
+		}
+
+		public void DatabaseDisconnect()
+		{
+			try
+			{
+				if (connection != null)
+				{
+					connection.Close();
+				}
+			}
+			catch (Exception ex)
+			{
+				if (log != null) log.Error("disconnect error {0}", ex.Message);
+				throw ex;
+			}
+		}
+
+		protected void executeStatement(string commandText)
+		{			
+			FbCommand command = null;
+
+			try
+			{
+				command = getCommand(commandText);
+				command.ExecuteNonQuery();
+			}
+			catch (Exception ex)
+			{
+				if (log != null) log.Error("executeStatement failed {0}", ex.Message);
+
+				rollbackTransaction();
+				
+				throw ex;
+			}
+			finally
+			{	
+				if (command != null)
+				{
+					command.Dispose();
+					command = null;	
+				}
+			}
+		}
+
+		protected void beginTransaction()
+		{
+			try
+			{
+				transaction = connection.BeginTransaction(isolation);
+			}
+			catch(Exception ex)
+			{
+				if (log != null) log.Error("beginTransaction failed {0}", ex.Message);
+				throw ex;
+			}
+		}
+
+		protected void commitTransaction()
+		{
+			try
+			{
+				transaction.Commit();
+			}
+			catch (Exception ex)
+			{					
+				if (log != null) log.Error("Commit failed {0}", ex.Message);
+				throw ex;
+			}
+		}
+
+		protected void rollbackTransaction()
+		{
+			try
+			{
+				
+				transaction.Rollback();
+			}
+			catch (Exception ex)
+			{
+				if (log != null) log.Error("Rollback failed {0}", ex.Message);
+				throw ex;
+			}
+		}
+
+		private void load_data()
+		{
+			try
+			{
+				beginTransaction();
+				loadTinyFile("tiny");
+				commitTransaction();
+
+				beginTransaction();
+				loadFile("uniques");
+				commitTransaction();
+
+				beginTransaction();
+				loadFile("updates");
+				commitTransaction();
+
+				beginTransaction();
+				loadFile("hundred");
+				commitTransaction();
+
+				beginTransaction();
+				loadFile("tenpct");
+				commitTransaction();								
+			}
+			catch (Exception ex)
+			{
+				if (log != null) log.Error("load failed {0}", ex.Message);
+
+				rollbackTransaction();
+
+				throw ex;
+			}
+		}
+
+		private void loadFile(string table)
+		{
+			StringBuilder	commandText = new StringBuilder();
+			StreamReader	stream		= null;
+			FbCommand		command		= null;
+
+			commandText.AppendFormat("insert into {0} values (?,?,?,?,?,?,?,?,?,?)", table);
+			// commandText.AppendFormat("insert into {0} values (@col_key,@col_int,@col_signed,@col_float,@col_double,@col_decim,@col_date,@col_code,@col_name,@col_address)", table);
+
+			/* Crate command */
+			// command = new FbCommand(commandText.ToString(), connection, transaction);
+			command = getCommand(commandText.ToString());
+
+			/* Add parameters	*/
+			command.Parameters.Add("@col_key"	, FbType.Integer	, "COL_KEY");
+			command.Parameters.Add("@col_int"	, FbType.Integer	, "COL_INT");
+			command.Parameters.Add("@col_signed", FbType.Integer	, "COL_SIGNED");
+			command.Parameters.Add("@col_float"	, FbType.Float		, "COL_FLOAT");
+			command.Parameters.Add("@col_double", FbType.Double		, "COL_DOUBLE");
+			command.Parameters.Add("@col_decim"	, FbType.Decimal	, "COL_DECIM");
+			command.Parameters.Add("@col_date"	, FbType.Char		, "COL_DATE");
+			command.Parameters.Add("@col_code"	, FbType.Char		, "COL_CODE");
+			command.Parameters.Add("@col_name"	, FbType.Char		, "COL_NAME");
+			command.Parameters.Add("@col_address", FbType.VarChar	, "COL_ADDRESS");
+
+			/* Prepare command execution	*/
+			command.Prepare();
+
+			stream = new StreamReader(
+				(System.IO.Stream)File.Open(
+				configuration.DataPath + "asap." + table	,
+				FileMode.Open								,
+				FileAccess.Read								,
+				FileShare.None));
+
+			while (stream.Peek() > -1)
+			{
+				string[] elements = stream.ReadLine().Split(',');
+			
+				for (int i = 0; i < 10; i++)
+				{
+					command.Parameters[i].Value = elements[i];
+				}
+	
+				command.ExecuteNonQuery();
+			}
+
+			command.Dispose();
+			stream.Close();
+		}
+
+		private void loadTinyFile(string table)
+		{
+			StringBuilder	commandText = new StringBuilder();
+			StreamReader	stream		= null;
+			FbCommand		command		= null;
+
+			commandText.AppendFormat("insert into {0} values (?)", table);
+
+			/* Crate command */
+			command = getCommand(commandText.ToString());
+
+			/* Add parameters	*/
+			command.Parameters.Add("@col_key", FbType.Integer, "COL_KEY");
+
+			/* Prepare command execution	*/
+			command.Prepare();
+
+			stream = new StreamReader(
+				(System.IO.Stream)File.Open(
+				configuration.DataPath + "asap." + table	,
+				FileMode.Open								,
+				FileAccess.Read								,
+				FileShare.None));
+
+			while (stream.Peek() > -1)
+			{
+				string[] elements = stream.ReadLine().Split(',');
+			
+				command.Parameters[0].Value = elements[0];
+	
+				command.ExecuteNonQuery();
+			}
+
+			command.Dispose();
+			stream.Close();
+		}
+
+		protected FbCommand getCommand(string commandText)
+		{
+			return new FbCommand(commandText, connection, transaction);
+		}
+
+		#endregion
+		
 	}
 }
