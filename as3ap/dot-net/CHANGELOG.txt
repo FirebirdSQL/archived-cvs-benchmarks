@@ -2,6 +2,16 @@ AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 =============================================================================================
 
 
+
+2003-02-11 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+
+	* Rewrited code for allow te execution of the benchmark using SQL87 or SQL92 sintax.
+
+	* Removed Neutral backend ( Needs to be rewrited ).
+
+	* Fixed error in logger.
+
+
 2003-02-10 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
 	* source/AS3AP.cs:
