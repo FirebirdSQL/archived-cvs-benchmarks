@@ -105,10 +105,10 @@ public class AggregateTest extends BenchmarkTest {
     public void testSimpleReport() throws Exception {
         ResultSet rs = stmt.executeQuery(""
             + "SELECT avg(" + DECIM_COL + ") "
-            + "FROM " + UPDATES_TABLE
+            + "FROM " + UPDATES_TABLE + " "
             + "WHERE "
             + KEY_COL + " IN ("
-            + "SELECT " + UPDATES_TABLE + "." + KEY_COL 
+            + "SELECT " + UPDATES_TABLE + "." + KEY_COL + " "
             + "FROM " + UPDATES_TABLE + ", " + HUNDRED_TABLE + " "
             + "WHERE " 
             + HUNDRED_TABLE + "." + KEY_COL + " = " 
@@ -133,7 +133,7 @@ public class AggregateTest extends BenchmarkTest {
             + UPDATES_DATE_COL + ", " + UPDATES_DECIM_COL + ", "
             + HUNDRED_NAME_COL + ", " + HUNDRED_CODE_COL + ", "
             + HUNDRED_INT_COL + " "
-            + "FROM " + UPDATES_TABLE + ", " + HUNDRED_TABLE
+            + "FROM " + UPDATES_TABLE + ", " + HUNDRED_TABLE + " "
             + "WHERE " + UPDATES_KEY_COL + " = " + HUNDRED_KEY_COL
             ;
 
@@ -156,6 +156,10 @@ public class AggregateTest extends BenchmarkTest {
             + "WHERE " + DECIM_COL + " > 980000000 "
             + "GROUP BY " + CODE_COL + ", " + INT_COL
             ;
+        
+        ResultSet rs = stmt.executeQuery(sql);
+        fetchResultSet(rs);
+        rs.close();
     }
     
     public void testTotalReport() throws Exception {
@@ -167,12 +171,21 @@ public class AggregateTest extends BenchmarkTest {
             + "max(" + DATE_COL + "), "
             + "min(" + DATE_COL + "), "
             + "count(DISTINCT " + NAME_COL + "), "
-            + "count(" + NAME_COL + ") "
+            + "count(" + NAME_COL + "), "
             + "count(" + CODE_COL + "), "
             + "count(" + INT_COL + ") "
             + "FROM reportview "
             + "WHERE " + DECIM_COL + " > 980000000 "
             ;
+        
+        ResultSet rs = stmt.executeQuery(sql);
+        fetchResultSet(rs);
+        rs.close();
     }
     
+    public void testDropView() throws Exception {
+        String sql = "DROP VIEW reportview";
+        
+        getDatabaseManager().executeDDL(sql);
+    }
 }
