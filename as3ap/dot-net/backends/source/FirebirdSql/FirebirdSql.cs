@@ -159,8 +159,10 @@ namespace AS3AP.BenchMark.Backends
 
 			try
 			{
-				// Firebird no tiene soporte para indices clustered
-				ddl(commandText.ToString());
+				/* This is not needed, Firebird creates a new unique index
+				 * when a table has a primary key defined.
+				 */
+				// ddl(commandText.ToString());
 			}
 			catch(Exception ex)
 			{
