@@ -77,11 +77,11 @@ namespace AS3AP.BenchMark
 			{			
 				Backend.TransactionBegin();
 				Backend.CursorOpen( 
-					"select uniques.col_signed, uniques.col_name, "		+
-					"hundred.col_signed, hundred.col_name "				+
-					"from uniques, hundred "							+
-					"where uniques.col_address = hundred.col_address "	+
-					"and uniques.col_address = 'SILICON VALLEY'"	);
+					"select uniques.col_signed, uniques.col_name,"				+
+					"hundred.col_signed, hundred.col_name"						+
+					"from uniques"												+
+					"join hundred ON uniques.col_address = hundred.col_address"	+
+					"where uniques.col_address = 'SILICON VALLEY'");
 				
 				while (Backend.CursorFetch()) 
 				{
