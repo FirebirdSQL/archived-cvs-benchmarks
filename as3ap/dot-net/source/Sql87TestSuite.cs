@@ -169,12 +169,12 @@ namespace AS3AP.BenchMark
 			{
 				beginTransaction();
 				cursorOpen(
-					"select uniques.col_signed, uniques.col_date, "		+
-					"hundred.col_signed, hundred.col_date, "	+
-					"tenpct.col_signed, tenpct.col_date "		+
-					"from uniques, hundred, tenpct "					+
-					"where uniques.col_key = hundred.col_key "			+
-					"and uniques.col_key = tenpct.col_key "				+
+					"select uniques.col_signed, uniques.col_date, "	+
+					"hundred.col_signed, hundred.col_date, "		+
+					"tenpct.col_signed, tenpct.col_date "			+
+					"from uniques, hundred, tenpct "				+
+					"where uniques.col_key = hundred.col_key "		+
+					"and uniques.col_key = tenpct.col_key "			+
 					"and uniques.col_key = 1000");
 				
 				while (cursorFetch()) 
