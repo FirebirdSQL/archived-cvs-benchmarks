@@ -1,3 +1,12 @@
+2003-10-04  carlosga_fb
+	* as3ap/dot-net/source/BaseTestSuite.cs:
+	* as3ap/dot-net/source/GUI/As3apGui.cs:
+		Updated file
+
+	* as3ap/dot-net/source/GUI/As3apGui.cs:
+		Minor change for select the Run tabpage wen a default config
+		file is loaded
+
 2003-08-07  skidder
 	* as3ap/dot-net/as3ap.BenchMark.build:
 		Make AS3AP benchmark build
@@ -712,7 +721,6 @@
 	* as3ap/dot-net/LICENSE.TXT:
 	* as3ap/dot-net/README.TXT:
 	* as3ap/dot-net/as3ap.BenchMark.build:
-	* as3ap/dot-net/data/as3ap.fdb:
 	* as3ap/dot-net/doc/The Benchmark Handbook - Chapter5.pdf:
 	* as3ap/dot-net/makefile:
 	* as3ap/dot-net/source/AS3AP.BenchMark.exe.config:
