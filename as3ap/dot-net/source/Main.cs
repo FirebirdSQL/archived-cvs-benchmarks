@@ -29,13 +29,24 @@ namespace AS3AP.BenchMark
 {
 	class Benchmark
 	{
-		/// <summary>
-		/// Punto de entrada principal de la aplicación.
-		/// </summary>
 		[STAThread]
 		static void Main(string[] args)
 		{
+#if (CONSOLE)
+			RunConsole();
+#else
+			RunGui();			
+#endif
+		}
+
+		static void RunGui()
+		{
 			Application.Run(new As3apGui());
+		}
+
+		static void RunConsole()
+		{
+			As3apConsole.Run();
 		}
 	}
 }
