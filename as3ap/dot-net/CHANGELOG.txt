@@ -2,7 +2,30 @@ AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark for Relational Data
 =============================================================================================
 
 
-2003-XX-XX Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+2003-02-07 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+
+
+Added suggestions of Sean Layne:
+
+	* source/as3ap.cs:
+
+		* Added a message before start the tablas creation and data loading.
+
+		* Changed log initialization.
+
+		* Get user number from config file.
+
+
+	* source/AS3AP.BenchMark.exe.config:
+
+		- Added two new keys for configuring:
+
+		    - Log mode.
+
+		    - Number of users.
+
+
+2003-02-06 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
 
 	- Initial import of the sources to the CVS.
 
