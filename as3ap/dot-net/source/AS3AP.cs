@@ -37,31 +37,22 @@ namespace AS3AP.BenchMark
 	{		
 		#region FIELDS
 
+		private BenchMarkConfiguration	configuration;
+
 		private	Logger		log;
 		private	long		ticksPerSecond	= TimeSpan.TicksPerSecond;		
 		private ITestSuite	testSuite;
 		private string		currentTest		= String.Empty;
-
-		private string		backendName		= String.Empty;
-
-		private bool		runCreate		= true;
-
 		private int			iters			= 0;
 		private int			timeToRun		= 15;
-		private int			userNumber		= 0;
-		private long		dataSize		= 0;
-
 		private int			tupleCount		= 0;
-
-		private string		runSequence		= String.Empty;
 		private string		testSuiteType	= "SQL87";
-		private string		dataCreationMethod = "LOAD";
 
 		#endregion
 
 		#region CONSTRUCTORS
 
-		public AS3AP()
+		public AS3AP(string configFileName)
 		{
 			string logName = "as3ap_"								+
 							System.DateTime.Now.Year.ToString()		+
@@ -71,30 +62,15 @@ namespace AS3AP.BenchMark
 							System.DateTime.Now.Minute.ToString()	+
 							System.DateTime.Now.Second.ToString()	+
 							".log";
-
-			log	= new Logger(logName, Mode.OVERWRITE);
-			getConfiguration();
-
-			testSuite = TestSuiteFactory.GetTestSuite(testSuiteType, backendName);
+			
+			log				= new Logger(logName, Mode.OVERWRITE);		
+			configuration	= BenchMarkConfiguration.Load(configFileName);			
+			testSuite		= TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
 		}
 
 		#endregion
 
 		#region METHODS
-
-		private void getConfiguration()
-		{
-			runCreate		= Boolean.Parse(ConfigurationSettings.AppSettings["RunCreate"]);
-
-			backendName		= ConfigurationSettings.AppSettings["Backend"];
-
-			userNumber		= Int32.Parse(ConfigurationSettings.AppSettings["UserNumber"]);
-			dataSize		= Int64.Parse(ConfigurationSettings.AppSettings["DataSize"]);			
-
-			runSequence		= ConfigurationSettings.AppSettings["RunSequence"];
-
-			dataCreationMethod	= ConfigurationSettings.AppSettings["DataCreationMethod"];			
-		}
 
 		public void Run()
 		{
@@ -108,7 +84,7 @@ namespace AS3AP.BenchMark
 
 			log.Simple("Starting as3ap benchmark at: {0}", DateTime.Now);
 
-			if (runCreate) 
+			if (configuration.RunCreate) 
 			{
 				Console.WriteLine("Creating tables and loading data {0}.", DateTime.Now);
 				timeIt("createDataBase");
@@ -132,7 +108,7 @@ namespace AS3AP.BenchMark
 
 			testSuite.Backend.DatabaseDisconnect();			
 
-			string[] testSequence = runSequence.Split(';');
+			string[] testSequence = configuration.RunSequence.Split(';');
 
 			for (int i = 0; i < testSequence.Length; i++)
 			{
@@ -148,7 +124,7 @@ namespace AS3AP.BenchMark
 							Console.WriteLine("Running tests using {0} syntax", testType[j]);
 						
 							testSuite.CloseBackendLogger();
-							testSuite = TestSuiteFactory.GetTestSuite(testSuiteType, backendName);
+							testSuite = TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
 							testSuite.TupleCount = tupleCount;
 
 							log.Simple("\r\n\"Running tests using {0} syntax\r\n", testType[j]);
@@ -167,7 +143,7 @@ namespace AS3AP.BenchMark
 							Console.WriteLine("Starting single-user test");
 							currentTest = "Preparing single user test";
 							clocks		= DateTime.Now.Ticks;
-							singleUserTests();
+							runSingleUserTests();
 							elapsed	= new TimeSpan(clocks = (DateTime.Now.Ticks - clocks));
 			
 							log.Simple("\r\n\"Single user test\"\t{0} seconds\t({1})\r\n\r\n",
@@ -192,7 +168,7 @@ namespace AS3AP.BenchMark
 								Console.WriteLine("Starting multi-user test");
 				
 								clocks = DateTime.Now.Ticks;
-								multiUserTests(userNumber == 0 ? (int)(dbSize / 4) : userNumber);
+								runMultiUserTests(configuration.UserNumber == 0 ? (int)(dbSize / 4) : configuration.UserNumber);
 								elapsed = new TimeSpan(clocks = (DateTime.Now.Ticks - clocks));
 
 								log.Simple("\r\n\"Multi user test\"\t{0} seconds\t({1})\r\n\r\n",
@@ -212,11 +188,11 @@ namespace AS3AP.BenchMark
 		{
 			testSuite.Backend.DatabaseCreate("AS3AP");
 
-			testSuite.Backend.DataSize = dataSize;
+			testSuite.Backend.DataSize = configuration.DataSize;
 
 			testSuite.Backend.DatabaseConnect();
 			timeIt("create_tables");
-			if (dataCreationMethod == "LOAD")
+			if (configuration.DataCreationMethod == "LOAD")
 			{
 				timeIt("LoadData");
 			}
@@ -258,7 +234,7 @@ namespace AS3AP.BenchMark
 		}
 
 
-		private void singleUserTests() 
+		private void runSingleUserTests() 
 		{
 			testSuite.Backend.DatabaseConnect();
 			
@@ -313,7 +289,7 @@ namespace AS3AP.BenchMark
 		}
 
 
-		private void multiUserTests(int nInstances) 
+		private void runMultiUserTests(int nInstances) 
 		{	
 			double		fTime;
 			DateTime	startTime;
@@ -533,7 +509,7 @@ namespace AS3AP.BenchMark
 		private void ir_select()
 		{
 			DateTime	endTime	= DateTime.Now;
-			ITestSuite	test	= TestSuiteFactory.GetTestSuite(testSuiteType, backendName);
+			ITestSuite	test	= TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
 
 			test.TupleCount = testSuite.TupleCount;
 
@@ -560,7 +536,7 @@ namespace AS3AP.BenchMark
 		private void oltp_update()
 		{
 			DateTime	endTime	= DateTime.Now;
-			ITestSuite	test	= TestSuiteFactory.GetTestSuite(testSuiteType, backendName);
+			ITestSuite	test	= TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
 
 			lock (test.Backend)
 			{
@@ -622,11 +598,7 @@ namespace AS3AP.BenchMark
 
 			clocks	= DateTime.Now.Ticks - clocks;
 
-			int length = 40 - methodName.Length;
-			for (int i = 0; i < length; i++)
-			{
-				methodName = " " + methodName;
-			}
+			methodName = formatMethodName(methodName);
 
 			StringBuilder logMessage = new StringBuilder();
 
@@ -645,6 +617,17 @@ namespace AS3AP.BenchMark
 			}
 
 			log.Simple(logMessage.ToString());
+		}
+
+		private string formatMethodName(string methodName)
+		{
+			int length = 40 - methodName.Length;
+			for (int i = 0; i < length; i++)
+			{
+				methodName = " " + methodName;
+			}
+
+			return methodName;
 		}
 
 		#endregion

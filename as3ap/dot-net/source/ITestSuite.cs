@@ -26,13 +26,18 @@
 
 using System;
 using System.Data;
-using AS3AP.BenchMark.Backends;
 
 namespace AS3AP.BenchMark
 {
 	public interface ITestSuite
 	{
 		#region PROPERTIES
+
+		BenchMarkConfiguration Configuration
+		{
+			get;
+			set;
+		}
 
 		object TestResult
 		{
@@ -46,7 +51,7 @@ namespace AS3AP.BenchMark
 			set;
 		}
 
-		IBackend Backend
+		Backend Backend
 		{
 			get;
 		}

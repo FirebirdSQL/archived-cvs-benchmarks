@@ -34,7 +34,7 @@ namespace AS3AP.BenchMark
 		[STAThread]
 		static void Main(string[] args)
 		{
-			AS3AP		as3ap = new AS3AP();
+			AS3AP		as3ap = new AS3AP("as3ap.config");
 
 			as3ap.Run();
 

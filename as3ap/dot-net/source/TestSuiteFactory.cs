@@ -28,15 +28,15 @@ namespace AS3AP.BenchMark
 {
 	public class TestSuiteFactory
 	{
-		public static ITestSuite GetTestSuite(string name, string backendName)
+		public static ITestSuite GetTestSuite(string name, BenchMarkConfiguration configuration)
 		{
 			switch (name)
 			{
 				case "SQL87":
-					return new Sql87TestSuite(backendName);
+					return new Sql87TestSuite(configuration);
 
 				case "SQL92":
-					return new Sql92TestSuite(backendName);
+					return new Sql92TestSuite(configuration);
 			}
 
 			return null;

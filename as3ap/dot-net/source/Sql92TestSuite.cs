@@ -31,7 +31,7 @@ namespace AS3AP.BenchMark
 	{
 		#region CONSTRUCTORS
 
-		public Sql92TestSuite(string backendName) : base(backendName)
+		public Sql92TestSuite(BenchMarkConfiguration configuration) : base(configuration)
 		{
 		}
 

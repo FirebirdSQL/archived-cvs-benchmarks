@@ -28,8 +28,6 @@ using System.Threading;
 using System.Text;
 using System.Reflection;
 
-using AS3AP.BenchMark.Backends;
-
 namespace AS3AP.BenchMark
 {
 	public abstract class BaseTestSuite : ITestSuite
@@ -37,27 +35,34 @@ namespace AS3AP.BenchMark
 		#region FIELDS
 
 		private const string baseTableStructure =
-			"col_key     int             not null, "	+
-			"col_int     int             not null, "	+
-			"col_signed  int             not null, "	+
-			"col_float   float           not null, "	+
-			"col_double  float			 not null, "	+
-			"col_decim   numeric(18,2)   not null, "	+
-			"col_date    char(20)        not null, "	+
-			"col_code    char(10)        not null, "	+
-			"col_name    char(20)        not null, "	+
-			"col_address varchar(80)     not null";
+			"col_key     int				not null, "	+
+			"col_int     int				not null, "	+
+			"col_signed  int				not null, "	+
+			"col_float   float				not null, "	+
+			"col_double  double precision	not null, "	+
+			"col_decim   numeric(18,2)		not null, "	+
+			"col_date    char(20)			not null, "	+
+			"col_code    char(10)			not null, "	+
+			"col_name    char(20)			not null, "	+
+			"col_address varchar(80)		not null";
 
+		private BenchMarkConfiguration configuration;
 
-		private IBackend	backend;
-		private bool		doIndexes;
-		private bool		testFailed = false;
-		private object		testResult = 0;
-		private int			tupleCount = 0;
+		private Backend		backend		= new Backend();
+		private bool		doIndexes	= true;
+		private bool		testFailed	= false;
+		private object		testResult	= 0;
+		private int			tupleCount	= 0;
 
 		#endregion
 
 		#region PROPERTIES
+
+		public BenchMarkConfiguration Configuration
+		{
+			get { return configuration; }
+			set { configuration = value; }
+		}
 
 		public object TestResult
 		{
@@ -71,7 +76,7 @@ namespace AS3AP.BenchMark
 			set { testFailed = value; }
 		}
 
-		public IBackend Backend
+		public Backend Backend
 		{
 			get { return backend; }
 		}
@@ -86,14 +91,19 @@ namespace AS3AP.BenchMark
 
 		#region CONSTRUCTORS
 
-		public BaseTestSuite(string backendName)
+		public BaseTestSuite(BenchMarkConfiguration configuration)
 		{
-			Assembly aseembly = Assembly.Load("AS3AP.BenchMark.Backends");
+			this.configuration			= configuration;
 
-			this.doIndexes	= true;			
+			doIndexes					= true;
+			backend.ConnectionString	= configuration.ConnectionString;
+			backend.DataPath			= configuration.DataPath;
+			backend.DataSize			= configuration.DataSize;
+			backend.CommandClass		= configuration.CommandClass;
+			backend.ConnectionClass		= configuration.ConnectionClass;
+			backend.ParameterClass		= configuration.ParameterClass;
 
-			this.backend	= (IBackend)Activator.CreateInstance(
-											aseembly.GetType(backendName));
+			backend.LoadAssembly(configuration.ProviderAssembly);
 		}
 
 		#endregion
@@ -531,7 +541,7 @@ namespace AS3AP.BenchMark
 				try
 				{
 					backend.CreateIndexBtree("hundred_code_h"	, 
-						"hundred"		, 
+						"hundred"								, 
 						"col_code");
 				}
 				catch (Exception)
@@ -568,13 +578,13 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_hundred_key_bt() 
 		{
-			if (doIndexes) 
+			if (doIndexes && configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
 					backend.CreateIndexCluster("hundred_key_bt"	, 
-						"hundred"		, 
-						"col_key");
+												"hundred"		, 
+												"col_key");
 				}
 				catch (Exception)
 				{
@@ -588,7 +598,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_code_h() 
 		{
-			if (doIndexes) 
+			if (doIndexes && configuration.SupportsHashIndexes) 
 			{
 				try
 				{
@@ -688,7 +698,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_key_bt() 
 		{
-			if (doIndexes) 
+			if (doIndexes && configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
@@ -728,7 +738,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_name_h() 
 		{
-			if (doIndexes) 
+			if (doIndexes && configuration.SupportsHashIndexes) 
 			{
 				try
 				{
@@ -788,7 +798,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_uniques_code_h() 
 		{
-			if (doIndexes) 
+			if (doIndexes && configuration.SupportsHashIndexes) 
 			{
 				try
 				{
@@ -808,7 +818,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_uniques_key_bt() 
 		{
-			if (doIndexes) 
+			if (doIndexes && configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
@@ -828,7 +838,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_code_h() 
 		{
-			if (doIndexes) 
+			if (doIndexes && configuration.SupportsHashIndexes) 
 			{
 				try
 				{
@@ -907,7 +917,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_key_bt() 
 		{
-			if (doIndexes) 
+			if (doIndexes && configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
@@ -958,7 +968,10 @@ namespace AS3AP.BenchMark
 					backend.ExecuteStatement("drop index updates_int_bt");
 					backend.ExecuteStatement("drop index updates_double_bt");
 					backend.ExecuteStatement("drop index updates_decim_bt");
-					backend.ExecuteStatement("drop index updates_code_h");
+					if (configuration.SupportsHashIndexes)
+					{
+						backend.ExecuteStatement("drop index updates_code_h");
+					}
 					backend.TransactionCommit();
 				}
 				catch (Exception)
