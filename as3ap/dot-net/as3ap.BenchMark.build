@@ -37,9 +37,7 @@
     <target name="build-as3ap">
         <copy todir="${build.dir}">
             <fileset basedir=".\assemblys">
-                <includes name="logger.dll" />
-                <includes name="Common.Data.Helper.dll" />
-                <includes name="FirebirdSql.Data.Firebird.dll" />
+                <includes name="*.dll" />
             </fileset>
         </copy>
 
