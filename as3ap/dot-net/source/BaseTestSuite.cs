@@ -1650,98 +1650,102 @@ namespace AS3AP.BenchMark
 
 		public void CreateDatabase() 
 		{
+			TimeSpan elapsed = new TimeSpan(0, 0, 0);
+
 			this.dropDatabase();
 			this.databaseCreate();
 
 			this.DatabaseConnect();
 
-			this.runTest("create_tables");
-			this.runTest("load_data");
-			this.runTest("create_idx_uniques_key_bt");
-			this.runTest("create_idx_updates_key_bt");
-			this.runTest("create_idx_hundred_key_bt");
-			this.runTest("create_idx_tenpct_key_bt");
-			this.runTest("create_idx_tenpct_key_code_bt");
-			this.runTest("create_idx_tiny_key_bt");
-			this.runTest("create_idx_tenpct_int_bt");
-			this.runTest("create_idx_tenpct_signed_bt");
-			this.runTest("create_idx_uniques_code_h");
-			this.runTest("create_idx_tenpct_double_bt");
-			this.runTest("create_idx_updates_decim_bt");
-			this.runTest("create_idx_tenpct_float_bt");
-			this.runTest("create_idx_updates_int_bt");
-			this.runTest("create_idx_tenpct_decim_bt");
-			this.runTest("create_idx_hundred_code_h");
-			this.runTest("create_idx_tenpct_name_h");
-			this.runTest("create_idx_updates_code_h");
-			this.runTest("create_idx_tenpct_code_h");
-			this.runTest("create_idx_updates_double_bt");
-			this.runTest("create_idx_hundred_foreign");
+			elapsed += this.runTest("create_tables");
+			elapsed += this.runTest("load_data");
+			elapsed += this.runTest("create_idx_uniques_key_bt");
+			elapsed += this.runTest("create_idx_updates_key_bt");
+			elapsed += this.runTest("create_idx_hundred_key_bt");
+			elapsed += this.runTest("create_idx_tenpct_key_bt");
+			elapsed += this.runTest("create_idx_tenpct_key_code_bt");
+			elapsed += this.runTest("create_idx_tiny_key_bt");
+			elapsed += this.runTest("create_idx_tenpct_int_bt");
+			elapsed += this.runTest("create_idx_tenpct_signed_bt");
+			elapsed += this.runTest("create_idx_uniques_code_h");
+			elapsed += this.runTest("create_idx_tenpct_double_bt");
+			elapsed += this.runTest("create_idx_updates_decim_bt");
+			elapsed += this.runTest("create_idx_tenpct_float_bt");
+			elapsed += this.runTest("create_idx_updates_int_bt");
+			elapsed += this.runTest("create_idx_tenpct_decim_bt");
+			elapsed += this.runTest("create_idx_hundred_code_h");
+			elapsed += this.runTest("create_idx_tenpct_name_h");
+			elapsed += this.runTest("create_idx_updates_code_h");
+			elapsed += this.runTest("create_idx_tenpct_code_h");
+			elapsed += this.runTest("create_idx_updates_double_bt");
+			elapsed += this.runTest("create_idx_hundred_foreign");
 			
 			this.DatabaseDisconnect();
+
+			if (this.log != null) 
+			{
+				this.log.Simple(
+					"\r\nDatabase creation time ( {0} )\r\n\r\n",
+					elapsed.ToString());
+			}
 		}
 
 		public void SingleUserTests() 
 		{
-			long		clocks;
-			TimeSpan	elapsed;
+			TimeSpan elapsed = new TimeSpan(0, 0, 0);
 
 			this.DatabaseConnect();
-			
-			clocks = System.DateTime.Now.Ticks;
-
-			this.runTest("sel_1_cl");
-			this.runTest("join_3_cl");
-			this.runTest("sel_100_ncl");
-			this.runTest("table_scan");
-			this.runTest("agg_func");
-			this.runTest("agg_scal");
-			this.runTest("sel_100_cl");
-			this.runTest("join_3_ncl");
-			this.runTest("sel_10pct_ncl");
-			this.runTest("agg_simple_report");
-			this.runTest("agg_info_retrieval");
-			this.runTest("agg_create_view");
-			this.runTest("agg_subtotal_report");
-			this.runTest("agg_total_report");
-			this.runTest("join_2_cl");
-			this.runTest("join_2");
-			this.runTest("sel_variable_select_low");
-			this.runTest("sel_variable_select_high");
-			this.runTest("join_4_cl");
-			this.runTest("proj_100");
-			this.runTest("join_4_ncl");
-			this.runTest("proj_10pct");
-			this.runTest("sel_1_ncl");
-			this.runTest("join_2_ncl");
-			this.runTest("integrity_test");
-			this.runTest("drop_updates_keys");
-			this.runTest("bulk_save");
-			this.runTest("bulk_modify");
-			this.runTest("upd_append_duplicate");
-			this.runTest("upd_remove_duplicate");
-			this.runTest("upd_app_t_mid");
-			this.runTest("upd_mod_t_mid");
-			this.runTest("upd_del_t_mid");
-			this.runTest("upd_app_t_end");
-			this.runTest("upd_mod_t_end");
-			this.runTest("upd_del_t_end");
-			this.runTest("create_idx_updates_code_h");
-			this.runTest("upd_app_t_mid");
-			this.runTest("upd_mod_t_cod");
-			this.runTest("upd_del_t_mid");
-			this.runTest("create_idx_updates_int_bt");
-			this.runTest("upd_app_t_mid");
-			this.runTest("upd_mod_t_int");
-			this.runTest("upd_del_t_mid");
-			this.runTest("bulk_append");
-			this.runTest("bulk_delete");
-
-			elapsed = new TimeSpan(DateTime.Now.Ticks - clocks);
+						
+			elapsed += this.runTest("sel_1_cl");
+			elapsed += this.runTest("join_3_cl");
+			elapsed += this.runTest("sel_100_ncl");
+			elapsed += this.runTest("table_scan");
+			elapsed += this.runTest("agg_func");
+			elapsed += this.runTest("agg_scal");
+			elapsed += this.runTest("sel_100_cl");
+			elapsed += this.runTest("join_3_ncl");
+			elapsed += this.runTest("sel_10pct_ncl");
+			elapsed += this.runTest("agg_simple_report");
+			elapsed += this.runTest("agg_info_retrieval");
+			elapsed += this.runTest("agg_create_view");
+			elapsed += this.runTest("agg_subtotal_report");
+			elapsed += this.runTest("agg_total_report");
+			elapsed += this.runTest("join_2_cl");
+			elapsed += this.runTest("join_2");
+			elapsed += this.runTest("sel_variable_select_low");
+			elapsed += this.runTest("sel_variable_select_high");
+			elapsed += this.runTest("join_4_cl");
+			elapsed += this.runTest("proj_100");
+			elapsed += this.runTest("join_4_ncl");
+			elapsed += this.runTest("proj_10pct");
+			elapsed += this.runTest("sel_1_ncl");
+			elapsed += this.runTest("join_2_ncl");
+			elapsed += this.runTest("integrity_test");
+			elapsed += this.runTest("drop_updates_keys");
+			elapsed += this.runTest("bulk_save");
+			elapsed += this.runTest("bulk_modify");
+			elapsed += this.runTest("upd_append_duplicate");
+			elapsed += this.runTest("upd_remove_duplicate");
+			elapsed += this.runTest("upd_app_t_mid");
+			elapsed += this.runTest("upd_mod_t_mid");
+			elapsed += this.runTest("upd_del_t_mid");
+			elapsed += this.runTest("upd_app_t_end");
+			elapsed += this.runTest("upd_mod_t_end");
+			elapsed += this.runTest("upd_del_t_end");
+			elapsed += this.runTest("create_idx_updates_code_h");
+			elapsed += this.runTest("upd_app_t_mid");
+			elapsed += this.runTest("upd_mod_t_cod");
+			elapsed += this.runTest("upd_del_t_mid");
+			elapsed += this.runTest("create_idx_updates_int_bt");
+			elapsed += this.runTest("upd_app_t_mid");
+			elapsed += this.runTest("upd_mod_t_int");
+			elapsed += this.runTest("upd_del_t_mid");
+			elapsed += this.runTest("bulk_append");
+			elapsed += this.runTest("bulk_delete");
 
 			if (this.log != null) 
 			{
-				log.Simple(
+				this.log.Simple(
 					"\r\nSingle user test ( {0} )\r\n\r\n",
 					elapsed.ToString());
 			}
@@ -1751,8 +1755,8 @@ namespace AS3AP.BenchMark
 
 		public void MultiUserTests(int nInstances) 
 		{	
-			TimeSpan	fTime;
-			long		sTime;			
+			TimeSpan fTime;
+			DateTime sTime;
 
 			this.userProcess = new Thread[nInstances];
 			
@@ -1773,7 +1777,10 @@ namespace AS3AP.BenchMark
 			{
 				this.Progress(
 					this, 
-					new ProgressMessageEventArgs("Run IR (Mix 1) test for 15 minutes (" + DateTime.Now.ToString() + ")."));
+					new ProgressMessageEventArgs(
+						"Run IR (Mix 1) test for {0} minutes ({1})",
+						this.timeToRun,
+						DateTime.Now.ToString()));
 			}
 
 			this.iters		= 0;
@@ -1799,10 +1806,13 @@ namespace AS3AP.BenchMark
 			{
 				this.Progress(
 					this, 
-					new ProgressMessageEventArgs("Run Measure throughput in IR test for five minutes (" + DateTime.Now.ToString() + ")."));
+					new ProgressMessageEventArgs(
+						"Run Measure throughput in IR test for {0} minutes ({1}).",
+						this.timeToRun,
+						DateTime.Now.ToString()));
 			}
 			
-			sTime			= DateTime.Now.Ticks;
+			sTime			= DateTime.Now;
 			this.iters		= 0;			
 			this.timeToRun	= 5;
 						
@@ -1821,12 +1831,12 @@ namespace AS3AP.BenchMark
 				this.userProcess[i].Join();
 			}
 
-			fTime = new TimeSpan(DateTime.Now.Ticks - sTime);
+			fTime = DateTime.Now - sTime;
+
 			if (this.log != null)
 			{
 				this.log.Simple(
-					"Mixed IR (tup/sec)\t{0}"			+
-					"\treturned in {1} minutes"			,
+					"Mixed IR (tup/sec)\t{0}\t returned in {1} minutes",
 					Math.Round((double)iters/fTime.TotalSeconds, 4)	, 
 					fTime.ToString());
 			}
@@ -1839,10 +1849,12 @@ namespace AS3AP.BenchMark
 			{
 				this.Progress(
 					this, 
-					new ProgressMessageEventArgs("Run Mixed Workload IR test (Mix 3) (" + DateTime.Now.ToString() + ")."));
+					new ProgressMessageEventArgs(
+						"Run Mixed Workload IR test (Mix 3) ({0}).",
+						DateTime.Now.ToString()));
 			}
 			
-			this.userProcess[0]		= new Thread(new ThreadStart(this.cross_section_tests));
+			this.userProcess[0]	= new Thread(new ThreadStart(this.cross_section_tests));
 
 			this.userProcess[0].Name = "User " + 0.ToString();
 			this.userProcess[0].Start();
@@ -1871,7 +1883,9 @@ namespace AS3AP.BenchMark
 			{
 				Progress(
 					this, 
-					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
+					new ProgressMessageEventArgs(
+						"Check correctness of the sequential and random bulk updates ({0}).",
+						DateTime.Now.ToString()));
 			}
 			
 			this.DatabaseConnect();
@@ -1894,7 +1908,9 @@ namespace AS3AP.BenchMark
 			{
 				this.Progress(
 					this, 
-					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
+					new ProgressMessageEventArgs(
+						"Check correctness of the sequential and random bulk updates ({0}).",
+						DateTime.Now.ToString()));
 			}
 			
 			this.DatabaseConnect();
@@ -1912,10 +1928,13 @@ namespace AS3AP.BenchMark
 			{
 				this.Progress(
 					this, 
-					new ProgressMessageEventArgs("Run OLTP test for 15 minutes (" + DateTime.Now.ToString() + ")."));
+					new ProgressMessageEventArgs(
+						"Run OLTP test for {0} minutes ({1})",
+						this.timeToRun,
+						DateTime.Now.ToString()));
 			}
 			
-			this.timeToRun = 15;						
+			this.timeToRun = 15;
 			for (int i = 0; i < this.userProcess.Length; i++) 
 			{
 				this.userProcess[i] = new Thread(new ThreadStart(oltp_update));
@@ -1936,10 +1955,13 @@ namespace AS3AP.BenchMark
 			{
 				this.Progress(
 					this, 
-					new ProgressMessageEventArgs("Run Measure throughput in IR test for five minutes (" + DateTime.Now.ToString() + ")."));
+					new ProgressMessageEventArgs(
+						"Run Measure throughput in IR test for {0} minutes ({1}).",
+						this.timeToRun,
+						DateTime.Now.ToString()));
 			}
 
-			sTime			= DateTime.Now.Ticks;
+			sTime			= DateTime.Now;
 			this.iters		= 0;
 			this.timeToRun	= 5;
 			
@@ -1958,14 +1980,13 @@ namespace AS3AP.BenchMark
 				this.userProcess[i].Join();
 			}
 						
-			fTime = new TimeSpan(DateTime.Now.Ticks - sTime);
+			fTime = DateTime.Now - sTime;
 			
 			if (this.log != null)
 			{
 				this.log.Simple(
-					"Mixed OLTP (tup/sec)\t{0}"			+
-					"\treturned in {1} minutes\n"		,
-					Math.Round((double)iters/fTime.TotalSeconds, 4)	, 
+					"Mixed OLTP (tup/sec)\t{0}\t returned in {1} minutes\n",
+					Math.Round((double)iters/fTime.TotalSeconds, 4), 
 					fTime.ToString());
 			}
 
@@ -1977,7 +1998,9 @@ namespace AS3AP.BenchMark
 			{
 				this.Progress(
 					this, 
-					new ProgressMessageEventArgs("Run Mixed Workload OLTP test (Mix 4) (" + DateTime.Now.ToString() + ")."));
+					new ProgressMessageEventArgs(
+						"Run Mixed Workload OLTP test (Mix 4) ({0}).",
+						DateTime.Now.ToString()));
 			}
 						
 			this.userProcess[0] = new Thread(new ThreadStart(this.cross_section_tests));
@@ -2011,7 +2034,9 @@ namespace AS3AP.BenchMark
 			{
 				this.Progress(
 					this, 
-					new ProgressMessageEventArgs("Check correctness of the sequential and random bulk updates (" + DateTime.Now.ToString() + ")."));
+					new ProgressMessageEventArgs(
+						"Check correctness of the sequential and random bulk updates ({0}).",
+						DateTime.Now.ToString()));
 			}
 			
 			this.DatabaseConnect();
@@ -2029,12 +2054,11 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				long startTime;
-				long endTime;
+				DateTime startTime;
 
 				this.DatabaseConnect();
 
-				startTime = DateTime.Now.Ticks;
+				startTime = DateTime.Now;
 
 				this.runTest("o_mode_tiny");
 				this.runTest("o_mode_100k");
@@ -2049,14 +2073,13 @@ namespace AS3AP.BenchMark
 				this.runTest("mu_unmod_100_seq");
 				this.runTest("mu_unmod_100_rand");
 
-				endTime = DateTime.Now.Ticks;
-				TimeSpan elapsed = new TimeSpan(endTime - startTime);
+				TimeSpan elapsed = startTime - DateTime.Now;
 
 				this.DatabaseDisconnect();
 
 				if (this.log != null)
 				{
-					this.log.Simple("CrossSectionTests \t( {1} )", elapsed.ToString());
+					this.log.Simple("CrossSectionTests \t( {0} )", elapsed.ToString());
 				}
 			}
 			catch (ThreadAbortException)
@@ -2072,12 +2095,11 @@ namespace AS3AP.BenchMark
 					testSuiteName, configuration);
 
 				testSuite.DatabaseConnect();
-			
-				DateTime endTime = DateTime.Now;
-
+							
 				if (timeToRun > 0)
 				{
-					endTime = DateTime.Now.AddMinutes(timeToRun);
+					DateTime endTime = DateTime.Now.AddMinutes(timeToRun);
+
 					while (endTime >= DateTime.Now)
 					{					
 						testSuite.mu_ir_select();
@@ -2105,11 +2127,10 @@ namespace AS3AP.BenchMark
 			
 				testSuite.DatabaseConnect();
 			
-				DateTime endTime = DateTime.Now;
-
 				if (timeToRun > 0)
 				{
-					endTime = DateTime.Now.AddMinutes(timeToRun);
+					DateTime endTime = DateTime.Now.AddMinutes(timeToRun);
+
 					while (endTime >= DateTime.Now)
 					{
 						testSuite.mu_oltp_update();
@@ -2127,11 +2148,11 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		private void runTest(string testName)
+		private TimeSpan runTest(string testName)
 		{
 			Type 		type	= null;
 			MethodInfo	method	= null;
-			long		clocks	= 0;
+			DateTime	stime	= DateTime.Now;
 
 			this.testFailed	= false;
 
@@ -2146,15 +2167,13 @@ namespace AS3AP.BenchMark
 			// Reset this.testFailed property value
 			this.testFailed = false;
 
-			clocks = DateTime.Now.Ticks;
+			stime = DateTime.Now;
 
 			method.Invoke(this, null);
 
-			clocks	= DateTime.Now.Ticks - clocks;
+			TimeSpan elapsed = DateTime.Now - stime;
 
 			testName = formatTestName(testName);
-
-			TimeSpan elapsed = new TimeSpan(clocks);				
 
 			if (this.Result != null)
 			{
@@ -2179,12 +2198,12 @@ namespace AS3AP.BenchMark
 					this.testResult);
 			}
 
-			if (log != null)
+			if (this.log != null)
 			{
-				log.Simple(logMessage.ToString());
+				this.log.Simple(logMessage.ToString());
 			}
 
-			elapsed = new TimeSpan(DateTime.Now.Ticks - clocks);
+			return elapsed;
 		}
 
 		private string formatTestName(string methodName)
@@ -2370,9 +2389,9 @@ namespace AS3AP.BenchMark
 			}
 			catch(Exception ex)
 			{
-				if (log != null)
+				if (this.log != null)
 				{
-					log.Error("foreign key error {0}", ex.Message);
+					this.log.Error("foreign key error {0}", ex.Message);
 				}
 				throw ex;
 			}
@@ -2400,9 +2419,9 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception ex)
 			{
-				if (log != null)
+				if (this.log != null)
 				{
-					log.Error("error create table {0}", ex.Message);
+					this.log.Error("error create table {0}", ex.Message);
 				}
 				throw ex;
 			}
@@ -2438,9 +2457,9 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception ex)
 			{
-				if (log != null)
+				if (this.log != null)
 				{
-					log.Error("disconnect error {0}", ex.Message);
+					this.log.Error("disconnect error {0}", ex.Message);
 				}
 				throw ex;
 			}
@@ -2640,9 +2659,9 @@ namespace AS3AP.BenchMark
 			}
 			catch(Exception ex)
 			{
-				if (log != null)
+				if (this.log != null)
 				{
-					log.Error("this.beginTransaction failed {0}", ex.Message);
+					this.log.Error("this.beginTransaction failed {0}", ex.Message);
 				}
 				throw ex;
 			}
@@ -2723,9 +2742,9 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception ex)
 			{
-				if (log != null) 
+				if (this.log != null) 
 				{
-					log.Error("load failed {0}", ex.Message);
+					this.log.Error("load failed {0}", ex.Message);
 				}
 				
 				throw ex;
@@ -2857,7 +2876,8 @@ namespace AS3AP.BenchMark
 			command		= this.CreateCommand(commandText.ToString(), transaction);
 
 			/* Add parameters	*/
-			IDbDataParameter p = dataHelper.CreateParameter("@col_key", DbType.Int32, 4, "col_key");
+			IDbDataParameter p = this.dataHelper.CreateParameter("@col_key", DbType.Int32, 4, "col_key");
+
 			command.Parameters.Add(p);
 
 			/* Prepare command execution	*/
@@ -2880,7 +2900,7 @@ namespace AS3AP.BenchMark
 		protected IDbCommand CreateCommand(
 			string commandText, IDbTransaction transaction)
 		{
-			IDbCommand command = connection.CreateCommand();
+			IDbCommand command = this.connection.CreateCommand();
 
 			command.CommandText = commandText;
 			command.Transaction	= transaction;

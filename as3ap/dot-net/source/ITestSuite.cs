@@ -48,33 +48,37 @@ namespace AS3AP.BenchMark
 
 		public string TestName
 		{
-			get { return testName; }
-			set { testName = value; }
+			get { return this.testName; }
+			set { this.testName = value; }
 		}
 
 		public object TestResult
 		{
-			get { return testResult; }
-			set { testResult = value; }
+			get { return this.testResult; }
+			set { this.testResult = value; }
 		}
 
 		public TimeSpan TestTime
 		{
-			get { return testTime; }
-			set { testTime = value; }
+			get { return this.testTime; }
+			set { this.testTime = value; }
 		}
 
 		public bool TestFailed
 		{
-			get { return testFailed; }
-			set { testFailed = value; }
+			get { return this.testFailed; }
+			set { this.testFailed = value; }
 		}
 
 		#endregion
 
 		#region Constructors
 
-		public TestResultEventArgs(string testName, object testResult, TimeSpan testTime, bool testFailed)
+		public TestResultEventArgs(
+			string		testName, 
+			object		testResult, 
+			TimeSpan	testTime, 
+			bool		testFailed)
 		{
 			this.testName	= testName;
 			this.testResult = testResult;
@@ -97,8 +101,8 @@ namespace AS3AP.BenchMark
 
 		public string Message
 		{
-			get { return message; }
-			set { message = value; }
+			get { return this.message; }
+			set { this.message = value; }
 		}
 
 		#endregion
@@ -108,6 +112,11 @@ namespace AS3AP.BenchMark
 		public ProgressMessageEventArgs(string message)
 		{
 			this.message = message;
+		}
+
+		public ProgressMessageEventArgs(string format, params object[] args)
+		{
+			this.message = String.Format(format, args);
 		}
 
 		#endregion

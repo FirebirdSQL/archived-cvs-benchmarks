@@ -199,8 +199,16 @@ namespace AS3AP.BenchMark
 
 							case "SINGLEUSER":
 							{
-								// Create database
-								this.createDatabase();
+								if (this.configuration.RunCreate)
+								{
+									this.createDatabase();
+								}
+								else
+								{
+									this.testSuite.DatabaseConnect();
+									this.testSuite.TupleCount = this.testSuite.CountRows("updates");
+									this.testSuite.DatabaseDisconnect();
+								}
 
 								if (this.ProgressMessage != null)
 								{
@@ -220,8 +228,16 @@ namespace AS3AP.BenchMark
 
 							case "MULTIUSER":
 							{
-								// Create database
-								this.createDatabase();
+								if (this.configuration.RunCreate)
+								{
+									this.createDatabase();
+								}
+								else
+								{
+									this.testSuite.DatabaseConnect();
+									this.testSuite.TupleCount = this.testSuite.CountRows("updates");
+									this.testSuite.DatabaseDisconnect();
+								}
 
 								/* Start of the multi-user test */
 								this.currentTest = "Preparing multi-user test";
