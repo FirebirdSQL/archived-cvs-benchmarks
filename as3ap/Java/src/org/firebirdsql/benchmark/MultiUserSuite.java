@@ -32,9 +32,19 @@ import junit.framework.TestSuite;
 public class MultiUserSuite extends BenchmarkSuite {
     
     public static final int KEY_RANGE = 1000 * 1000 * 1000;
-
+    
+    private BenchmarkListener listener;
+    
+    public MultiUserSuite(BenchmarkListener listener) {
+        this.listener = listener;
+    }
+    
+    public BenchmarkListener getListener() {
+        return listener;
+    }
+    
     protected int getUserCount() {
-        return 10;
+        return 2;
     }
     
     /** 
@@ -44,7 +54,11 @@ public class MultiUserSuite extends BenchmarkSuite {
         addTest(new Suite("testMultiUser"));
     }
     
-    private class Suite extends TestCase {
+    public boolean isCreateDatabase() {
+        return false;
+    }
+    
+    public class Suite extends TestCase {
         public Suite(String name) {
             super(name);
         }
@@ -52,6 +66,7 @@ public class MultiUserSuite extends BenchmarkSuite {
         public void testMultiUser() throws Exception {
             
             TestResult testResult = new TestResult();
+            testResult.addListener(listener);
             
             // Step 1
             
@@ -142,4 +157,16 @@ public class MultiUserSuite extends BenchmarkSuite {
         
         return suite;
     }
+    
+    /**
+     * Run this benchmark suite.
+     * 
+     * @param args arguments to this program.
+     */
+    public static void main(String[] args) {
+        BenchmarkListener listener = new BenchmarkListener();
+        MultiUserSuite suite = new MultiUserSuite(listener);
+        TestRunner.run(suite.suite(), suite.listener);
+        listener.printStatistics(System.out);
+    }    
 }

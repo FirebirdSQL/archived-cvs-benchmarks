@@ -98,10 +98,10 @@ public class BenchmarkListener implements TestListener {
                 message = testTime.toString() + " ms";
             else
             if (failure != null)
-                message = "FAILED";
+                message = "FAILED : " + failure.toString();
             else
             if (error != null)
-                message = "ERROR";
+                message = "ERROR : " + error.toString();
             else
                 message = "UNKNOWN";
                 
