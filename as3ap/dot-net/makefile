@@ -10,7 +10,7 @@ COPY = cp
 LD_FLAGS = -reference:System.dll -reference:System.Data.dll -reference:System.Xml.dll
 
 cp-dll:
-	$(COPY) /home/linux/desarrollo/Net-Provider/build/FirebirdSql.Data.Firebird.dll ./
+	$(COPY) ../../Net-Provider/build/FirebirdSql.Data.Firebird.dll ./
 
 AS3AP.Logger.dll:	
 	$(MCS) -target:library -out:AS3AP.Logger.dll ${LD_FLAGS} -recurse:./Logger/*.cs
