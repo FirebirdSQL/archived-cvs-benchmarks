@@ -19,6 +19,7 @@
 
 package org.firebirdsql.benchmark;
 
+
 /**
  * Background test cases. Each tests executes corresponding statement in an
  * endless loop until it is stopped. There's small delay between subsequent
@@ -35,8 +36,6 @@ public class BackgroundMultiUserTest extends MultiUserTest {
     protected void setUp() throws Exception {
         super.setUp();
         
-        getConnection().setAutoCommit(true);
-        
         stopped = false;
     }
 
@@ -52,8 +51,17 @@ public class BackgroundMultiUserTest extends MultiUserTest {
     }
         
     public void testOltpUpdate() throws Exception {
+        long counter = 0;
+        
         while(!stopped) {
             doOltpUpdate();
+            
+            counter++;
+            
+            if (counter % getDatabaseManager().getConfig().getOltpCommitPeriod() == 0) {
+                if (!getConnection().getAutoCommit())
+                    getConnection().commit();
+            }
             
             int sleepDuration = getDatabaseManager().getConfig().getSleepDuration();
             if (sleepDuration > 0)
@@ -66,8 +74,17 @@ public class BackgroundMultiUserTest extends MultiUserTest {
     }
 
     public void testIrSelect() throws Exception {
+        long counter = 0;
+        
         while(!stopped) {
             doIrSelect();
+            
+            counter++;
+            
+            if (counter % getDatabaseManager().getConfig().getIrCommitPeriod() == 0) {
+                if (!getConnection().getAutoCommit())
+                    getConnection().commit();
+            }
             
             int sleepDuration = getDatabaseManager().getConfig().getSleepDuration();
             if (sleepDuration > 0)

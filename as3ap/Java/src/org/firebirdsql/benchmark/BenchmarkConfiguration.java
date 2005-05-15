@@ -65,6 +65,9 @@ public class BenchmarkConfiguration {
     
     public static final String FIXTURE_CLASS_NAME = "fixtureClassName";
     
+    public static final String OLTP_COMMIT_PERIOD = "oltpCommitPeriod";
+    public static final String IR_COMMIT_PERIOD = "irCommitPeriod";
+    
     public static final String CUSTOM_PROPERTY = "custom";
     
     private static final Properties RES = new Properties();
@@ -218,6 +221,14 @@ public class BenchmarkConfiguration {
     
     public int getSleepDuration() {
         return getIntProperty(SLEEP_DURATION, 0);
+    }
+    
+    public int getOltpCommitPeriod() {
+        return getIntProperty(OLTP_COMMIT_PERIOD, 1000);
+    }
+    
+    public int getIrCommitPeriod() {
+        return getIntProperty(IR_COMMIT_PERIOD, 1000);
     }
     
     public String getFixtureClassName() {
