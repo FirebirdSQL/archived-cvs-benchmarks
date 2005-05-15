@@ -23,6 +23,7 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import org.firebirdsql.jdbc.FirebirdConnection;
 import org.firebirdsql.pool.BasicAbstractConnectionPool;
 import org.firebirdsql.pool.FBConnectionPoolDataSource;
 import org.firebirdsql.pool.SimpleDataSource;
@@ -65,6 +66,7 @@ public class FirebirdDatabaseManager extends BenchmarkDatabaseManager {
         FBConnectionPoolDataSource pool = new FBConnectionPoolDataSource();
 
         pool.setMaxPoolSize(getConfig().getMaxConnections());
+        pool.setBlockingTimeout(1);
 
         pool.setDatabase(getConfig().getCustomProperty("firebird.databasePath"));
         pool.setUserName(getConfig().getUserName());
@@ -109,7 +111,7 @@ public class FirebirdDatabaseManager extends BenchmarkDatabaseManager {
     }
 
     public Connection getConnection() throws SQLException {
-        Connection connection = dataSource.getConnection();
+        FirebirdConnection connection = (FirebirdConnection)dataSource.getConnection();
         setUp(connection);
         return connection;
     }
