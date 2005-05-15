@@ -59,7 +59,7 @@ public abstract class BenchmarkSuite extends TestSuite {
         TestSetup setup = new TestSetup(this) {
             
             protected void setUp() throws Exception {
-                fixture = createFixture(databaseManager);
+                fixture = createFixture();
                 fixture.setUp(isCreateDatabase());
 
                 databaseManager = createDatabaseManager();
@@ -75,7 +75,7 @@ public abstract class BenchmarkSuite extends TestSuite {
         return setup;
     }
     
-    public BenchmarkFixture createFixture(BenchmarkDatabaseManager databaseManager) 
+    public BenchmarkFixture createFixture() 
         throws ClassNotFoundException, NoSuchMethodException, 
         InvocationTargetException, InstantiationException, IllegalAccessException 
     {
