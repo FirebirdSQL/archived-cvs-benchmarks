@@ -21,6 +21,7 @@ package org.firebirdsql.benchmark;
 import java.io.File;
 import java.sql.SQLException;
 
+import org.firebirdsql.gds.impl.GDSType;
 import org.firebirdsql.jdbc.FBSQLException;
 import org.firebirdsql.management.FBManager;
 
@@ -48,7 +49,9 @@ public class FirebirdFixture extends BenchmarkFixture {
     public void setUp(boolean createDatabase) throws SQLException {
         
         if (createDatabase) {
-            FBManager manager = new FBManager();
+            FBManager manager = new FBManager(GDSType.getType(
+                    getConfig().getCustomProperty("firebird.type")));
+            
             manager.setForceCreate(true);
             
             try {
