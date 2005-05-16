@@ -266,7 +266,7 @@ public abstract class BenchmarkFixture {
                 if (rowCount != 0 && rowCount % 1000 == 0)
                     System.out.println("Inserted " + rowCount + " rows");
 
-                stmt.executeUpdate();
+                stmt.execute();
                 rowCount++;
 
             }

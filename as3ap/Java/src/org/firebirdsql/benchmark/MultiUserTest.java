@@ -143,12 +143,12 @@ public abstract class MultiUserTest extends BenchmarkTest {
                 
                 setParams(stmt, params);
                 
-                stmt.executeUpdate();
+                stmt.execute();
             } else {
                 Statement stmt = getConnection().createStatement();
                 statements.add(stmt);
                 
-                stmt.executeUpdate(sql);
+                stmt.execute(sql);
             }
         } catch(SQLException ex) {
             
