@@ -1,3 +1,139 @@
+2005-05-16	rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/FirebirdFixture.java 1.3:
+		switched to the new constructor taking a String type (available 
+		in HEAD and in Branch_1_5)
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkFixture.java 1.11:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserTest.java 1.10:
+		replaced executeUpdate() with execute()
+
+2005-05-15	rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/FirebirdFixture.java 1.2:
+		added code to respect connection type when creating manager
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkSuite.java 1.11:
+		changed the method signature
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BackgroundMultiUserTest.java 1.5:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkConfiguration.java 1.8:
+		added OLTP and IR test commit periods
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/FirebirdDatabaseManager.java 1.5:
+		added a blocking timeout for connection pool
+
+2004-11-09	rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/AggregateTest.java 1.3:
+		fixed whitespaces after table names
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkConfiguration.java 1.7:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDDL.java 1.9:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDatabaseManager.java 1.12:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkFixture.java 1.10:
+	* as3ap/Java/src/org/firebirdsql/benchmark/DaffodilDbFixture.java 1.1:
+	* as3ap/Java/src/org/firebirdsql/benchmark/JdbcFixture.java 1.1:
+	* as3ap/Java/src/org/firebirdsql/benchmark/SingleUserSuite.java 1.5:
+	* as3ap/Java/src/org/firebirdsql/benchmark/UpdateTest.java 1.3:
+	* as3ap/Java/src/org/firebirdsql/benchmark/benchmarkSuite.properties 1.9:
+		added support for DaffodilDB
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/FirebirdDatabaseManager.java 1.4:
+	* as3ap/Java/src/org/firebirdsql/benchmark/JdbcDatabaseManager.java 1.2:
+		fixed deprecated warning
+
+2004-10-09	rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkFixture.java 1.9:
+	* as3ap/Java/src/org/firebirdsql/benchmark/LoadTest.java 1.6:
+	* as3ap/Java/src/org/firebirdsql/benchmark/benchmarkSuite.properties 1.8:
+		enabled "recreate tables" feature
+
+2004-10-02	rrokytskyy
+	* as3ap/Java/src/org/firebirdsql/benchmark/FirebirdDatabaseManager.java 1.3:
+	* as3ap/Java/src/org/firebirdsql/benchmark/benchmarkSuite.properties 1.7:
+		added TPB mapping
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkConfiguration.java 1.6:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDatabaseManager.java 1.10:
+		added txIsolation parameter
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDatabaseManager.java 1.11:
+		fixed calling commit for auto-commit connections
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/BackgroundMultiUserTest.java 1.4:
+		fixed transaction boundaries for update tests
+
+2004-08-12	carlosga_fb
+	* as3ap/dot-net/CHANGELOG.txt 1.54:
+	* as3ap/dot-net/source/GUI/As3apGui.cs 1.16:
+	* as3ap/dot-net/source/ITestSuite.cs 1.17:
+	* as3ap/dot-net/source/Main.cs 1.7:
+		2004-08-12 Carlos Guzmán Álvarez  <carlosga@telefonica.net>
+		
+			* source/GUI/As3ApGui.cs:
+		
+				- Improved UI threading.
+		
+			* source/ITestSuite.cs:
+		
+				- Minor changes.
+		
+			* source/Main.cs:
+		
+				- Added some .NET 2.0 configuration for the GUI version.
+
+2004-05-13	rrokytskyy
+	* as3ap/Java/build.sh 1.2:
+		fixed CRLF for Linux
+
+	* as3ap/Java/build.xml 1.2:
+		added targets to run suite
+
+	* as3ap/Java/src/org/firebirdsql/benchmark/FirebirdDatabaseManager.java 1.2:
+	* as3ap/Java/src/org/firebirdsql/benchmark/benchmarkSuite.properties 1.6:
+		added possibility to specify type of driver
+
+	* as3ap/Java/lib/ant.jar 1.1:
+	* as3ap/Java/lib/cpptasks.jar 1.1:
+	* as3ap/Java/lib/firebirdsql-full.jar 1.1:
+	* as3ap/Java/lib/junit.jar 1.1:
+	* as3ap/Java/lib/optional.jar 1.1:
+	* as3ap/Java/lib/xalan.jar 1.1:
+	* as3ap/Java/lib/xerces.jar 1.1:
+	* as3ap/Java/lib/xml-apis.jar 1.1:
+		added jars needed for compilation
+
+	* as3ap/Java/bin/ant 1.1:
+	* as3ap/Java/bin/ant.bat 1.1:
+	* as3ap/Java/bin/antRun 1.1:
+	* as3ap/Java/bin/antRun.bat 1.1:
+	* as3ap/Java/bin/lcp.bat 1.1:
+	* as3ap/Java/bin/runant.pl 1.1:
+	* as3ap/Java/bin/runant.py 1.1:
+		added ant scripts
+
+	* as3ap/Java/build.xml 1.3:
+		fixed issue with copying .properties files
+
+	* as3ap/Java/build.bat 1.1:
+	* as3ap/Java/build.sh 1.1:
+	* as3ap/Java/build.xml 1.1:
+	* as3ap/Java/src/org/firebirdsql/benchmark/ActiveBenchmarkSuite.java 1.5:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BackgroundMultiUserTest.java 1.3:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkConfiguration.java 1.5:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkDatabaseManager.java 1.9:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkFixture.java 1.8:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkSuite.java 1.10:
+	* as3ap/Java/src/org/firebirdsql/benchmark/BenchmarkTest.java 1.6:
+	* as3ap/Java/src/org/firebirdsql/benchmark/FirebirdDatabaseManager.java 1.1:
+	* as3ap/Java/src/org/firebirdsql/benchmark/FirebirdFixture.java 1.1:
+	* as3ap/Java/src/org/firebirdsql/benchmark/HSQLDBFixture.java 1.1:
+	* as3ap/Java/src/org/firebirdsql/benchmark/JdbcDatabaseManager.java 1.1:
+	* as3ap/Java/src/org/firebirdsql/benchmark/LoadDataSuite.java 1.2:
+	* as3ap/Java/src/org/firebirdsql/benchmark/MultiUserSuite.java 1.12:
+	* as3ap/Java/src/org/firebirdsql/benchmark/SingleUserSuite.java 1.4:
+	* as3ap/Java/src/org/firebirdsql/benchmark/UpdateTest.java 1.2:
+	* as3ap/Java/src/org/firebirdsql/benchmark/benchmarkSuite.properties 1.5:
+		big refactoring to make it more generic
+
 2004-04-20	carlosga_fb
 	* as3ap/dot-net/source/BaseTestSuite.cs 1.37:
 		Minor changes
