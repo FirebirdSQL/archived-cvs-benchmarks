@@ -18,46 +18,28 @@
 //
 
 using System;
-using System.IO;
-using System.Data;
 using System.Collections;
+using System.Configuration;
+using System.Data;
+using System.Data.Common;
+using System.IO;
 using System.Threading;
 using System.Text;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-using Common.Data.Helper;
-
 namespace AS3AP.BenchMark
 {
-	#region Enumerations
-
-	public enum IndexType
-	{
-		Btree,
-		Clustered,
-		Hash
-	}
-
-	#endregion
-
-	#region Delegates
-
-	public delegate void ResultEventHandler(object sender, TestResultEventArgs e);
-	public delegate void ProgressEventHandler(object sender, ProgressMessageEventArgs e);
-
-	#endregion
-
 	public abstract class BaseTestSuite : ITestSuite
 	{
-		#region Events
+		#region · Events ·
 
 		public event ResultEventHandler		Result;
 		public event ProgressEventHandler	Progress;
 
 		#endregion
 
-		#region Fields
+		#region · Fields ·
 
 		private Thread[] userProcess;
 
@@ -75,26 +57,28 @@ namespace AS3AP.BenchMark
 
 		private BenchMarkConfiguration configuration;
 
-		private	Logger		log;
-		private int			iters		= 0;
-		private int			timeToRun	= 15;
-		private bool		disposed	= false;
-		private int			tupleCount	= 0;		
-
-		protected bool		testFailed	= false;
-		protected object	testResult	= 0;
-		
-		protected string 	testSuiteName = String.Empty;
-
-		private		IsolationLevel	isolation  = IsolationLevel.ReadCommitted;
-		private		IDbConnection	connection;
-		private		DataHelper		dataHelper;
+		private	Logger		    log;
+		private int			    iters		= 0;
+		private int			    timeToRun	= 15;
+		private bool		    disposed	= false;
+		private int			    tupleCount	= 0;		
+		private	IsolationLevel	isolation   = IsolationLevel.ReadCommitted;
+		private	IDbConnection	connection  = null;
 
 		#endregion
 
-		#region Properties
+        #region · Protected Fields ·
 
-		public Logger Log
+        protected bool              testFailed      = false;
+        protected object            testResult      = 0;
+        protected string            testSuiteName   = String.Empty;
+        protected DbProviderFactory providerFactory = null;
+
+        #endregion
+
+        #region · Properties ·
+
+        public Logger Log
 		{
 			get { return this.log; }
 			set { this.log = value; }
@@ -119,33 +103,27 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Constructors
+		#region · Constructors ·
 
 		public BaseTestSuite(BenchMarkConfiguration configuration)
 		{
 			this.configuration	= configuration;
 
 			// Set specific table structure
-			this.baseTableStructure = baseTableStructure.Replace(
-				"@INTEGER", configuration.IntegerTypeName);
-			this.baseTableStructure = baseTableStructure.Replace(
-				"@FLOAT", configuration.FloatTypeName);
-			this.baseTableStructure = baseTableStructure.Replace(
-				"@DOUBLE", configuration.DoubleTypeName);
-			this.baseTableStructure = baseTableStructure.Replace(
-				"@DECIMAL", configuration.DecimalTypeName);
-			this.baseTableStructure = baseTableStructure.Replace(
-				"@CHAR", configuration.CharTypeName);
-			this.baseTableStructure = baseTableStructure.Replace(
-				"@VARCHAR", configuration.VarcharTypeName);
+			this.baseTableStructure = baseTableStructure.Replace("@INTEGER", configuration.IntegerTypeName);
+			this.baseTableStructure = baseTableStructure.Replace("@FLOAT", configuration.FloatTypeName);
+			this.baseTableStructure = baseTableStructure.Replace("@DOUBLE", configuration.DoubleTypeName);
+			this.baseTableStructure = baseTableStructure.Replace("@DECIMAL", configuration.DecimalTypeName);
+			this.baseTableStructure = baseTableStructure.Replace("@CHAR", configuration.CharTypeName);
+			this.baseTableStructure = baseTableStructure.Replace("@VARCHAR", configuration.VarcharTypeName);
 
-			// Create the helper object
-			this.dataHelper = DataHelperFactory.GetHelper(configuration.HelperType);
+            // Get an instance of the provider factory
+            this.providerFactory = DbProviderFactories.GetFactory(this.Configuration.ProviderName);
 		}
 
 		#endregion
 
-		#region Finalizer
+		#region · Finalizer ·
 
 		~BaseTestSuite()
 		{
@@ -154,7 +132,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region IDisposable Methods
+		#region · IDisposable Methods ·
 
 		private void Dispose(bool disposing)
 		{
@@ -200,7 +178,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Misc Methods
+		#region · Misc Methods ·
 
 		public int CountRows(string table)
 		{
@@ -211,7 +189,7 @@ namespace AS3AP.BenchMark
 			{
 				count = Convert.ToInt32(this.ExecuteScalar(sql));
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				this.testFailed = true;
 			}
@@ -242,16 +220,15 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region AS3AP Methods
+		#region · AS3AP Methods ·
 
 		public void CreateDatabase() 
 		{
 			TimeSpan elapsed = new TimeSpan(0, 0, 0);
 
-			this.dropDatabase();
-			this.databaseCreate();
-
-			this.DatabaseConnect();
+			this.DropDatabase();
+			
+			this.ConnectDatabase();
 
 			elapsed += this.runTest("create_tables");
 			elapsed += this.runTest("load_data");
@@ -276,13 +253,11 @@ namespace AS3AP.BenchMark
 			elapsed += this.runTest("create_idx_updates_double_bt");
 			elapsed += this.runTest("create_idx_hundred_foreign");
 			
-			this.DatabaseDisconnect();
+			this.DisconnectDatabase();
 
 			if (this.log != null) 
 			{
-				this.log.Simple(
-					"\r\nDatabase creation time ( {0} )\r\n\r\n",
-					elapsed.ToString());
+				this.log.Simple("\r\nDatabase creation time ( {0} )\r\n\r\n", elapsed.ToString());
 			}
 		}
 
@@ -358,13 +333,13 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Single User Tests - Main
+		#region · Single User Tests - Main ·
 
 		public void SingleUserTests() 
 		{
 			TimeSpan elapsed = new TimeSpan(0, 0, 0);
 
-			this.DatabaseConnect();
+			this.ConnectDatabase();
 						
 			elapsed += this.runTest("sel_1_cl");
 			elapsed += this.runTest("join_3_cl");
@@ -422,7 +397,7 @@ namespace AS3AP.BenchMark
 					elapsed.ToString());
 			}
 
-			this.DatabaseDisconnect();
+			this.DisconnectDatabase();
 		}
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
@@ -441,7 +416,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Single User Test - Joins
+		#region · Single User Test - Joins ·
 
 		/* AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems
 		 * 
@@ -466,7 +441,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Single User Tests - Selections
+		#region · Single User Tests - Selections ·
 
 		/* AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems
 		 * 
@@ -663,7 +638,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Single User Tests - Projections
+		#region · Single User Tests - Projections ·
 
 		/* AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems
 		 * 
@@ -720,7 +695,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Single User Tests - Aggregates
+		#region · Single User Tests - Aggregates ·
 
 		/* AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems
 		 * 
@@ -762,7 +737,7 @@ namespace AS3AP.BenchMark
 
 				this.testResult = count;
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				this.testFailed = true;
 			}
@@ -786,7 +761,7 @@ namespace AS3AP.BenchMark
 						"and col_double > 600000000 "							+
 						"and col_decim < -600000000");
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				this.testFailed = true;
 			}
@@ -831,7 +806,7 @@ namespace AS3AP.BenchMark
 						"from updates, hundred "					+
 						"where updates.col_key = hundred.col_key");
 			}
-			catch(Exception)
+			catch (Exception)
 			{				
 				this.testFailed = true;
 			}
@@ -886,7 +861,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Single User Tests - Updates
+		#region · Single User Tests - Updates ·
 
 		/* AS3AP - An ANSI SQL Standard Scalable and Portable Benchmark for Relational Database Systems
 		 * 
@@ -896,7 +871,7 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void upd_append_duplicate() 
 		{
-			if (this.configuration.UseIndexes) 
+			if (this.Configuration.UseIndexes) 
 			{
 				try
 				{
@@ -1129,7 +1104,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Single User Tests - Bulk Updates
+		#region · Single User Tests - Bulk Updates ·
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void bulk_save()
@@ -1202,7 +1177,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Multi User Tests - Main
+		#region · Multi User Tests - Main ·
 
 		public void MultiUserTests(int nInstances) 
 		{	
@@ -1339,12 +1314,12 @@ namespace AS3AP.BenchMark
 					DateTime.Now.ToString()));
 			}
 			
-			this.DatabaseConnect();
+			this.ConnectDatabase();
 
 			this.runTest("mu_checkmod_100_seq");
 			this.runTest("mu_checkmod_100_rand");
 
-			this.DatabaseDisconnect();
+			this.DisconnectDatabase();
 			
 			/* Step 6 - Recover updates relation from backup tape (Step 1)
 			 * and log (from Steps 2, 3, 4, and 5).	
@@ -1364,7 +1339,7 @@ namespace AS3AP.BenchMark
 					DateTime.Now.ToString()));
 			}
 			
-			this.DatabaseConnect();
+			this.ConnectDatabase();
 
 			this.runTest("mu_checkmod_100_seq");
 			this.runTest("mu_checkmod_100_rand");
@@ -1372,7 +1347,7 @@ namespace AS3AP.BenchMark
 			this.runTest("mu_drop_sel100_seq");
 			this.runTest("mu_drop_sel100_rand");
 
-			this.DatabaseDisconnect();
+			this.DisconnectDatabase();
 
 			/* Step 8 - Run OLTP test for 15 minutes.	*/
 			if (this.Progress != null)
@@ -1490,7 +1465,7 @@ namespace AS3AP.BenchMark
 					DateTime.Now.ToString()));
 			}
 			
-			this.DatabaseConnect();
+			this.ConnectDatabase();
 
 			this.runTest("mu_checkmod_100_seq");			
 			this.runTest("mu_checkmod_100_rand");
@@ -1498,7 +1473,7 @@ namespace AS3AP.BenchMark
 			this.runTest("mu_drop_sel100_seq");
 			this.runTest("mu_drop_sel100_rand");
 
-			this.DatabaseDisconnect();
+			this.DisconnectDatabase();
 		}
 
 		private void oltp_update()
@@ -1508,7 +1483,7 @@ namespace AS3AP.BenchMark
 				ITestSuite testSuite = TestSuiteFactory.GetTestSuite(
 					testSuiteName, configuration);
 			
-				testSuite.DatabaseConnect();
+				testSuite.ConnectDatabase();
 			
 				if (timeToRun > 0)
 				{
@@ -1524,7 +1499,7 @@ namespace AS3AP.BenchMark
 					testSuite.mu_oltp_update();
 				}
 			
-				testSuite.DatabaseDisconnect();
+				testSuite.DisconnectDatabase();
 			}
 			catch (ThreadAbortException)
 			{
@@ -1538,7 +1513,7 @@ namespace AS3AP.BenchMark
 				ITestSuite testSuite = TestSuiteFactory.GetTestSuite(
 					testSuiteName, configuration);
 
-				testSuite.DatabaseConnect();
+				testSuite.ConnectDatabase();
 							
 				if (timeToRun > 0)
 				{
@@ -1555,7 +1530,7 @@ namespace AS3AP.BenchMark
 					this.mu_ir_select();
 				}
 			
-				testSuite.DatabaseDisconnect();
+				testSuite.DisconnectDatabase();
 			}
 			catch (ThreadAbortException)
 			{
@@ -1564,7 +1539,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Cross Section Tests Main
+		#region · Cross Section Tests Main ·
 
 		private void cross_section_tests() 
 		{
@@ -1572,7 +1547,7 @@ namespace AS3AP.BenchMark
 			{
 				DateTime startTime;
 
-				this.DatabaseConnect();
+				this.ConnectDatabase();
 
 				startTime = DateTime.Now;
 
@@ -1591,7 +1566,7 @@ namespace AS3AP.BenchMark
 
 				TimeSpan elapsed = startTime - DateTime.Now;
 
-				this.DatabaseDisconnect();
+				this.DisconnectDatabase();
 
 				if (this.log != null)
 				{
@@ -1605,7 +1580,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Multi User Tests - Cross Section Tests for Mixed IR and Mixed OLTP tests
+		#region · Multi User Tests - Cross Section Tests for Mixed IR and Mixed OLTP tests ·
 
 		[IsolationLevel(System.Data.IsolationLevel.ReadCommitted)]
 		public void mu_oltp_update()
@@ -1894,7 +1869,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Table and Index handling
+		#region · Table and Index handling ·
 
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_tables() 
@@ -1908,7 +1883,7 @@ namespace AS3AP.BenchMark
 
 				this.createTable( 
 					"tiny"					,
-					"col_key " + this.configuration.IntegerTypeName + " not null",
+					"col_key " + this.Configuration.IntegerTypeName + " not null",
 					"col_key");
 			}
 			catch (Exception)
@@ -1924,8 +1899,7 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.createIndex(
-					IndexType.Btree, "hundred_code_h", "hundred", "col_code");
+				this.CreateIndex(IndexType.Btree, "hundred_code_h", "hundred", "col_code");
 			}
 			catch (Exception)
 			{
@@ -1938,16 +1912,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_hundred_foreign() 
 		{
-			if (this.configuration.UseIndexes) 
+			if (this.Configuration.UseIndexes) 
 			{  
 				try
 				{
-					this.createForeignKey(
-						"hundred"				, 
-						"fk_hundred_updates"	, 
-						"col_signed"			, 
-						"updates"				, 
-						"col_key");
+					this.CreateForeignKey("hundred", "fk_hundred_updates", "col_signed", "updates", "col_key");
 				}
 				catch (Exception)
 				{
@@ -1961,16 +1930,12 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_hundred_key_bt() 
 		{
-			if (this.configuration.UseIndexes && 
-				this.configuration.SupportsClusteredIndexes) 
+			if (this.Configuration.UseIndexes && 
+				this.Configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Clustered	,
-						"hundred_key_bt"	, 
-						"hundred"			, 
-						"col_key");
+					this.CreateIndex(IndexType.Clustered, "hundred_key_bt", "hundred", "col_key");
 				}
 				catch (Exception)
 				{
@@ -1984,16 +1949,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_code_h() 
 		{
-			if (this.configuration.UseIndexes && 
-				this.configuration.SupportsHashIndexes) 
+			if (this.Configuration.UseIndexes && this.Configuration.SupportsHashIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Hash	,
-						"tenpct_code_h"	, 
-						"tenpct"		, 
-						"col_code");
+					this.CreateIndex(IndexType.Hash	,"tenpct_code_h", "tenpct", "col_code");
 				}
 				catch (Exception)
 				{
@@ -2007,15 +1967,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_decim_bt() 
 		{
-			if (this.configuration.UseIndexes) 
+			if (this.Configuration.UseIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Btree		,
-						"tenpct_decim_bt"	, 
-						"tenpct"			, 
-						"col_decim");
+					this.CreateIndex(IndexType.Btree, "tenpct_decim_bt", "tenpct", "col_decim");
 				}
 				catch (Exception)
 				{
@@ -2029,15 +1985,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_double_bt() 
 		{
-			if (this.configuration.UseIndexes) 
+			if (this.Configuration.UseIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Btree		,
-						"tenpct_double_bt"	, 
-						"tenpct"			, 
-						"col_double");
+					this.CreateIndex(IndexType.Btree, "tenpct_double_bt", "tenpct", "col_double");
 				}
 				catch (Exception)
 				{
@@ -2051,15 +2003,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_float_bt() 
 		{
-			if (this.configuration.UseIndexes) 
+			if (this.Configuration.UseIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Btree		,
-						"tenpct_float_bt"	, 
-						"tenpct"			, 
-						"col_float");
+					this.CreateIndex(IndexType.Btree, "tenpct_float_bt", "tenpct", "col_float");
 				}
 				catch (Exception)
 				{
@@ -2073,15 +2021,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_int_bt() 
 		{
-			if (this.configuration.UseIndexes) 
+			if (this.Configuration.UseIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Btree	,
-						"tenpct_int_bt"	, 
-						"tenpct"		, 
-						"col_int");
+					this.CreateIndex(IndexType.Btree, "tenpct_int_bt", "tenpct", "col_int");
 				}
 				catch (Exception)
 				{
@@ -2095,16 +2039,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_key_bt() 
 		{
-			if (this.configuration.UseIndexes && 
-				this.configuration.SupportsClusteredIndexes) 
+			if (this.Configuration.UseIndexes && this.Configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Clustered	,
-						"tenpct_key_bt"		, 
-						"tenpct"			, 
-						"col_key");
+					this.CreateIndex(IndexType.Clustered, "tenpct_key_bt", "tenpct", "col_key");
 				}
 				catch (Exception)
 				{
@@ -2118,15 +2057,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_key_code_bt() 
 		{
-			if (this.configuration.UseIndexes)
+			if (this.Configuration.UseIndexes)
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Btree			,
-						"tenpct_key_code_bt"	,
-						"tenpct"				,
-						"col_key, col_code");
+					this.CreateIndex(IndexType.Btree, "tenpct_key_code_bt", "tenpct", "col_key, col_code");
 				}
 				catch (Exception)
 				{
@@ -2140,16 +2075,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_name_h() 
 		{
-			if (this.configuration.UseIndexes && 
-				this.configuration.SupportsHashIndexes) 
+			if (this.Configuration.UseIndexes && this.Configuration.SupportsHashIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Hash	,
-						"tenpct_name_h"	, 
-						"tenpct"		,
-						"col_name");
+					this.CreateIndex(IndexType.Hash, "tenpct_name_h", "tenpct", "col_name");
 				}
 				catch (Exception)
 				{
@@ -2163,15 +2093,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tenpct_signed_bt() 
 		{
-			if (this.configuration.UseIndexes) 
+			if (this.Configuration.UseIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Btree		,
-						"tenpct_signed_bt"	, 
-						"tenpct"			,
-						"col_signed");
+					this.CreateIndex(IndexType.Btree, "tenpct_signed_bt", "tenpct", "col_signed");
 				}
 				catch (Exception)
 				{
@@ -2185,15 +2111,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_tiny_key_bt() 
 		{
-			if (this.configuration.UseIndexes) 
+			if (this.Configuration.UseIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Btree	,
-						"tiny_key_bt"	, 
-						"tiny"			, 
-						"col_key");
+					this.CreateIndex(IndexType.Btree, "tiny_key_bt", "tiny", "col_key");
 				}
 				catch (Exception)
 				{
@@ -2207,16 +2129,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_uniques_code_h() 
 		{
-			if (this.configuration.UseIndexes && 
-				this.configuration.SupportsHashIndexes) 
+			if (this.Configuration.UseIndexes && this.Configuration.SupportsHashIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Hash		,
-						"uniques_code_h"	, 
-						"uniques"			, 
-						"col_code");
+					this.CreateIndex(IndexType.Hash, "uniques_code_h", "uniques", "col_code");
 				}
 				catch (Exception)
 				{
@@ -2230,16 +2147,12 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_uniques_key_bt() 
 		{
-			if (this.configuration.UseIndexes && 
-				this.configuration.SupportsClusteredIndexes) 
+			if (this.Configuration.UseIndexes && 
+				this.Configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Clustered	,
-						"uniques_key_bt"	, 
-						"uniques"			, 
-						"col_key");
+					this.CreateIndex(IndexType.Clustered, "uniques_key_bt", "uniques", "col_key");
 				}
 				catch (Exception)
 				{
@@ -2253,16 +2166,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_code_h() 
 		{
-			if (this.configuration.UseIndexes && 
-				this.configuration.SupportsHashIndexes) 
+			if (this.Configuration.UseIndexes && this.Configuration.SupportsHashIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Hash		,
-						"updates_code_h"	, 
-						"updates"			, 
-						"col_code");
+					this.CreateIndex(IndexType.Hash, "updates_code_h", "updates", "col_code");
 				}
 				catch (Exception)
 				{
@@ -2276,15 +2184,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_decim_bt() 
 		{
-			if (this.configuration.UseIndexes) 
+			if (this.Configuration.UseIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Btree		,
-						"updates_decim_bt"	, 
-						"updates"			,
-						"col_decim");
+					this.CreateIndex(IndexType.Btree, "updates_decim_bt", "updates", "col_decim");
 				}
 				catch (Exception)
 				{
@@ -2298,15 +2202,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_double_bt() 
 		{
-			if (this.configuration.UseIndexes) 
+			if (this.Configuration.UseIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Btree		,
-						"updates_double_bt"	, 
-						"updates"			,
-						"col_double");
+					this.CreateIndex(IndexType.Btree, "updates_double_bt", "updates", "col_double");
 				}
 				catch (Exception)
 				{
@@ -2319,15 +2219,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_int_bt() 
 		{
-			if (this.configuration.UseIndexes) 
+			if (this.Configuration.UseIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Btree	,
-						"updates_int_bt", 
-						"updates"		, 
-						"col_int");
+					this.CreateIndex(IndexType.Btree, "updates_int_bt", "updates", "col_int");
 				}
 				catch (Exception)
 				{
@@ -2341,16 +2237,11 @@ namespace AS3AP.BenchMark
 		[IsolationLevel(IsolationLevel.ReadCommitted)]
 		public void create_idx_updates_key_bt() 
 		{
-			if (this.configuration.UseIndexes && 
-				this.configuration.SupportsClusteredIndexes) 
+			if (this.Configuration.UseIndexes && this.Configuration.SupportsClusteredIndexes) 
 			{
 				try
 				{
-					this.createIndex(
-						IndexType.Clustered	,
-						"updates_key_bt"	, 
-						"updates"			, 
-						"col_key");
+					this.CreateIndex(IndexType.Clustered, "updates_key_bt", "updates", "col_key");
 				}
 				catch (Exception)
 				{
@@ -2371,7 +2262,7 @@ namespace AS3AP.BenchMark
 					this.ExecuteNonQuery("drop index updates_int_bt");
 					this.ExecuteNonQuery("drop index updates_double_bt");
 					this.ExecuteNonQuery("drop index updates_decim_bt");
-					if (this.configuration.SupportsHashIndexes)
+					if (this.Configuration.SupportsHashIndexes)
 					{
 						this.ExecuteNonQuery("drop index updates_code_h");
 					}
@@ -2387,118 +2278,16 @@ namespace AS3AP.BenchMark
 
 		#endregion
 		
-		#region Database Creation Methods
+		#region · Database Creation Methods ·
 
-		private void databaseCreate()
+		private void DropDatabase()
 		{
-			this.dataHelper.CreateDatabase(this.parseConnectionString());
+            throw new NotImplementedException();
 		}
 
-		private void dropDatabase()
+		private void CreateIndex(IndexType indextype, string indexName, string tableName, string fields)
 		{
-			try
-			{
-				this.dataHelper.DropDatabase(this.parseConnectionString());
-			}
-			catch (Exception)
-			{
-			}
-		}
-
-		private Hashtable parseConnectionString()
-		{
-			string	dataSource	= "localhost";
-			int		port		= 3050;
-			string	database	= @"c:\asp3ap.fdb";
-			string	user		= "SYSDBA";
-			string	password	= "masterkey";
-			byte	dialect		= 3;
-			bool	forcedWrite = configuration.ForcedWrites;
-			short	pageSize	= 4096;
-			string	charset		= "NONE";
-			bool	ssl			= false;
-			int		serverType	= 0;
-			string	isecurity	= "SSPI";
-
-			Regex			search	 = new Regex(@"([\w\s\d]*)\s*=\s*([^;]*)");
-			MatchCollection	elements = search.Matches(this.configuration.ConnectionString);
-
-			foreach (Match element in elements)
-			{
-				switch (element.Groups[1].Value.Trim().ToLower())
-				{
-					case "datasource":
-					case "data source":
-					case "server":
-					case "host":
-						dataSource = element.Groups[2].Value.Trim();
-						break;
-
-					case "database":
-						database = element.Groups[2].Value.Trim();
-						break;
-
-					case "user name":
-					case "user":
-					case "user id":
-					case "userid":
-						user = element.Groups[2].Value.Trim();
-						break;
-
-					case "user password":
-					case "password":
-						password = element.Groups[2].Value.Trim();
-						break;
-
-					case "port":
-						port = Int32.Parse(element.Groups[2].Value.Trim());
-						break;
-
-					case "dialect":
-						dialect = byte.Parse(element.Groups[2].Value.Trim());
-						break;
-
-					case "ssl":
-						ssl = Boolean.Parse(element.Groups[2].Value.Trim());
-						break;
-
-					case "charset":
-						charset = element.Groups[2].Value.Trim();
-						break;
-
-					case "servertype":
-					case "server type":
-						serverType = Int32.Parse(element.Groups[2].Value.Trim());
-						break;
-
-					case "Integrated Security":
-						isecurity = element.Groups[2].Value.Trim();
-						break;
-				}
-			}
-
-			Hashtable values = new Hashtable();
-
-			values.Add("DataSource"			, dataSource);
-			values.Add("Port"				, port);
-			values.Add("Database"			, database);
-			values.Add("User"				, user);
-			values.Add("Password"			, password);
-			values.Add("Dialect"			, dialect);
-			values.Add("ForcedWrites"		, forcedWrite);
-			values.Add("PageSize"			, pageSize);
-			values.Add("Charset"			, charset);
-			values.Add("ServerType"			, serverType);
-			values.Add("SSL"				, ssl);
-			values.Add("Integrated Security", isecurity);
-
-			return values;
-		}
-
-		private void createIndex(
-			IndexType indextype, string indexName, string tableName, string fields)
-		{
-			if (this.configuration.UseIndexes) 
+			if (this.Configuration.UseIndexes) 
 			{
 				string createIndexStmt = String.Empty;
 			
@@ -2525,7 +2314,7 @@ namespace AS3AP.BenchMark
 				{
 					this.ExecuteNonQuery(createIndexStmt);
 				}
-				catch(Exception ex)
+				catch (Exception ex)
 				{
 					if (this.log != null)
 					{
@@ -2536,7 +2325,7 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		private void createForeignKey(
+		private void CreateForeignKey(
 			string foreignTable, 
 			string constraintName, 
 			string foreignKeyColumns,
@@ -2554,7 +2343,7 @@ namespace AS3AP.BenchMark
 			{
 				this.ExecuteNonQuery(commandText.ToString());
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				if (this.log != null)
 				{
@@ -2594,25 +2383,25 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		public void DatabaseConnect()
+		public void ConnectDatabase()
 		{
 			try
 			{
-				this.connection = this.dataHelper.CreateConnection(
-					this.configuration.ConnectionString);
+                this.connection = this.providerFactory.CreateConnection();
+                this.connection.ConnectionString = ConfigurationManager.ConnectionStrings[this.Configuration.ConnectionStringName].ConnectionString;
 				this.connection.Open();
 			}
 			catch (Exception ex)
 			{
 				if (this.log != null) 
 				{
-					this.log.Error("DatabaseConnect error {0}", ex.Message);
+					this.log.Error("ConnectDatabase error {0}", ex.Message);
 				}
 				throw ex;
 			}
 		}
 
-		public void DatabaseDisconnect()
+		public void DisconnectDatabase()
 		{
 			try
 			{
@@ -2643,8 +2432,8 @@ namespace AS3AP.BenchMark
 
 		protected int ExecuteNonQuery(string commandText)
 		{
-			IDbCommand		command		= null;
-			IDbTransaction	transaction = null;
+			DbCommand		command		= null;
+			DbTransaction	transaction = null;
 			int				count		= 0;
 
 			try
@@ -2687,8 +2476,8 @@ namespace AS3AP.BenchMark
 
 		protected int ExecuteAborting(string commandText)
 		{
-			IDbCommand		command		= null;
-			IDbTransaction	transaction = null;
+			DbCommand		command		= null;
+			DbTransaction	transaction = null;
 			int				count		= 0;
 
 			try
@@ -2729,9 +2518,9 @@ namespace AS3AP.BenchMark
 
 		protected int ExecuteReader(string commandText)
 		{
-			IDbCommand		command		= null;
+			DbCommand		command		= null;
 			IDataReader		cursor		= null;
-			IDbTransaction	transaction = null;
+			DbTransaction	transaction = null;
 			int				count		= 0;
 
 			try
@@ -2785,8 +2574,8 @@ namespace AS3AP.BenchMark
 
 		protected object ExecuteScalar(string commandText)
 		{
-			IDbCommand		command		= null;
-			IDbTransaction	transaction = null;
+			DbCommand		command		= null;
+			DbTransaction	transaction = null;
 			object			result		= null;
 
 			try
@@ -2818,13 +2607,13 @@ namespace AS3AP.BenchMark
 			return result;
 		}
 
-		protected IDbTransaction BeginTransaction()
+		protected DbTransaction BeginTransaction()
 		{
 			try
 			{
-				return this.connection.BeginTransaction(isolation);
+                return (DbTransaction)this.connection.BeginTransaction(isolation);
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				if (this.log != null)
 				{
@@ -2922,8 +2711,8 @@ namespace AS3AP.BenchMark
 		{
 			StringBuilder	commandText			= new StringBuilder();
 			StreamReader	stream				= null;
-			IDbCommand		command				= null;			
-			IDbTransaction	transaction			= null;
+			DbCommand		command				= null;			
+			DbTransaction	transaction			= null;
 			bool			transactionPending	= false;
 			bool			commandPrepared		= false;
 			int				rowCount			= 0;			
@@ -2938,9 +2727,7 @@ namespace AS3AP.BenchMark
 
 			if (!File.Exists(path + "asap." + table))
 			{
-				throw new FileNotFoundException(
-					"AS3AP data file not found",
-					path + "asap." + table);
+				throw new FileNotFoundException("AS3AP data file not found", path + "asap." + table);
 			}
 
 			stream = new StreamReader(
@@ -2954,16 +2741,16 @@ namespace AS3AP.BenchMark
 			command = this.CreateCommand(commandText.ToString(), transaction);
 
 			/* Add parameters	*/
-			command.Parameters.Add(dataHelper.CreateParameter("@col_key", DbType.Int32, 4, "col_key"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_int", DbType.Int32, 4, "col_int"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_signed", DbType.Int32, 4, "col_signed"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_float", DbType.Single, 4, "col_float"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_double", DbType.Double, 8, "col_double"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_decim", DbType.Single, 18, 2, "col_decim"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_date", DbType.StringFixedLength, 20, "col_date"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_code", DbType.StringFixedLength, 10, "col_code"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_name", DbType.StringFixedLength, 20, "col_name"));
-			command.Parameters.Add(dataHelper.CreateParameter("@col_address", DbType.String, 80, "col_address"));
+			command.Parameters.Add(this.CreateParameter("@col_key", DbType.Int32, 4, "col_key"));
+			command.Parameters.Add(this.CreateParameter("@col_int", DbType.Int32, 4, "col_int"));
+			command.Parameters.Add(this.CreateParameter("@col_signed", DbType.Int32, 4, "col_signed"));
+			command.Parameters.Add(this.CreateParameter("@col_float", DbType.Single, 4, "col_float"));
+			command.Parameters.Add(this.CreateParameter("@col_double", DbType.Double, 8, "col_double"));
+			command.Parameters.Add(this.CreateParameter("@col_decim", DbType.Single, 18, 2, "col_decim"));
+			command.Parameters.Add(this.CreateParameter("@col_date", DbType.StringFixedLength, 20, "col_date"));
+			command.Parameters.Add(this.CreateParameter("@col_code", DbType.StringFixedLength, 10, "col_code"));
+			command.Parameters.Add(this.CreateParameter("@col_name", DbType.StringFixedLength, 20, "col_name"));
+			command.Parameters.Add(this.CreateParameter("@col_address", DbType.String, 80, "col_address"));
 
 			while (stream.Peek() > -1)
 			{
@@ -3013,8 +2800,8 @@ namespace AS3AP.BenchMark
 		{
 			StringBuilder	commandText = new StringBuilder();
 			StreamReader	stream		= null;
-			IDbCommand		command		= null;
-			IDbTransaction	transaction	= null;
+			DbCommand		command		= null;
+			DbTransaction	transaction	= null;
 
 			commandText.AppendFormat("insert into {0} values (@col_key)", table);
 
@@ -3043,9 +2830,7 @@ namespace AS3AP.BenchMark
 			command		= this.CreateCommand(commandText.ToString(), transaction);
 
 			/* Add parameters	*/
-			IDbDataParameter p = this.dataHelper.CreateParameter("@col_key", DbType.Int32, 4, "col_key");
-
-			command.Parameters.Add(p);
+			command.Parameters.Add(this.CreateParameter("@col_key", DbType.Int32, 4, "col_key"));
 
 			/* Prepare command execution	*/
 			command.Prepare();
@@ -3064,16 +2849,25 @@ namespace AS3AP.BenchMark
 			stream.Close();
 		}
 
-		protected IDbCommand CreateCommand(
-			string commandText, IDbTransaction transaction)
+		protected DbCommand CreateCommand(string commandText, DbTransaction transaction)
 		{
-			IDbCommand command = this.connection.CreateCommand();
+            DbCommand command = (DbCommand)this.connection.CreateCommand();
 
 			command.CommandText = commandText;
 			command.Transaction	= transaction;
 
 			return command;
 		}
+
+        protected DbParameter CreateParameter(string parameterName, DbType dbType, int size, string sourceColumn)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected DbParameter CreateParameter(string parameterName, DbType dbType, int precision, int scale, string sourceColumn)
+        {
+            throw new NotImplementedException();
+        }
 
 		#endregion	
 	}

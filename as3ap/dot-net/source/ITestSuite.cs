@@ -22,106 +22,9 @@ using System.Data;
 
 namespace AS3AP.BenchMark
 {
-	#region Event Args Classes
-
-	public class TestResultEventArgs : EventArgs
-	{
-		#region Fields
-
-		private string		testName	= String.Empty;
-		private object		testResult;
-		private TimeSpan	testTime;
-		private bool		testFailed	= false;
-
-		#endregion
-
-		#region Properties
-
-		public string TestName
-		{
-			get { return this.testName; }
-			set { this.testName = value; }
-		}
-
-		public object TestResult
-		{
-			get { return this.testResult; }
-			set { this.testResult = value; }
-		}
-
-		public TimeSpan TestTime
-		{
-			get { return this.testTime; }
-			set { this.testTime = value; }
-		}
-
-		public bool TestFailed
-		{
-			get { return this.testFailed; }
-			set { this.testFailed = value; }
-		}
-
-		#endregion
-
-		#region Constructors
-
-		public TestResultEventArgs(
-			string		testName, 
-			object		testResult, 
-			TimeSpan	testTime,  
-			bool		testFailed)
-		{
-			this.testName	= testName;
-			if (testResult == null)
-			{
-				testResult = 0;
-			}
-			this.testResult = testResult;
-			this.testTime	= testTime;
-			this.testFailed	= testFailed;
-		}
-
-		#endregion
-	}
-
-	public class ProgressMessageEventArgs : EventArgs
-	{
-		#region Fields
-
-		private string	message	= String.Empty;
-
-		#endregion
-
-		#region Properties
-
-		public string Message
-		{
-			get { return this.message; }
-			set { this.message = value; }
-		}
-
-		#endregion
-
-		#region Constructors
-
-		public ProgressMessageEventArgs(string message)
-		{
-			this.message = message;
-		}
-
-		public ProgressMessageEventArgs(string format, params object[] args)
-		{
-			this.message = String.Format(format, args);
-		}
-
-		#endregion
-	}
-
-	#endregion
-
 	public interface ITestSuite : IDisposable
 	{
-		#region Properties
+		#region · Properties ·
 
 		BenchMarkConfiguration Configuration
 		{
@@ -148,22 +51,22 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Events
+		#region · Events ·
 		
 		event ResultEventHandler	Result;
 		event ProgressEventHandler	Progress;
 		
 		#endregion
 
-		#region Methods
+		#region · Methods ·
 
 		void SetIsolationLevel(string methodName);
 				
 		void CreateDatabase();
 
-		void DatabaseConnect();
+		void ConnectDatabase();
 				
-		void DatabaseDisconnect();
+		void DisconnectDatabase();
 
 		void SingleUserTests();
 

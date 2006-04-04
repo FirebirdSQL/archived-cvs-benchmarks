@@ -21,8 +21,6 @@ using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Soap;
 
-using Common.Data.Helper;
-
 namespace AS3AP.BenchMark
 {
 	/// <summary>
@@ -31,7 +29,7 @@ namespace AS3AP.BenchMark
 	[Serializable]
 	public class BenchMarkConfiguration
 	{
-		#region Fields
+		#region · Fields ·
 
 		private int		userNumber			= 0;
 		private string	runSequence			= "SQL87;singleuser;SQL92;singleuser";
@@ -41,9 +39,9 @@ namespace AS3AP.BenchMark
 		private bool	enableLogging		= true;
 		private bool	enableErrorLogging	= true;
 
-		private string	connectionString	= "Database=AS3AP.FDB;User=SYSDBA;Password=masterkey;Server=localhost;Port=3050;Dialect=3;Charset=NONE;Role=;Connection Lifetime=15;Pooling=true";
+		private string	connectionStringName= "";
 
-		private string	providerAssembly	= "FirebirdSql.Data.Firebird";
+		private string	providerName	    = "";
 		private bool	supportsClusteredIndexes = false;
 		private bool	supportsHashIndexes = false;
 		
@@ -60,147 +58,139 @@ namespace AS3AP.BenchMark
 
 		private bool	forcedWrites		= true;
 
-		private			DataHelperType		helperType = DataHelperType.Firebird;
-
 		#endregion
 
-		#region Properties
+		#region · Properties ·
 
 		public int UserNumber
 		{
-			get { return userNumber; }
-			set { userNumber = value; }
+            get { return this.userNumber; }
+            set { this.userNumber = value; }
 		}
 
 		public string RunSequence
 		{
-			get { return runSequence; }
-			set { runSequence = value; }
+            get { return this.runSequence; }
+            set { this.runSequence = value; }
 		}
 
 		public bool RunCreate
 		{
-			get { return runCreate; }
-			set { runCreate = value; }
+            get { return this.runCreate; }
+            set { this.runCreate = value; }
 		}
 
 		public string DataPath
 		{
-			get { return dataPath; }
-			set { dataPath = value; }
+            get { return this.dataPath; }
+            set { this.dataPath = value; }
 		}
 
 		public bool UseIndexes
 		{
-			get { return useIndexes; }
-			set { useIndexes = value; }
+            get { return this.useIndexes; }
+            set { this.useIndexes = value; }
 		}
 
 		public bool	EnableLogging
 		{
-			get { return enableLogging; }
-			set { enableLogging = value; }
+            get { return this.enableLogging; }
+            set { this.enableLogging = value; }
 		}
 
 		public bool	EnableErrorLogging
 		{
-			get { return enableErrorLogging; }
-			set { enableErrorLogging = value; }
+            get { return this.enableErrorLogging; }
+            set { this.enableErrorLogging = value; }
 		}
 
-		public string ConnectionString
+		public string ConnectionStringName
 		{
-			get { return connectionString; }
-			set { connectionString = value; }
+			get { return this.connectionStringName; }
+            set { this.connectionStringName = value; }
 		}
 
-		public string ProviderAssembly
+		public string ProviderName
 		{
-			get { return providerAssembly; }
-			set { providerAssembly = value; }
+			get { return this.providerName; }
+			set { this.providerName = value; }
 		}
 		
 		public bool SupportsClusteredIndexes
 		{
-			get { return supportsClusteredIndexes; }
-			set { supportsClusteredIndexes = value; } 
+            get { return this.supportsClusteredIndexes; }
+            set { this.supportsClusteredIndexes = value; } 
 		}
 
 		public bool SupportsHashIndexes
 		{
-			get { return supportsHashIndexes; }
-			set { supportsHashIndexes = value; } 
+            get { return this.supportsHashIndexes; }
+            set { this.supportsHashIndexes = value; } 
 		}
 
 		public string BtreeIndexStmt
 		{
-			get { return btreeIndexStmt; }
-			set { btreeIndexStmt = value; }
+            get { return this.btreeIndexStmt; }
+            set { this.btreeIndexStmt = value; }
 		}
 		
 		public string ClusteredIndexStmt
 		{
-			get { return clusteredIndexStmt; }
-			set { clusteredIndexStmt = value; }
+            get { return this.clusteredIndexStmt; }
+            set { this.clusteredIndexStmt = value; }
 		}
 
 		public string HashIndexStmt
 		{
-			get { return hashIndexStmt; }
-			set { hashIndexStmt = value; }
+            get { return this.hashIndexStmt; }
+            set { this.hashIndexStmt = value; }
 		}
 
 		public string CharTypeName
 		{
-			get { return charTypeName; }
-			set { charTypeName = value; }
+            get { return this.charTypeName; }
+            set { this.charTypeName = value; }
 		}
 
 		public string VarcharTypeName
 		{
-			get { return varcharTypeName; }
-			set { varcharTypeName = value; }
+            get { return this.varcharTypeName; }
+            set { this.varcharTypeName = value; }
 		}
 
 		public string IntegerTypeName
 		{
-			get { return integerTypeName; }
-			set { integerTypeName = value; }
+            get { return this.integerTypeName; }
+            set { this.integerTypeName = value; }
 		}
 
 		public string DecimalTypeName
 		{
-			get { return decimalTypeName; }
-			set { decimalTypeName = value; }
+            get { return this.decimalTypeName; }
+            set { this.decimalTypeName = value; }
 		}
 
 		public string FloatTypeName
 		{
-			get { return floatTypeName; }
-			set { floatTypeName = value; }
+            get { return this.floatTypeName; }
+            set { this.floatTypeName = value; }
 		}
 
 		public string DoubleTypeName
 		{
-			get { return doubleTypeName; }
-			set { doubleTypeName = value; }
+            get { return this.doubleTypeName; }
+            set { this.doubleTypeName = value; }
 		}
 
 		public bool ForcedWrites
 		{
-			get { return forcedWrites; }
-			set { forcedWrites = value; }
-		}
-
-		public DataHelperType HelperType
-		{
-			get { return helperType; }
-			set { helperType = value; }
+            get { return this.forcedWrites; }
+            set { this.forcedWrites = value; }
 		}
 
 		#endregion
 
-		#region SOAP Methods
+		#region · SOAP Methods ·
 
 		public static BenchMarkConfiguration Load(string fileName)
 		{

@@ -27,23 +27,16 @@ using System.Configuration;
 
 namespace AS3AP.BenchMark
 {
-	#region Delegates
-
-	public delegate void TestResultEventHandler(object sender, TestResultEventArgs e);
-	public delegate void ProgressMessageEventHandler(object sender, ProgressMessageEventArgs e);
-
-	#endregion
-
 	public class AS3AP : IDisposable
 	{	
-		#region Events
+		#region · Events ·
 
 		public event TestResultEventHandler			TestResult;
 		public event ProgressMessageEventHandler	ProgressMessage;
 
 		#endregion
 
-		#region Fields
+		#region · Fields ·
 
 		private BenchMarkConfiguration	configuration;
 		private bool					disposed		= false;
@@ -56,7 +49,7 @@ namespace AS3AP.BenchMark
 		
 		#endregion
 
-		#region Constructors
+		#region · Constructors ·
 
 		public AS3AP(string logPath, BenchMarkConfiguration	configuration)
 		{
@@ -91,7 +84,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Finalizer
+		#region · Finalizer ·
 
 		~AS3AP()
 		{
@@ -100,7 +93,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region IDisposable Methods
+		#region · IDisposable Methods ·
 
 		private void Dispose(bool disposing)
 		{
@@ -135,7 +128,7 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region Methods
+		#region · Methods ·
 
 		public void Run()
 		{
@@ -198,9 +191,9 @@ namespace AS3AP.BenchMark
 								}
 								else
 								{
-									this.testSuite.DatabaseConnect();
+									this.testSuite.ConnectDatabase();
 									this.testSuite.TupleCount = this.testSuite.CountRows("updates");
-									this.testSuite.DatabaseDisconnect();
+									this.testSuite.DisconnectDatabase();
 								}
 
 								if (this.ProgressMessage != null)
@@ -227,17 +220,17 @@ namespace AS3AP.BenchMark
 								}
 								else
 								{
-									this.testSuite.DatabaseConnect();
+									this.testSuite.ConnectDatabase();
 									this.testSuite.TupleCount = this.testSuite.CountRows("updates");
-									this.testSuite.DatabaseDisconnect();
+									this.testSuite.DisconnectDatabase();
 								}
 
 								/* Start of the multi-user test */
 								this.currentTest = "Preparing multi-user test";
-								this.testSuite.DatabaseConnect();
+								this.testSuite.ConnectDatabase();
 								if (this.testSuite.TupleCount != this.testSuite.CountRows("updates")) 
 								{
-									this.testSuite.DatabaseDisconnect();															
+									this.testSuite.DisconnectDatabase();															
 									if (this.testSuite.Log != null)
 									{
 										this.testSuite.Log.Simple("Invalid data ( Multi user tests )");
@@ -246,7 +239,7 @@ namespace AS3AP.BenchMark
 								}
 								else
 								{
-									this.testSuite.DatabaseDisconnect();
+									this.testSuite.DisconnectDatabase();
 									if (this.ProgressMessage != null)
 									{
 										this.ProgressMessage(
@@ -273,7 +266,7 @@ namespace AS3AP.BenchMark
 			}
 			catch (Exception ex)
 			{
-				this.testSuite.DatabaseDisconnect();
+				this.testSuite.DisconnectDatabase();
 				this.testSuite.Dispose();
 
 				throw ex;
@@ -293,7 +286,7 @@ namespace AS3AP.BenchMark
 
 			this.testSuite.CreateDatabase();
 
-			this.testSuite.DatabaseConnect();
+			this.testSuite.ConnectDatabase();
 			if ((tupleCount = this.testSuite.CountRows("updates")) == 0)
 			{
 				if (this.testSuite.Log != null)
@@ -310,7 +303,7 @@ namespace AS3AP.BenchMark
 				testSuite.Log.Simple("\r\n\"Database size {0}MB\"\r\n", dbSize);
 			}
 
-			this.testSuite.DatabaseDisconnect();
+			this.testSuite.DisconnectDatabase();
 		}
 
 		private void OnResult(object Sender, TestResultEventArgs e)

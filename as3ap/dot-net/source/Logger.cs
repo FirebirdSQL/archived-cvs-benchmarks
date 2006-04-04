@@ -361,7 +361,7 @@ namespace AS3AP.BenchMark
 					}
 				}
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				debugListener = null;
 			}
@@ -392,7 +392,7 @@ namespace AS3AP.BenchMark
 					}
 				}
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				debugListener = null;
 			}
@@ -433,7 +433,7 @@ namespace AS3AP.BenchMark
 					}
 				}
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				debugListener = null;
 			}
@@ -464,7 +464,7 @@ namespace AS3AP.BenchMark
 					}
 				}
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				debugListener = null;
 			}
@@ -502,7 +502,7 @@ namespace AS3AP.BenchMark
 					}
 				}
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				debugListener = null;
 			}
@@ -533,7 +533,7 @@ namespace AS3AP.BenchMark
 					}
 				}
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				debugListener = null;
 			}
@@ -571,7 +571,7 @@ namespace AS3AP.BenchMark
 					}
 				}
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				debugListener = null;
 			}
@@ -602,7 +602,7 @@ namespace AS3AP.BenchMark
 					}
 				}
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				debugListener = null;
 			}
@@ -640,7 +640,7 @@ namespace AS3AP.BenchMark
 					}
 				}
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				debugListener = null;
 			}
@@ -671,7 +671,7 @@ namespace AS3AP.BenchMark
 					}
 				}
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				debugListener = null;
 			}
@@ -705,7 +705,7 @@ namespace AS3AP.BenchMark
 					}
 				}
 			}
-			catch(Exception)
+			catch (Exception)
 			{
 				debugListener = null;
 			}
