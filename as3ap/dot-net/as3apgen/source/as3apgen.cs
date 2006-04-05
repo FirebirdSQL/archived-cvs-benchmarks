@@ -31,7 +31,7 @@ namespace AS3AP.BenchMark.Generator
 {
 	public class As3apGen
 	{
-		#region Constants
+		#region · Constants ·
 
 		private const int HUNDREDMILLION	= 10*10*10*10*10*10*10*10;
 		private const int THOUSANDMILLION	= HUNDREDMILLION*10;
@@ -47,14 +47,14 @@ namespace AS3AP.BenchMark.Generator
 
 		#endregion
 
-		#region Fields
+		#region · Fields ·
 
 		private string	destDir	= String.Empty;
 		private long	dataSize = 0;
 
 		#endregion
 
-		#region Main
+		#region · Main ·
 
 		static void Main(string[] args)
 		{
@@ -70,7 +70,7 @@ namespace AS3AP.BenchMark.Generator
 
 		#endregion
 
-		#region Constructors
+		#region · Constructors ·
 
 		public As3apGen(string destDir, long dataSize)
 		{
@@ -80,7 +80,7 @@ namespace AS3AP.BenchMark.Generator
 
 		#endregion
 
-		#region Methods
+		#region · Methods ·
 
         /// <summary>
         /// This method is based on OSDB project ( sourceforge.net/projects/osdb )
@@ -132,7 +132,6 @@ namespace AS3AP.BenchMark.Generator
 
 			DateTime		col_date		= new DateTime();
 			Random			randNumber		= new Random();
-
 			DsRandomData	dsRandomData	= new DsRandomData();
 
 			StreamWriter dfUpdates	= null;
@@ -443,10 +442,10 @@ namespace AS3AP.BenchMark.Generator
 				hundred_key	= 0;
 				tenpct_key	= 0;
 
-				dfUniques	= this.createStream(destDir + UNIQUES_FILE_NAME);
-				dfUpdates	= this.createStream(destDir + UPDATES_FILE_NAME);
-				dfHundred	= this.createStream(destDir + HUNDRED_FILE_NAME);
-				dfTenpct	= this.createStream(destDir + TENPCT_FILE_NAME);
+				dfUniques	= this.CreateStream(destDir + UNIQUES_FILE_NAME);
+				dfUpdates	= this.CreateStream(destDir + UPDATES_FILE_NAME);
+				dfHundred	= this.CreateStream(destDir + HUNDRED_FILE_NAME);
+				dfTenpct	= this.CreateStream(destDir + TENPCT_FILE_NAME);
 
 				rec		= 0;
 				foreach (DataRow row in dsRandomData.Tables["RANDOM_DATA"].Rows)
@@ -603,9 +602,9 @@ namespace AS3AP.BenchMark.Generator
 
 		#endregion
 
-		#region Private Methods
+		#region · Private Methods ·
 
-		private StreamWriter createStream(string fileName)
+		private StreamWriter CreateStream(string fileName)
 		{
 			return new StreamWriter(new BufferedStream(new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None)));
 		}

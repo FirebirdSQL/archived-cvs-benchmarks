@@ -1,7 +1,7 @@
 //
 // AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark
 //			for Relational Database Systems.
-// Copyright (C) 2003-2004  Carlos Guzman Alvarez
+// Copyright (C) 2003-2006  Carlos Guzman Alvarez
 //
 // Distributable under LGPL license.
 // You may obtain a copy of the License at http://www.gnu.org/copyleft/lesser.html
@@ -38,25 +38,19 @@ namespace AS3AP.BenchMark
 		private bool	useIndexes			= true;
 		private bool	enableLogging		= true;
 		private bool	enableErrorLogging	= true;
-
-		private string	connectionStringName= "";
-
-		private string	providerName	    = "";
+		private string	connectionStringName    = "";
 		private bool	supportsClusteredIndexes = false;
 		private bool	supportsHashIndexes = false;
-		
+        private string  createDatabaseStmt  = "";
 		private string	btreeIndexStmt		= "create index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
 		private string	clusteredIndexStmt	= "create unique clustered index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
 		private string	hashIndexStmt		= "create index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
-	
 		private string	charTypeName		= "char";
 		private string	varcharTypeName		= "varchar";
 		private string	integerTypeName		= "int";
 		private string	decimalTypeName		= "decimal";
 		private string	floatTypeName		= "float";
 		private string	doubleTypeName		= "double precision";
-
-		private bool	forcedWrites		= true;
 
 		#endregion
 
@@ -109,13 +103,7 @@ namespace AS3AP.BenchMark
 			get { return this.connectionStringName; }
             set { this.connectionStringName = value; }
 		}
-
-		public string ProviderName
-		{
-			get { return this.providerName; }
-			set { this.providerName = value; }
-		}
-		
+	
 		public bool SupportsClusteredIndexes
 		{
             get { return this.supportsClusteredIndexes; }
@@ -127,6 +115,12 @@ namespace AS3AP.BenchMark
             get { return this.supportsHashIndexes; }
             set { this.supportsHashIndexes = value; } 
 		}
+
+        public string CreateDatabaseStmt
+        {
+            get { return this.createDatabaseStmt; }
+            set { this.createDatabaseStmt = value; }
+        }
 
 		public string BtreeIndexStmt
 		{
@@ -180,12 +174,6 @@ namespace AS3AP.BenchMark
 		{
             get { return this.doubleTypeName; }
             set { this.doubleTypeName = value; }
-		}
-
-		public bool ForcedWrites
-		{
-            get { return this.forcedWrites; }
-            set { this.forcedWrites = value; }
 		}
 
 		#endregion

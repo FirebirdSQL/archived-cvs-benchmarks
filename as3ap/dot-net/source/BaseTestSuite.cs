@@ -1,7 +1,7 @@
 //
 // AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark
 //			for Relational Database Systems.
-// Copyright (C) 2003-2004  Carlos Guzman Alvarez
+// Copyright (C) 2003-2006  Carlos Guzman Alvarez
 //
 // Distributable under LGPL license.
 // You may obtain a copy of the License at http://www.gnu.org/copyleft/lesser.html
@@ -63,7 +63,7 @@ namespace AS3AP.BenchMark
 		private bool		    disposed	= false;
 		private int			    tupleCount	= 0;		
 		private	IsolationLevel	isolation   = IsolationLevel.ReadCommitted;
-		private	IDbConnection	connection  = null;
+		private	DbConnection	connection  = null;
 
 		#endregion
 
@@ -118,7 +118,9 @@ namespace AS3AP.BenchMark
 			this.baseTableStructure = baseTableStructure.Replace("@VARCHAR", configuration.VarcharTypeName);
 
             // Get an instance of the provider factory
-            this.providerFactory = DbProviderFactories.GetFactory(this.Configuration.ProviderName);
+            string providerName = ConfigurationManager.ConnectionStrings[this.Configuration.ConnectionStringName].ProviderName;
+            
+            this.providerFactory = DbProviderFactories.GetFactory(providerName);
 		}
 
 		#endregion
@@ -204,10 +206,11 @@ namespace AS3AP.BenchMark
 
 			try
 			{
-				att = (IsolationLevelAttribute)Attribute.GetCustomAttribute(
-					GetType().GetMethod(methodName),
-					typeof(IsolationLevelAttribute));
-				isolationLevel = att.IsolationLevel;
+				att = (IsolationLevelAttribute)Attribute.GetCustomAttribute(GetType().GetMethod(methodName), typeof(IsolationLevelAttribute));
+                if (att != null)
+                {
+                    isolationLevel = att.IsolationLevel;
+                }
 			}
 			catch
 			{				
@@ -224,9 +227,20 @@ namespace AS3AP.BenchMark
 
 		public void CreateDatabase() 
 		{
-			TimeSpan elapsed = new TimeSpan(0, 0, 0);
+            string connectionString = ConfigurationManager.ConnectionStrings[this.configuration.ConnectionStringName].ConnectionString;
+            string providerName = ConfigurationManager.ConnectionStrings[this.configuration.ConnectionStringName].ProviderName;
+            TimeSpan elapsed = new TimeSpan(0, 0, 0);
 
 			this.DropDatabase();
+
+            if (providerName.ToLower().Trim() == "firebirdsql.data.firebirdclient")
+            {
+                FirebirdSql.Data.FirebirdClient.FbConnection.CreateDatabase(connectionString, true);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
 			
 			this.ConnectDatabase();
 
@@ -270,9 +284,7 @@ namespace AS3AP.BenchMark
 			this.testFailed	= false;
 
 			type	= this.GetType();
-			method 	= type.GetMethod(
-				testName, 
-				BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance);
+			method 	= type.GetMethod(testName, BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance);
 			
 			// Set IsolationLevel for test execution
 			this.SetIsolationLevel(testName);
@@ -290,10 +302,7 @@ namespace AS3AP.BenchMark
 
 			if (this.Result != null)
 			{
-				this.Result(
-					this, 
-					new TestResultEventArgs(
-					testName, this.testResult, elapsed, this.testFailed));
+				this.Result(this, new TestResultEventArgs(testName, this.testResult, elapsed, this.testFailed));
 			}
 
 			StringBuilder logMessage = new StringBuilder();
@@ -325,7 +334,7 @@ namespace AS3AP.BenchMark
 
 			for (int i = 0; i < length; i++)
 			{
-				methodName = " " + methodName;
+				methodName = String.Format(" {0}", methodName);
 			}
 
 			return methodName;
@@ -915,7 +924,7 @@ namespace AS3AP.BenchMark
 				 * 
 				 * make temp relation for restore 
 				 */
-				this.createTable("integrity_temp", this.baseTableStructure, null);
+				this.CreateTable("integrity_temp", this.baseTableStructure, null);
 
 				int count = this.ExecuteNonQuery(
 					"insert into integrity_temp select * from hundred where col_int = 0");
@@ -1111,7 +1120,7 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.createTable("saveupdates", baseTableStructure, null);
+				this.CreateTable("saveupdates", baseTableStructure, null);
 
 				int count = this.ExecuteNonQuery(
 					"insert into saveupdates select * "	+
@@ -1778,7 +1787,7 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.createTable("sel100rand", baseTableStructure, null);
+				this.CreateTable("sel100rand", baseTableStructure, null);
 
 				int count = this.ExecuteNonQuery(
 					"insert into sel100rand select * from updates "	+
@@ -1802,7 +1811,7 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.createTable("sel100seq", baseTableStructure, null);
+				this.CreateTable("sel100seq", baseTableStructure, null);
 
 				int count = this.ExecuteNonQuery(
 					"insert into sel100seq select * from updates "	+
@@ -1876,12 +1885,12 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-				this.createTable("uniques", this.baseTableStructure, "col_key");
-				this.createTable("hundred", this.baseTableStructure, "col_key");
-				this.createTable("updates", this.baseTableStructure, "col_key");
-				this.createTable("tenpct" , this.baseTableStructure, "col_key,col_code");
+				this.CreateTable("uniques", this.baseTableStructure, "col_key");
+				this.CreateTable("hundred", this.baseTableStructure, "col_key");
+				this.CreateTable("updates", this.baseTableStructure, "col_key");
+				this.CreateTable("tenpct" , this.baseTableStructure, "col_key,col_code");
 
-				this.createTable( 
+				this.CreateTable( 
 					"tiny"					,
 					"col_key " + this.Configuration.IntegerTypeName + " not null",
 					"col_key");
@@ -2282,7 +2291,23 @@ namespace AS3AP.BenchMark
 
 		private void DropDatabase()
 		{
-            throw new NotImplementedException();
+            try
+            {
+                string connectionString = ConfigurationManager.ConnectionStrings[this.configuration.ConnectionStringName].ConnectionString;
+                string providerName = ConfigurationManager.ConnectionStrings[this.configuration.ConnectionStringName].ProviderName;
+
+                if (providerName.ToLower().Trim() == "firebirdsql.data.firebirdclient")
+                {
+                    FirebirdSql.Data.FirebirdClient.FbConnection.DropDatabase(connectionString);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+            }
+            catch (Exception)
+            {
+            }
 		}
 
 		private void CreateIndex(IndexType indextype, string indexName, string tableName, string fields)
@@ -2353,8 +2378,7 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		private void createTable(
-			string tableName, string tableStructure, string primaryKey) 
+		private void CreateTable(string tableName, string tableStructure, string primaryKey) 
 		{
 			StringBuilder commandText = new StringBuilder();
 
@@ -2633,67 +2657,43 @@ namespace AS3AP.BenchMark
 
 				if (this.Result != null)
 				{
-					this.Result(
-						this, 
-						new TestResultEventArgs(
-							"	tiny file loaded", 
-							0, 
-							DateTime.Now - start, false));
+					this.Result(this, new TestResultEventArgs("	tiny file loaded", 0, DateTime.Now - start, false));
 				}
 
 				start = DateTime.Now;
 								
-				this.loadFile("uniques");
+				this.LoadFile("uniques");
 
 				if (this.Result != null)
 				{
-					this.Result(this, 
-						new TestResultEventArgs(
-						"	uniques file loaded", 
-						0, 
-						DateTime.Now - start, false));
+					this.Result(this, new TestResultEventArgs("	uniques file loaded", 0, DateTime.Now - start, false));
 				}
 
 				start = DateTime.Now;
 				
-				this.loadFile("updates");
+				this.LoadFile("updates");
 
 				if (this.Result != null)
 				{
-					this.Result(
-						this, 
-						new TestResultEventArgs(
-						"	updates file loaded", 
-						0, 
-						DateTime.Now - start, false));
+					this.Result(this, new TestResultEventArgs("	updates file loaded", 0, DateTime.Now - start, false));
 				}
 
 				start = DateTime.Now;
 				
-				this.loadFile("hundred");
+				this.LoadFile("hundred");
 
 				if (this.Result != null)
 				{
-					this.Result(
-						this, 
-						new TestResultEventArgs(
-						"	hundred file loaded", 
-						0, 
-						DateTime.Now - start, false));
+					this.Result(this, new TestResultEventArgs("	hundred file loaded", 0, DateTime.Now - start, false));
 				}
 
 				start = DateTime.Now;
 				
-				this.loadFile("tenpct");
+				this.LoadFile("tenpct");
 
 				if (this.Result != null)
 				{
-					this.Result(
-						this, 
-						new TestResultEventArgs(
-						"	tenpct file loaded", 
-						0, 
-						DateTime.Now - start, false));
+					this.Result(this, new TestResultEventArgs("	tenpct file loaded", 0, DateTime.Now - start, false));
 				}
 			}
 			catch (Exception ex)
@@ -2707,7 +2707,7 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		private void loadFile(string table)
+		private void LoadFile(string table)
 		{
 			StringBuilder	commandText			= new StringBuilder();
 			StreamReader	stream				= null;
@@ -2746,7 +2746,7 @@ namespace AS3AP.BenchMark
 			command.Parameters.Add(this.CreateParameter("@col_signed", DbType.Int32, 4, "col_signed"));
 			command.Parameters.Add(this.CreateParameter("@col_float", DbType.Single, 4, "col_float"));
 			command.Parameters.Add(this.CreateParameter("@col_double", DbType.Double, 8, "col_double"));
-			command.Parameters.Add(this.CreateParameter("@col_decim", DbType.Single, 18, 2, "col_decim"));
+			command.Parameters.Add(this.CreateParameter("@col_decim", DbType.Single, 18, "col_decim"));
 			command.Parameters.Add(this.CreateParameter("@col_date", DbType.StringFixedLength, 20, "col_date"));
 			command.Parameters.Add(this.CreateParameter("@col_code", DbType.StringFixedLength, 10, "col_code"));
 			command.Parameters.Add(this.CreateParameter("@col_name", DbType.StringFixedLength, 20, "col_name"));
@@ -2772,7 +2772,7 @@ namespace AS3AP.BenchMark
 			
 				for (int i = 0; i < 10; i++)
 				{
-					((IDataParameter)command.Parameters[i]).Value = elements[i];
+					((DbParameter)command.Parameters[i]).Value = elements[i];
 				}
 
 				command.ExecuteNonQuery();
@@ -2813,9 +2813,7 @@ namespace AS3AP.BenchMark
 
 			if (!File.Exists(path + "asap." + table))
 			{
-				throw new FileNotFoundException(
-					"AS3AP data file not found",
-					path + "asap." + table);
+				throw new FileNotFoundException("AS3AP data file not found", path + "asap." + table);
 			}
 
 			stream = new StreamReader(
@@ -2839,7 +2837,7 @@ namespace AS3AP.BenchMark
 			{
 				string[] elements = stream.ReadLine().Split(',');
 			
-				((IDataParameter)command.Parameters[0]).Value = elements[0];
+				((DbParameter)command.Parameters[0]).Value = elements[0];
 	
 				command.ExecuteNonQuery();
 			}
@@ -2861,12 +2859,14 @@ namespace AS3AP.BenchMark
 
         protected DbParameter CreateParameter(string parameterName, DbType dbType, int size, string sourceColumn)
         {
-            throw new NotImplementedException();
-        }
+            DbParameter parameter = this.providerFactory.CreateParameter();
 
-        protected DbParameter CreateParameter(string parameterName, DbType dbType, int precision, int scale, string sourceColumn)
-        {
-            throw new NotImplementedException();
+            parameter.ParameterName = parameterName;
+            parameter.DbType        = dbType;
+            parameter.Size          = size;
+            parameter.SourceColumn  = sourceColumn;
+
+            return parameter;
         }
 
 		#endregion	

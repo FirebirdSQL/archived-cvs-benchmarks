@@ -169,9 +169,9 @@ namespace AS3AP.BenchMark
 										false));									
 								}
 
-								this.testSuite 		= TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
-								this.testSuite.Log	= log;
-								this.testSuite.TupleCount = tupleCount;
+								this.testSuite 		        = TestSuiteFactory.GetTestSuite(testSuiteType, configuration);
+								this.testSuite.Log	        = log;
+								this.testSuite.TupleCount   = tupleCount;
 
 								this.testSuite.Result	+= new ResultEventHandler(OnResult);
 								this.testSuite.Progress	+= new ProgressEventHandler(OnProgress);
@@ -187,7 +187,7 @@ namespace AS3AP.BenchMark
 							{
 								if (this.configuration.RunCreate)
 								{
-									this.createDatabase();
+									this.CreateDatabase();
 								}
 								else
 								{
@@ -216,7 +216,7 @@ namespace AS3AP.BenchMark
 							{
 								if (this.configuration.RunCreate)
 								{
-									this.createDatabase();
+									this.CreateDatabase();
 								}
 								else
 								{
@@ -228,9 +228,11 @@ namespace AS3AP.BenchMark
 								/* Start of the multi-user test */
 								this.currentTest = "Preparing multi-user test";
 								this.testSuite.ConnectDatabase();
+
 								if (this.testSuite.TupleCount != this.testSuite.CountRows("updates")) 
 								{
-									this.testSuite.DisconnectDatabase();															
+									this.testSuite.DisconnectDatabase();
+
 									if (this.testSuite.Log != null)
 									{
 										this.testSuite.Log.Simple("Invalid data ( Multi user tests )");
@@ -240,6 +242,7 @@ namespace AS3AP.BenchMark
 								else
 								{
 									this.testSuite.DisconnectDatabase();
+
 									if (this.ProgressMessage != null)
 									{
 										this.ProgressMessage(
@@ -259,9 +262,7 @@ namespace AS3AP.BenchMark
 
 				if (this.ProgressMessage != null)
 				{
-					this.ProgressMessage(
-						this, 
-						new ProgressMessageEventArgs("!!! Finished !!!"));
+					this.ProgressMessage(this, new ProgressMessageEventArgs("!!! Finished !!!"));
 				}
 			}
 			catch (Exception ex)
@@ -273,7 +274,7 @@ namespace AS3AP.BenchMark
 			}
 		}
 
-		private void createDatabase()
+		private void CreateDatabase()
 		{
 			int	dbSize = 0;
 
@@ -285,8 +286,8 @@ namespace AS3AP.BenchMark
 			}
 
 			this.testSuite.CreateDatabase();
-
 			this.testSuite.ConnectDatabase();
+
 			if ((tupleCount = this.testSuite.CountRows("updates")) == 0)
 			{
 				if (this.testSuite.Log != null)
@@ -295,6 +296,7 @@ namespace AS3AP.BenchMark
 				}
 				throw new InvalidOperationException("Database tables are empty.");
 			}		
+
 			this.testSuite.TupleCount = tupleCount;
 			dbSize = (4 * this.testSuite.TupleCount * 100)/1000000;
 			
