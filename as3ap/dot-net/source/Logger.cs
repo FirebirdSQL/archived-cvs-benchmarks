@@ -22,7 +22,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace AS3AP.BenchMark
+namespace DatabaseBenchmark
 {
 	#region Enumerations
 

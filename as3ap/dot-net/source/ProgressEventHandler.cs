@@ -19,7 +19,7 @@
 
 using System;
 
-namespace AS3AP.BenchMark
+namespace DatabaseBenchmark
 {
     public delegate void ProgressEventHandler(object sender, ProgressMessageEventArgs e);
 }

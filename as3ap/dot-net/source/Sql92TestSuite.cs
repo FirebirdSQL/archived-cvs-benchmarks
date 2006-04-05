@@ -20,7 +20,7 @@
 using System;
 using System.Data;
 
-namespace AS3AP.BenchMark
+namespace DatabaseBenchmark
 {
 	public class Sql92TestSuite : BaseTestSuite
 	{

@@ -20,7 +20,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace AS3AP.BenchMark
+namespace DatabaseBenchmark
 {
 	class Benchmark
 	{
@@ -30,10 +30,8 @@ namespace AS3AP.BenchMark
 #if (CONSOLE)
 			As3apConsole.Run();
 #else
-    #if (NET_2_0)
             Application.EnableVisualStyles();
-            Application.EnableRTLMirroring();
-    #endif
+            Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new As3apGui());
 #endif
 		}

@@ -20,7 +20,7 @@
 using System;
 using System.Data;
 
-namespace AS3AP.BenchMark
+namespace DatabaseBenchmark
 {
 	[AttributeUsage(AttributeTargets.Method)]
 	public class IsolationLevelAttribute : System.Attribute 

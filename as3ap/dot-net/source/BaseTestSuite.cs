@@ -28,7 +28,7 @@ using System.Text;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace AS3AP.BenchMark
+namespace DatabaseBenchmark
 {
 	public abstract class BaseTestSuite : ITestSuite
 	{

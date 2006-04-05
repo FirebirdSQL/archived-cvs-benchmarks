@@ -21,7 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace AS3AP.BenchMark
+namespace DatabaseBenchmark
 {
     public delegate void ResultEventHandler(object sender, TestResultEventArgs e);
 }

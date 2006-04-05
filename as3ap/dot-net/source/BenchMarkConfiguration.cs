@@ -21,7 +21,7 @@ using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Soap;
 
-namespace AS3AP.BenchMark
+namespace DatabaseBenchmark
 {
 	/// <summary>
 	/// Descripción breve de Configuration.
@@ -42,6 +42,7 @@ namespace AS3AP.BenchMark
 		private bool	supportsClusteredIndexes = false;
 		private bool	supportsHashIndexes = false;
         private string  createDatabaseStmt  = "";
+        private string  dropDatabaseStmt    = "";
 		private string	btreeIndexStmt		= "create index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
 		private string	clusteredIndexStmt	= "create unique clustered index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
 		private string	hashIndexStmt		= "create index @INDEX_NAME on @TABLE_NAME (@INDEX_FIELDS)";
@@ -122,7 +123,13 @@ namespace AS3AP.BenchMark
             set { this.createDatabaseStmt = value; }
         }
 
-		public string BtreeIndexStmt
+        public string DropDatabaseStmt
+        {
+            get { return this.dropDatabaseStmt; }
+            set { this.dropDatabaseStmt = value; }
+        }
+
+        public string BtreeIndexStmt
 		{
             get { return this.btreeIndexStmt; }
             set { this.btreeIndexStmt = value; }
@@ -178,9 +185,17 @@ namespace AS3AP.BenchMark
 
 		#endregion
 
-		#region · SOAP Methods ·
+        #region · Constructors ·
 
-		public static BenchMarkConfiguration Load(string fileName)
+        public BenchMarkConfiguration()
+        {
+        }
+
+        #endregion
+
+        #region · SOAP Methods ·
+
+        public static BenchMarkConfiguration Load(string fileName)
 		{
 			try
 			{

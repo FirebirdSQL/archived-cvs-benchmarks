@@ -25,7 +25,7 @@ using System.Threading;
 using System.Reflection;
 using System.Configuration;
 
-namespace AS3AP.BenchMark
+namespace DatabaseBenchmark
 {
 	public class AS3AP : IDisposable
 	{	
@@ -198,9 +198,7 @@ namespace AS3AP.BenchMark
 
 								if (this.ProgressMessage != null)
 								{
-									this.ProgressMessage(
-										this, 
-										new ProgressMessageEventArgs("Starting single-user test"));
+									this.ProgressMessage(this, new ProgressMessageEventArgs("Starting single-user test"));
 								}
 
 								if (this.testSuite.Log != null)
@@ -246,8 +244,7 @@ namespace AS3AP.BenchMark
 									if (this.ProgressMessage != null)
 									{
 										this.ProgressMessage(
-											this, 
-											new ProgressMessageEventArgs("Starting multi-user test"));
+											this, new ProgressMessageEventArgs("Starting multi-user test"));
 									}
 
 									int dbSize = dbSize = (4 * this.testSuite.TupleCount * 100)/1000000;;
@@ -258,6 +255,12 @@ namespace AS3AP.BenchMark
 							break;
 						}
 					}
+
+                    if (i < testSequence.Length)
+                    {
+                        // Wait 10 seconds before running next benchmark
+                        Thread.Sleep(10000);
+                    }
 				}
 
 				if (this.ProgressMessage != null)
@@ -281,8 +284,7 @@ namespace AS3AP.BenchMark
 			if (this.ProgressMessage != null)
 			{
 				this.ProgressMessage(
-					this, 
-					new ProgressMessageEventArgs("Creating tables and loading data " + DateTime.Now.ToString()));
+					this, new ProgressMessageEventArgs("Creating tables and loading data " + DateTime.Now.ToString()));
 			}
 
 			this.testSuite.CreateDatabase();
@@ -298,7 +300,7 @@ namespace AS3AP.BenchMark
 			}		
 
 			this.testSuite.TupleCount = tupleCount;
-			dbSize = (4 * this.testSuite.TupleCount * 100)/1000000;
+			dbSize = (4 * this.testSuite.TupleCount * 100) / 1000000;
 			
 			if (this.testSuite.Log != null)
 			{
