@@ -1,7 +1,7 @@
 //
 // AS3AP -	An ANSI SQL Standard Scalable and Portable Benchmark
 //			for Relational Database Systems.
-// Copyright (C) 2003-2004  Carlos Guzman Alvarez
+// Copyright (C) 2003-2006  Carlos Guzman Alvarez
 //
 // Distributable under LGPL license.
 // You may obtain a copy of the License at http://www.gnu.org/copyleft/lesser.html
@@ -54,7 +54,7 @@ namespace AS3AP.BenchMark
 		private System.Windows.Forms.Label lblHashIndex;
 		private System.Windows.Forms.Button cmdRun;
 		private System.Windows.Forms.TextBox txtClusterIndex;
-		private System.Windows.Forms.Label lblConnectionString;
+		private System.Windows.Forms.Label lblConnectionStringName;
 		private System.Windows.Forms.TabPage tabProvider;		
 		private System.Windows.Forms.Label lblBtreeIndex;
 		private System.Windows.Forms.Button cmdSave;		
@@ -62,7 +62,7 @@ namespace AS3AP.BenchMark
 		private System.Windows.Forms.TextBox txtInteger;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.TabPage tabGeneral;
-		private System.Windows.Forms.TextBox txtConnectionString;
+		private System.Windows.Forms.TextBox txtConnectionStringName;
 		private System.Windows.Forms.TextBox txtDecimal;
 		private System.Windows.Forms.TextBox txtRunSequence;
 		private System.Windows.Forms.TextBox txtVarchar;
@@ -96,10 +96,10 @@ namespace AS3AP.BenchMark
 		private System.Windows.Forms.Label lblProgressMessage;
 		private System.Windows.Forms.Button cmdStop;
 		private System.Windows.Forms.CheckBox chkEnableLog;
-		private System.Windows.Forms.CheckBox chkEnableErrorLog;
-		private System.Windows.Forms.CheckBox chkForcedWrites;
-		private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox cboHelperType;
+        private System.Windows.Forms.CheckBox chkEnableErrorLog;
+        private TextBox txtCreateDatabase;
+        private Label lblCreateDatabase;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.TabControl tabControl;
 	
 		#endregion
@@ -140,7 +140,8 @@ namespace AS3AP.BenchMark
             this.txtUserNumber = new System.Windows.Forms.TextBox();
             this.lblUSerNumber = new System.Windows.Forms.Label();
             this.tabRDBMS = new System.Windows.Forms.TabPage();
-            this.chkForcedWrites = new System.Windows.Forms.CheckBox();
+            this.txtCreateDatabase = new System.Windows.Forms.TextBox();
+            this.lblCreateDatabase = new System.Windows.Forms.Label();
             this.grbDataTypes = new System.Windows.Forms.GroupBox();
             this.txtVarchar = new System.Windows.Forms.TextBox();
             this.lblVarchar = new System.Windows.Forms.Label();
@@ -163,10 +164,8 @@ namespace AS3AP.BenchMark
             this.txtBTreeIndex = new System.Windows.Forms.TextBox();
             this.lblBtreeIndex = new System.Windows.Forms.Label();
             this.tabProvider = new System.Windows.Forms.TabPage();
-            this.cboHelperType = new System.Windows.Forms.ComboBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.lblConnectionString = new System.Windows.Forms.Label();
-            this.txtConnectionString = new System.Windows.Forms.TextBox();
+            this.lblConnectionStringName = new System.Windows.Forms.Label();
+            this.txtConnectionStringName = new System.Windows.Forms.TextBox();
             this.tabRun = new System.Windows.Forms.TabPage();
             this.cmdStop = new System.Windows.Forms.Button();
             this.lblProgressMessage = new System.Windows.Forms.Label();
@@ -180,6 +179,7 @@ namespace AS3AP.BenchMark
             this.cmdSave = new System.Windows.Forms.Button();
             this.cmdLoad = new System.Windows.Forms.Button();
             this.tabBenchmark = new System.Windows.Forms.TabControl();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.tabControl.SuspendLayout();
             this.tabGeneral.SuspendLayout();
             this.tabRDBMS.SuspendLayout();
@@ -246,7 +246,7 @@ namespace AS3AP.BenchMark
             // 
             // txtDataFilesPath
             // 
-            this.txtDataFilesPath.Location = new System.Drawing.Point(176, 120);
+            this.txtDataFilesPath.Location = new System.Drawing.Point(168, 120);
             this.txtDataFilesPath.Multiline = true;
             this.txtDataFilesPath.Name = "txtDataFilesPath";
             this.txtDataFilesPath.Size = new System.Drawing.Size(264, 56);
@@ -254,7 +254,7 @@ namespace AS3AP.BenchMark
             // 
             // label2
             // 
-            this.label2.Location = new System.Drawing.Point(176, 104);
+            this.label2.Location = new System.Drawing.Point(168, 104);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(100, 16);
             this.label2.TabIndex = 7;
@@ -278,7 +278,7 @@ namespace AS3AP.BenchMark
             // 
             // lblRunSequence
             // 
-            this.lblRunSequence.Location = new System.Drawing.Point(176, 16);
+            this.lblRunSequence.Location = new System.Drawing.Point(168, 16);
             this.lblRunSequence.Name = "lblRunSequence";
             this.lblRunSequence.Size = new System.Drawing.Size(100, 16);
             this.lblRunSequence.TabIndex = 5;
@@ -309,7 +309,8 @@ namespace AS3AP.BenchMark
             // 
             // tabRDBMS
             // 
-            this.tabRDBMS.Controls.Add(this.chkForcedWrites);
+            this.tabRDBMS.Controls.Add(this.txtCreateDatabase);
+            this.tabRDBMS.Controls.Add(this.lblCreateDatabase);
             this.tabRDBMS.Controls.Add(this.grbDataTypes);
             this.tabRDBMS.Controls.Add(this.chkHashIndexes);
             this.tabRDBMS.Controls.Add(this.chkClusterIndexes);
@@ -325,13 +326,20 @@ namespace AS3AP.BenchMark
             this.tabRDBMS.TabIndex = 2;
             this.tabRDBMS.Text = "RDBMS";
             // 
-            // chkForcedWrites
+            // txtCreateDatabase
             // 
-            this.chkForcedWrites.Location = new System.Drawing.Point(344, 8);
-            this.chkForcedWrites.Name = "chkForcedWrites";
-            this.chkForcedWrites.Size = new System.Drawing.Size(96, 16);
-            this.chkForcedWrites.TabIndex = 9;
-            this.chkForcedWrites.Text = "Forced writes";
+            this.txtCreateDatabase.Location = new System.Drawing.Point(102, 29);
+            this.txtCreateDatabase.Name = "txtCreateDatabase";
+            this.txtCreateDatabase.Size = new System.Drawing.Size(338, 20);
+            this.txtCreateDatabase.TabIndex = 11;
+            // 
+            // lblCreateDatabase
+            // 
+            this.lblCreateDatabase.Location = new System.Drawing.Point(3, 32);
+            this.lblCreateDatabase.Name = "lblCreateDatabase";
+            this.lblCreateDatabase.Size = new System.Drawing.Size(93, 16);
+            this.lblCreateDatabase.TabIndex = 10;
+            this.lblCreateDatabase.Text = "Create Database";
             // 
             // grbDataTypes
             // 
@@ -347,23 +355,23 @@ namespace AS3AP.BenchMark
             this.grbDataTypes.Controls.Add(this.lblFloat);
             this.grbDataTypes.Controls.Add(this.txtInteger);
             this.grbDataTypes.Controls.Add(this.lblInteger);
-            this.grbDataTypes.Location = new System.Drawing.Point(8, 112);
+            this.grbDataTypes.Location = new System.Drawing.Point(8, 124);
             this.grbDataTypes.Name = "grbDataTypes";
-            this.grbDataTypes.Size = new System.Drawing.Size(432, 100);
+            this.grbDataTypes.Size = new System.Drawing.Size(432, 91);
             this.grbDataTypes.TabIndex = 8;
             this.grbDataTypes.TabStop = false;
             this.grbDataTypes.Text = "Data Type names";
             // 
             // txtVarchar
             // 
-            this.txtVarchar.Location = new System.Drawing.Point(296, 64);
+            this.txtVarchar.Location = new System.Drawing.Point(304, 63);
             this.txtVarchar.Name = "txtVarchar";
             this.txtVarchar.Size = new System.Drawing.Size(112, 20);
             this.txtVarchar.TabIndex = 11;
             // 
             // lblVarchar
             // 
-            this.lblVarchar.Location = new System.Drawing.Point(224, 66);
+            this.lblVarchar.Location = new System.Drawing.Point(232, 65);
             this.lblVarchar.Name = "lblVarchar";
             this.lblVarchar.Size = new System.Drawing.Size(72, 16);
             this.lblVarchar.TabIndex = 10;
@@ -371,14 +379,14 @@ namespace AS3AP.BenchMark
             // 
             // txtChar
             // 
-            this.txtChar.Location = new System.Drawing.Point(296, 40);
+            this.txtChar.Location = new System.Drawing.Point(304, 39);
             this.txtChar.Name = "txtChar";
             this.txtChar.Size = new System.Drawing.Size(112, 20);
             this.txtChar.TabIndex = 9;
             // 
             // lblChar
             // 
-            this.lblChar.Location = new System.Drawing.Point(224, 42);
+            this.lblChar.Location = new System.Drawing.Point(232, 41);
             this.lblChar.Name = "lblChar";
             this.lblChar.Size = new System.Drawing.Size(72, 16);
             this.lblChar.TabIndex = 8;
@@ -386,14 +394,14 @@ namespace AS3AP.BenchMark
             // 
             // txtDecimal
             // 
-            this.txtDecimal.Location = new System.Drawing.Point(296, 16);
+            this.txtDecimal.Location = new System.Drawing.Point(304, 15);
             this.txtDecimal.Name = "txtDecimal";
             this.txtDecimal.Size = new System.Drawing.Size(112, 20);
             this.txtDecimal.TabIndex = 7;
             // 
             // lblDecimal
             // 
-            this.lblDecimal.Location = new System.Drawing.Point(224, 18);
+            this.lblDecimal.Location = new System.Drawing.Point(232, 17);
             this.lblDecimal.Name = "lblDecimal";
             this.lblDecimal.Size = new System.Drawing.Size(72, 16);
             this.lblDecimal.TabIndex = 6;
@@ -401,14 +409,14 @@ namespace AS3AP.BenchMark
             // 
             // txtDouble
             // 
-            this.txtDouble.Location = new System.Drawing.Point(80, 64);
+            this.txtDouble.Location = new System.Drawing.Point(88, 63);
             this.txtDouble.Name = "txtDouble";
             this.txtDouble.Size = new System.Drawing.Size(112, 20);
             this.txtDouble.TabIndex = 5;
             // 
             // lblDouble
             // 
-            this.lblDouble.Location = new System.Drawing.Point(8, 66);
+            this.lblDouble.Location = new System.Drawing.Point(16, 65);
             this.lblDouble.Name = "lblDouble";
             this.lblDouble.Size = new System.Drawing.Size(72, 16);
             this.lblDouble.TabIndex = 4;
@@ -416,14 +424,14 @@ namespace AS3AP.BenchMark
             // 
             // txtFloat
             // 
-            this.txtFloat.Location = new System.Drawing.Point(80, 40);
+            this.txtFloat.Location = new System.Drawing.Point(88, 39);
             this.txtFloat.Name = "txtFloat";
             this.txtFloat.Size = new System.Drawing.Size(112, 20);
             this.txtFloat.TabIndex = 3;
             // 
             // lblFloat
             // 
-            this.lblFloat.Location = new System.Drawing.Point(8, 42);
+            this.lblFloat.Location = new System.Drawing.Point(16, 41);
             this.lblFloat.Name = "lblFloat";
             this.lblFloat.Size = new System.Drawing.Size(72, 16);
             this.lblFloat.TabIndex = 2;
@@ -431,14 +439,14 @@ namespace AS3AP.BenchMark
             // 
             // txtInteger
             // 
-            this.txtInteger.Location = new System.Drawing.Point(80, 16);
+            this.txtInteger.Location = new System.Drawing.Point(88, 15);
             this.txtInteger.Name = "txtInteger";
             this.txtInteger.Size = new System.Drawing.Size(112, 20);
             this.txtInteger.TabIndex = 1;
             // 
             // lblInteger
             // 
-            this.lblInteger.Location = new System.Drawing.Point(8, 18);
+            this.lblInteger.Location = new System.Drawing.Point(16, 17);
             this.lblInteger.Name = "lblInteger";
             this.lblInteger.Size = new System.Drawing.Size(72, 16);
             this.lblInteger.TabIndex = 0;
@@ -462,97 +470,74 @@ namespace AS3AP.BenchMark
             // 
             // txtHashIndex
             // 
-            this.txtHashIndex.Location = new System.Drawing.Point(80, 80);
+            this.txtHashIndex.Location = new System.Drawing.Point(80, 103);
             this.txtHashIndex.Name = "txtHashIndex";
             this.txtHashIndex.Size = new System.Drawing.Size(360, 20);
             this.txtHashIndex.TabIndex = 7;
             // 
             // lblHashIndex
             // 
-            this.lblHashIndex.Location = new System.Drawing.Point(8, 80);
+            this.lblHashIndex.Location = new System.Drawing.Point(3, 104);
             this.lblHashIndex.Name = "lblHashIndex";
-            this.lblHashIndex.Size = new System.Drawing.Size(72, 16);
+            this.lblHashIndex.Size = new System.Drawing.Size(77, 16);
             this.lblHashIndex.TabIndex = 6;
             this.lblHashIndex.Text = "Hash Index";
             // 
             // txtClusterIndex
             // 
-            this.txtClusterIndex.Location = new System.Drawing.Point(80, 56);
+            this.txtClusterIndex.Location = new System.Drawing.Point(80, 79);
             this.txtClusterIndex.Name = "txtClusterIndex";
             this.txtClusterIndex.Size = new System.Drawing.Size(360, 20);
             this.txtClusterIndex.TabIndex = 5;
             // 
             // lblClusterIndex
             // 
-            this.lblClusterIndex.Location = new System.Drawing.Point(8, 56);
+            this.lblClusterIndex.Location = new System.Drawing.Point(3, 80);
             this.lblClusterIndex.Name = "lblClusterIndex";
-            this.lblClusterIndex.Size = new System.Drawing.Size(72, 16);
+            this.lblClusterIndex.Size = new System.Drawing.Size(77, 16);
             this.lblClusterIndex.TabIndex = 4;
             this.lblClusterIndex.Text = "Cluster Index";
             // 
             // txtBTreeIndex
             // 
-            this.txtBTreeIndex.Location = new System.Drawing.Point(80, 32);
+            this.txtBTreeIndex.Location = new System.Drawing.Point(80, 55);
             this.txtBTreeIndex.Name = "txtBTreeIndex";
             this.txtBTreeIndex.Size = new System.Drawing.Size(360, 20);
             this.txtBTreeIndex.TabIndex = 3;
             // 
             // lblBtreeIndex
             // 
-            this.lblBtreeIndex.Location = new System.Drawing.Point(8, 32);
+            this.lblBtreeIndex.Location = new System.Drawing.Point(3, 56);
             this.lblBtreeIndex.Name = "lblBtreeIndex";
-            this.lblBtreeIndex.Size = new System.Drawing.Size(72, 16);
+            this.lblBtreeIndex.Size = new System.Drawing.Size(77, 16);
             this.lblBtreeIndex.TabIndex = 2;
             this.lblBtreeIndex.Text = "BTree Index";
             // 
             // tabProvider
             // 
-            this.tabProvider.Controls.Add(this.cboHelperType);
-            this.tabProvider.Controls.Add(this.label1);
-            this.tabProvider.Controls.Add(this.lblConnectionString);
-            this.tabProvider.Controls.Add(this.txtConnectionString);
+            this.tabProvider.Controls.Add(this.lblConnectionStringName);
+            this.tabProvider.Controls.Add(this.txtConnectionStringName);
             this.tabProvider.Location = new System.Drawing.Point(4, 22);
             this.tabProvider.Name = "tabProvider";
             this.tabProvider.Size = new System.Drawing.Size(448, 222);
             this.tabProvider.TabIndex = 1;
             this.tabProvider.Text = "ADO.NET Provider";
             // 
-            // cboHelperType
+            // lblConnectionStringName
             // 
-            this.cboHelperType.FormattingEnabled = true;
-            this.cboHelperType.Items.AddRange(new object[] {
-            "Firebird",
-            "Oracle",
-            "PostgreSQL",
-            "Sql Server"});
-            this.cboHelperType.Location = new System.Drawing.Point(8, 128);
-            this.cboHelperType.Name = "cboHelperType";
-            this.cboHelperType.Size = new System.Drawing.Size(121, 21);
-            this.cboHelperType.TabIndex = 13;
+            this.lblConnectionStringName.Location = new System.Drawing.Point(121, 93);
+            this.lblConnectionStringName.Name = "lblConnectionStringName";
+            this.lblConnectionStringName.Size = new System.Drawing.Size(129, 16);
+            this.lblConnectionStringName.TabIndex = 10;
+            this.lblConnectionStringName.Text = "ConnectionString Name";
             // 
-            // label1
+            // txtConnectionStringName
             // 
-            this.label1.Location = new System.Drawing.Point(8, 112);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(100, 16);
-            this.label1.TabIndex = 12;
-            this.label1.Text = "Data Helper Type";
-            // 
-            // lblConnectionString
-            // 
-            this.lblConnectionString.Location = new System.Drawing.Point(8, 8);
-            this.lblConnectionString.Name = "lblConnectionString";
-            this.lblConnectionString.Size = new System.Drawing.Size(100, 16);
-            this.lblConnectionString.TabIndex = 10;
-            this.lblConnectionString.Text = "ConnectionString";
-            // 
-            // txtConnectionString
-            // 
-            this.txtConnectionString.Location = new System.Drawing.Point(8, 24);
-            this.txtConnectionString.Multiline = true;
-            this.txtConnectionString.Name = "txtConnectionString";
-            this.txtConnectionString.Size = new System.Drawing.Size(432, 80);
-            this.txtConnectionString.TabIndex = 11;
+            this.txtConnectionStringName.Location = new System.Drawing.Point(121, 109);
+            this.txtConnectionStringName.Multiline = true;
+            this.txtConnectionStringName.Name = "txtConnectionStringName";
+            this.txtConnectionStringName.Size = new System.Drawing.Size(206, 20);
+            this.txtConnectionStringName.TabIndex = 11;
             // 
             // tabRun
             // 
@@ -704,21 +689,20 @@ namespace AS3AP.BenchMark
 		private void UpdateControls()
 		{
 			// General TAB
-			this.chkCreateDB.Checked		= configuration.RunCreate;
-			this.chkCreateIndexes.Checked	= configuration.UseIndexes;
-			this.chkEnableLog.Checked		= configuration.EnableLogging;
-			this.chkEnableErrorLog.Checked	= configuration.EnableErrorLogging;
-			this.txtDataFilesPath.Text		= configuration.DataPath;
-			this.txtUserNumber.Text			= configuration.UserNumber.ToString();
-			this.txtRunSequence.Text		= configuration.RunSequence;
+            this.chkCreateDB.Checked        = this.configuration.RunCreate;
+            this.chkCreateIndexes.Checked   = this.configuration.UseIndexes;
+            this.chkEnableLog.Checked       = this.configuration.EnableLogging;
+            this.chkEnableErrorLog.Checked  = this.configuration.EnableErrorLogging;
+            this.txtDataFilesPath.Text      = this.configuration.DataPath;
+            this.txtUserNumber.Text         = this.configuration.UserNumber.ToString();
+            this.txtRunSequence.Text        = this.configuration.RunSequence;
 			
 			// ADO .NET Provider  TAB
-#warning Update connection string and provider names
+            this.txtConnectionStringName.Text = this.configuration.ConnectionStringName;
 
 			// RDBMS TAB
 			this.chkClusterIndexes.Checked	= this.configuration.SupportsClusteredIndexes;
 			this.chkHashIndexes.Checked		= this.configuration.SupportsHashIndexes;
-			this.chkForcedWrites.Checked	= this.configuration.ForcedWrites;
 			this.txtBTreeIndex.Text			= this.configuration.BtreeIndexStmt;
 			this.txtClusterIndex.Text		= this.configuration.ClusteredIndexStmt;
 			this.txtHashIndex.Text			= this.configuration.HashIndexStmt;
@@ -742,12 +726,11 @@ namespace AS3AP.BenchMark
 			this.configuration.RunSequence			= this.txtRunSequence.Text;
 
 			// ADO .NET Provider  TAB
-#warning Update connection string and provider names
+            this.configuration.ConnectionStringName = this.txtConnectionStringName.Text;
 
 			// RDBMS TAB
 			this.configuration.SupportsClusteredIndexes	= this.chkClusterIndexes.Checked;
 			this.configuration.SupportsHashIndexes		= this.chkHashIndexes.Checked;
-			this.configuration.ForcedWrites				= this.chkForcedWrites.Checked;
 			this.configuration.BtreeIndexStmt			= this.txtBTreeIndex.Text;
 			this.configuration.ClusteredIndexStmt		= this.txtClusterIndex.Text;
 			this.configuration.HashIndexStmt			= this.txtHashIndex.Text;
@@ -804,8 +787,7 @@ namespace AS3AP.BenchMark
 		{
 			SaveFileDialog saveDlg = new SaveFileDialog();
 
-			saveDlg.Filter = "Archivos Config (*.config)|*.config|"	+
-				"All files (*.*)|*.*" ;
+			saveDlg.Filter = "Archivos Config (*.config)|*.config|"	+ "All files (*.*)|*.*" ;
 			
 			saveDlg.ShowDialog();
 			
@@ -847,16 +829,12 @@ namespace AS3AP.BenchMark
 
 		private void OnTestResult(object Sender, TestResultEventArgs e)
 		{
-            this.lstTestResults.Invoke(
-                new ShowTestResultHandler(this.ShowTestResult), 
-                new object[] { e });
+            this.lstTestResults.Invoke(new ShowTestResultHandler(this.ShowTestResult), new object[] { e });
         }
 
         private void OnProgressMessage(object Sender, ProgressMessageEventArgs e)
 		{
-            this.lblProgressMessage.Invoke(
-                new ShowProgressMessageHandler(this.ShowProgressMessage),
-                new object[] { e.Message });
+            this.lblProgressMessage.Invoke(new ShowProgressMessageHandler(this.ShowProgressMessage), new object[] { e.Message });
 		}
 
 		#endregion
@@ -894,9 +872,7 @@ namespace AS3AP.BenchMark
 		{
 			try
 			{
-                this.as3ap = new AS3AP(
-                    Path.GetDirectoryName(Application.ExecutablePath),
-                    this.configuration);
+                this.as3ap = new AS3AP(Path.GetDirectoryName(Application.ExecutablePath), this.configuration);
 
                 // Test Result Event handler
                 this.testResultHandler = new TestResultEventHandler(OnTestResult);
@@ -930,8 +906,11 @@ namespace AS3AP.BenchMark
 				{
 					this.as3ap.ProgressMessage -= progressMessageHandler;
 				}
-				this.as3ap.Dispose();
-				this.as3ap		= null;
+                if (this.as3ap != null)
+                {
+                    this.as3ap.Dispose();
+                    this.as3ap = null;
+                }
 				this.isRunning	= false;
             }
 		}
