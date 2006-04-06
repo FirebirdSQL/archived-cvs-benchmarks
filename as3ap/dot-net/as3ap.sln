@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "as3ap", "source\as3ap.csproj", "{70BD5DEE-5F9C-49B7-ADB3-6DC314D59DA1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "as3apDataGenerator", "as3apgen\source\as3apDataGenerator.csproj", "{519C84EC-9601-43FD-B395-0AB2BE6229DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FirebirdSql.Data.FirebirdClient", "..\..\..\NETProvider\NETProvider_20\source\FirebirdSql\FirebirdSql.Data.FirebirdClient.csproj", "{326A24F9-6259-45DB-835C-18DB80728460}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{70BD5DEE-5F9C-49B7-ADB3-6DC314D59DA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70BD5DEE-5F9C-49B7-ADB3-6DC314D59DA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70BD5DEE-5F9C-49B7-ADB3-6DC314D59DA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70BD5DEE-5F9C-49B7-ADB3-6DC314D59DA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{519C84EC-9601-43FD-B395-0AB2BE6229DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{519C84EC-9601-43FD-B395-0AB2BE6229DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{519C84EC-9601-43FD-B395-0AB2BE6229DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{519C84EC-9601-43FD-B395-0AB2BE6229DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{326A24F9-6259-45DB-835C-18DB80728460}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{326A24F9-6259-45DB-835C-18DB80728460}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{326A24F9-6259-45DB-835C-18DB80728460}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{326A24F9-6259-45DB-835C-18DB80728460}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
