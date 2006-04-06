@@ -239,7 +239,41 @@ namespace DatabaseBenchmark
             }
             else
             {
-                throw new NotImplementedException();
+                string                      catalog = "";
+                DbConnectionStringBuilder   builder = this.providerFactory.CreateConnectionStringBuilder();
+
+                builder.ConnectionString = connectionString;
+
+                if (builder.ContainsKey("Catalog"))
+                {
+                    catalog = builder["Catalog"].ToString();
+                    builder["Catalog"] = "";
+                }
+                else if (builder.ContainsKey("Database"))
+                {
+                    catalog = builder["Database"].ToString();
+                    builder["Database"] = "";
+                }
+
+                DbConnection connection = this.providerFactory.CreateConnection();
+                connection.ConnectionString = builder.ToString();
+                connection.Open();
+
+                DbCommand command = connection.CreateCommand();
+
+                try
+                {
+                    command.CommandText = String.Format(this.Configuration.CreateDatabaseStmt, catalog);
+                    command.ExecuteNonQuery();
+                }
+                catch
+                {
+                    throw;
+                }
+                finally
+                {
+                    connection.Close();
+                }
             }
 			
 			this.ConnectDatabase();
@@ -2293,6 +2327,7 @@ namespace DatabaseBenchmark
 		{
             try
             {
+                string catalog = ""; 
                 string connectionString = ConfigurationManager.ConnectionStrings[this.configuration.ConnectionStringName].ConnectionString;
                 string providerName = ConfigurationManager.ConnectionStrings[this.configuration.ConnectionStringName].ProviderName;
 
@@ -2302,7 +2337,39 @@ namespace DatabaseBenchmark
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    DbConnectionStringBuilder builder = this.providerFactory.CreateConnectionStringBuilder();
+
+                    builder.ConnectionString = connectionString;
+
+                    if (builder.ContainsKey("Catalog"))
+                    {
+                        catalog = builder["Catalog"].ToString();
+                        builder["Catalog"] = "";
+                    }
+                    else if (builder.ContainsKey("Database"))
+                    {
+                        catalog = builder["Database"].ToString();
+                        builder["Database"] = "";
+                    }
+
+                    DbConnection connection = this.providerFactory.CreateConnection();
+                    connection.ConnectionString = builder.ToString();
+                    connection.Open();
+
+                    DbCommand command = connection.CreateCommand();
+
+                    try
+                    {
+                        command.CommandText = String.Format(this.Configuration.DropDatabaseStmt, catalog);
+                        command.ExecuteNonQuery();
+                    }
+                    catch
+                    {
+                    }
+                    finally
+                    {
+                        connection.Close();
+                    }
                 }
             }
             catch (Exception)

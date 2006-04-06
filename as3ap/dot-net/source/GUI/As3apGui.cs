@@ -895,7 +895,7 @@ namespace DatabaseBenchmark
 		{
 			try
 			{
-                BenchMarkConfiguration configuration = (BenchMarkConfiguration)bindingSource.DataSource;
+                BenchMarkConfiguration configuration = (BenchMarkConfiguration)bindingSource.Current;
 
                 this.as3ap = new AS3AP(Path.GetDirectoryName(Application.ExecutablePath), configuration);
 
