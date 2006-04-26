@@ -1,3 +1,87 @@
+2006-04-06	carlosga_fb
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.41:
+	* as3ap/dot-net/source/GUI/As3apGui.cs 1.20:
+		More changes on the AS3AP Benchmark rework
+
+	* as3ap/dot-net/as3ap.BenchMark.build 1.13:
+	* as3ap/dot-net/as3ap.sln 1.1:
+	* as3ap/dot-net/as3apgen/as3apgen.build 1.4:
+	* as3ap/dot-net/as3apgen/source/as3apDataGenerator.csproj 1.1:
+	* as3ap/dot-net/source/as3ap.csproj 1.1:
+		Added new build system using Visual Studio solutions/projects
+
+2006-04-05	carlosga_fb
+	* as3ap/dot-net/source/GUI/As3apGui.cs 1.19:
+	* as3ap/dot-net/source/GUI/As3apGui.resx 1.3:
+	* as3ap/dot-net/source/Properties/DataSources/AS3AP.BenchMark.BenchMarkConfiguration.datasource 1.1:
+		· Changes to use DataBinding
+		· Added Drop Database statement configuration
+		· Bring BackgroundWorker to work
+
+	* as3ap/dot-net/as3apgen/source/App.config 1.1:
+	* as3ap/dot-net/as3apgen/source/AssemblyInfo.cs 1.2:
+	* as3ap/dot-net/as3apgen/source/DsRandomData.xsd 1.4:
+	* as3ap/dot-net/as3apgen/source/Properties/AssemblyInfo.cs 1.1:
+	* as3ap/dot-net/as3apgen/source/as3apgen.cs 1.6:
+	* as3ap/dot-net/as3apgen/source/as3apgen.exe.config 1.2:
+	* as3ap/dot-net/source/AS3AP.cs 1.46:
+	* as3ap/dot-net/source/AS3AP.cs 1.47:
+	* as3ap/dot-net/source/App.config 1.1:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.39:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.40:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs 1.17:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs 1.18:
+	* as3ap/dot-net/source/GUI/As3apGui.cs 1.18:
+	* as3ap/dot-net/source/GUI/As3apGui.resx 1.2:
+	* as3ap/dot-net/source/ITestSuite.cs 1.19:
+	* as3ap/dot-net/source/ITestSuite.cs 1.20:
+	* as3ap/dot-net/source/IndexType.cs 1.2:
+	* as3ap/dot-net/source/IndexType.cs 1.3:
+	* as3ap/dot-net/source/IsolationAttribute.cs 1.3:
+	* as3ap/dot-net/source/IsolationAttribute.cs 1.4:
+	* as3ap/dot-net/source/Logger.cs 1.3:
+	* as3ap/dot-net/source/Logger.cs 1.4:
+	* as3ap/dot-net/source/Main.cs 1.8:
+	* as3ap/dot-net/source/Main.cs 1.9:
+	* as3ap/dot-net/source/ProgressEventHandler.cs 1.2:
+	* as3ap/dot-net/source/ProgressEventHandler.cs 1.3:
+	* as3ap/dot-net/source/ProgressMessageEventArgs.cs 1.2:
+	* as3ap/dot-net/source/ProgressMessageEventArgs.cs 1.3:
+	* as3ap/dot-net/source/ProgressMessageEventHandler.cs 1.2:
+	* as3ap/dot-net/source/ResultEventHandler.cs 1.2:
+	* as3ap/dot-net/source/ResultEventHandler.cs 1.3:
+	* as3ap/dot-net/source/Sql87TestSuite.cs 1.17:
+	* as3ap/dot-net/source/Sql87TestSuite.cs 1.18:
+	* as3ap/dot-net/source/Sql92TestSuite.cs 1.19:
+	* as3ap/dot-net/source/Sql92TestSuite.cs 1.20:
+	* as3ap/dot-net/source/TestResultEventArgs.cs 1.2:
+	* as3ap/dot-net/source/TestResultEventArgs.cs 1.3:
+	* as3ap/dot-net/source/TestResultEventHandler.cs 1.2:
+	* as3ap/dot-net/source/TestSuiteFactory.cs 1.4:
+	* as3ap/dot-net/source/TestSuiteFactory.cs 1.5:
+		Started rework of the MS.NET AS3AP Benchmark to work with 
+		ADO.NET 2.0 and .NET 2.0
+
+2006-04-04	carlosga_fb
+	* as3ap/dot-net/source/AS3AP.cs 1.45:
+	* as3ap/dot-net/source/AssemblyInfo.cs 1.2:
+	* as3ap/dot-net/source/BaseTestSuite.cs 1.38:
+	* as3ap/dot-net/source/BenchMarkConfiguration.cs 1.16:
+	* as3ap/dot-net/source/GUI/As3apGui.cs 1.17:
+	* as3ap/dot-net/source/GUI/As3apGui.resx 1.1:
+	* as3ap/dot-net/source/ITestSuite.cs 1.18:
+	* as3ap/dot-net/source/IndexType.cs 1.1:
+	* as3ap/dot-net/source/Logger.cs 1.2:
+	* as3ap/dot-net/source/ProgressEventHandler.cs 1.1:
+	* as3ap/dot-net/source/ProgressMessageEventArgs.cs 1.1:
+	* as3ap/dot-net/source/ProgressMessageEventHandler.cs 1.1:
+	* as3ap/dot-net/source/Properties/AssemblyInfo.cs 1.1:
+	* as3ap/dot-net/source/ResultEventHandler.cs 1.1:
+	* as3ap/dot-net/source/TestResultEventArgs.cs 1.1:
+	* as3ap/dot-net/source/TestResultEventHandler.cs 1.1:
+		Started rework of the MS.NET AS3AP Benchmark to work with 
+		ADO.NET 2.0 and .NET 2.0
+
 2005-05-16	rrokytskyy
 	* as3ap/Java/src/org/firebirdsql/benchmark/FirebirdFixture.java 1.3:
 		switched to the new constructor taking a String type (available 
